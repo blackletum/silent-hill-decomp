@@ -384,7 +384,7 @@ typedef struct _MapEffectsInfo
                                  * the code count with probably unused features as some pieces of code handle cases
                                  * where this variable is set to 2 and 3.
                                  * * In `Gfx_FogParametersSet` if this variable is set to 3 has the same behaviour of
-                                 * * 0 and 1 (which is setting the targ et fog distance), but if it is set to 2 the fog.
+                                 * * 0 and 1 (which is setting the target fog distance), but if it is set to 2 the fog.
                                  * * distance is set to 0.
                                  * * In `Gfx_EffectsUpdate` setting the value to 3 sets some special behaviour and
                                  * * adjust the fog distance.
@@ -420,8 +420,8 @@ typedef struct _MapEffectsInfo
                                  * The second variable seems to be either broken or doesn't do any real impact neither in rain the
                                  * effect or the snow effect.
                                  */
-    /* 0x21 */ CVECTOR field_21;
-    /* 0x25 */ CVECTOR field_25;
+    /* 0x21 */ CVECTOR field_21;               // } Particle effect related. Only the first value affects snow transparency.
+    /* 0x25 */ CVECTOR field_25;               // }
                // 3 bytes of padding.
 } s_MapEffectsInfo;
 STATIC_ASSERT_SIZEOF(s_MapEffectsInfo, 44);

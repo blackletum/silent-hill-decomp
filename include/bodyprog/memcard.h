@@ -114,7 +114,7 @@ typedef enum _FileState
     FileState_Damaged = 3
 } e_FileState;
 
-/** @brief Memory card process states. */
+/** @brief Memory card processes states. */
 typedef enum _MemCardWorkState
 {
     MemCardWorkState_Idle          = 0,
@@ -189,7 +189,6 @@ typedef struct _MemCard_Directory
     /* 0x13B */ u8   blockCounts[MEMCARD_FILE_COUNT_MAX]; // Size of each file in 8192 byte blocks.
     /* 0x14C */ s8   __pad_14C[2];
 } s_MemCard_Directory;
-STATIC_ASSERT_SIZEOF(s_MemCard_Directory, 332);
 
 typedef struct _MemCard_Work
 {
@@ -531,12 +530,12 @@ s32 MemCard_FileStatusesGet(s32 deviceId);
  */
 s_MemCard_SaveMetadata* MemCard_SaveMetadataGet(s32 deviceId, s32 fileIdx, s32 saveIdx);
 
-/** @brief Returns the count of used files on the specified memory card.
+/** @brief Returns the count of non-empty files on the specified memory card.
  * 
  * Scratch: https://decomp.me/scratch/dJ8Oq
  *
  * @param deviceId Memory card index.
- * @return Count of used files in memory card.
+ * @return Count of non-empty files in memory card.
  */
 s32 MemCard_UsedFileCount(s32 deviceId);
 
@@ -572,104 +571,286 @@ bool MemCard_NoSavesDoneCheck(s32* outDeviceId, s32* outFileIdx, s32* outSaveIdx
  */
 void MemCard_Update(void);
 
-/** Copies the user config into an `s_Savegame_OptionsConfig` and calculates the footer checksum. */
-void MemCard_UserConfigCopy(s_Savegame_OptionsConfig* dest, s_OptionsConfig* src);
-
+/** @brief
+ * Scratch: https://decomp.me/scratch/v5gVl
+ */
 s32 MemCard_BiggestTotalSavegameCountGet(s32 deviceId);
 
-/** Copies savegame into an `s_Savegame_Container` and calculates the footer checksum. */
+/** @brief Copies savegame into a `s_Savegame_Container` and calculates footer checksum.
+ *
+ * @param dest Target element where data will be moved.
+ * @param src Origin source save game data.
+ */
 void MemCard_GameDataCopy(s_Savegame_Container* dest, s_Savegame* src);
 
+/** @brief 
+ *
+ * Scratch 1: https://decomp.me/scratch/CXEis
+ * Scratch 2: https://decomp.me/scratch/3M4wO
+ */
 void MemCard_TotalSavegameCountUpdate(s32 deviceId, s32 fileIdx, s32 saveIdx, s_Savegame* arg3);
 
+/** @brief 
+ *
+ * Scratch: https://decomp.me/scratch/TaVpJ
+ */
 void MemCard_TotalSavegameCountStepUpdate(s32 deviceId, s32 fileIdx, s32 saveIdx);
 
+/** @brief 
+ *
+ * Scratch: https://decomp.me/scratch/cam86
+ */
 void MemCard_SaveWithBiggestTotalSavegameCountGet(s32 deviceId, s_MemCard_TotalSavesInfo* result);
 
-/** Updates the footer with the checksum of the given data. */
+/** @brief Updates the footer with the checksum of the given data.
+ *
+ * Scratch: https://decomp.me/scratch/Gj9Ox
+ */
 void MemCard_ChecksumUpdate(s_Savegame_Footer* saveFooter, s8* saveData, s32 saveDataLength);
 
-/** Generates a checksum of the given saveData and compares it against the checksum value in the footer.
- * Returns 1 if the checksums match, otherwise 0.
+/** @brief Generates a checksum of the given saveData and compares it against the checksum value in the footer.
+ *
+ * Scratch: https://decomp.me/scratch/oAvuF
+ *
+ * @return True if the checksums match, otherwise False.
  */
-bool MemCard_ChecksumValidate(s_Savegame_Footer* saveFooter, s8* saveData, s32 saveDataLength); // 0x8002FF74
+bool MemCard_ChecksumValidate(s_Savegame_Footer* saveFooter, s8* saveData, s32 saveDataLength);
 
-/** Generates an 8-bit XOR checksum over the given data, only appears used with s_Savegame data. */
+/** @brief Generates an 8-bit XOR checksum over the given data, only appears used with s_Savegame data.
+ *
+ * Scratch 1: https://decomp.me/scratch/TyNmD
+ * Scratch 2: https://decomp.me/scratch/AvFBU
+ *
+ * @return True if the checksums match, otherwise False.
+ */
 u8 MemCard_ChecksumGenerate(s8* saveData, s32 saveDataLength);
 
-/** Generates a save filename for the given save index. */
+/** @brief Generates a save filename for the given save index.
+ *
+ * Scratch 1: https://decomp.me/scratch/y2zUU
+ * Scratch 2: https://decomp.me/scratch/Mt2pD
+ */
 void MemCard_FilenameGenerate(char* dest, s32 fileIdx);
 
+/** @brief 
+ *
+ * Scratch: https://decomp.me/scratch/62slY
+ */
 void MemCard_SaveBlockInit(s_PsxSaveBlock* saveBlock, s8 blockCount, s32 saveIdx, s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7, s32 arg8);
 
-/** Unused function? Appears to write `0xFF` to first 128 bytes of card and check if event is triggered. */
+/** @unused @brief Appears to write `0xFF` to first 128 bytes of card and check if event is triggered.
+ *
+ * Scratch 1: https://decomp.me/scratch/fi1GL
+ * Scratch 2: https://decomp.me/scratch/fKUIm
+ */
 s32 MemCard_DeviceTest(s32 deviceId);
 
+/** @brief
+ *
+ * Scratch 1: https://decomp.me/scratch/Ir3Z4
+ * Scratch 2: https://decomp.me/scratch/RuxhB
+ * Scratch 3: https://decomp.me/scratch/VSZEp
+ */
 s32 MemCard_DeviceFormat(s32 deviceId);
 
+/** @brief
+ *
+ * Scratch 1: https://decomp.me/scratch/BL03h
+ * Scratch 2: https://decomp.me/scratch/pkwrp
+ */
 s32 MemCard_FileClear(s32 deviceId, char* fileName);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/HEQn8
+ */
 s32 MemCard_FileRename(s32 deviceId, char* prevName, char* newName);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/4Bd9c
+ */
 void MemCard_WorkInit(void);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/dQ9Mh
+ */
 void MemCard_EventsInit(void);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/GfCpR
+ */
 void MemCard_StateInit(void);
 
+/** @brief
+ *
+ * Scratch 1: https://decomp.me/scratch/yKRru
+ * Scratch 2: https://decomp.me/scratch/lxBDY
+ */
 void MemCard_SwEventsInit(void);
 
+/** @brief
+ *
+ * Scratch 1: https://decomp.me/scratch/hCYR6
+ * Scratch 2: https://decomp.me/scratch/2epbu
+ */
 void MemCard_HwEventsInit(void);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/9iYwp
+ */
 void MemCard_EventsClose(void);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/IFjjm
+ */
 void MemCard_SwEventsClose(void);
 
+/** @brief
+ *
+ * Scratch 1: https://decomp.me/scratch/eu76G
+ * Scratch 2: https://decomp.me/scratch/GRwPV
+ */
 void MemCard_HwEventsClose(void);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/r0KzP
+ */
 s32 MemCard_SwEventsTest(void);
 
+/** @brief
+ *
+ * Scratch 1: https://decomp.me/scratch/bAN2R
+ * Scratch 2: https://decomp.me/scratch/D9ZX8
+ */
 void MemCard_SwEventsReset(void);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/xxLr7
+ */
 s32 MemCard_HwEventsTest(void);
 
+/** @brief
+ *
+ * Scratch 1: https://decomp.me/scratch/BzLTs
+ * Scratch 2: https://decomp.me/scratch/ZvY0z
+ */
 void MemCard_HwEventsReset(void);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/T0fbk
+ */
 void MemCard_HwEventSpIOE(void);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/Wszu4
+ */
 void MemCard_HwEventSpERROR(void);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/uuikJ
+ */
 void MemCard_HwEventSpNEW(void);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/xomR5
+ */
 void MemCard_HwEventSpTIMOUT(void);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/JLaeo
+ */
 void MemCard_HwEventSpUNKNOWN(void);
 
-s32 MemCard_StateResult(void); /** `e_MemCardResult` */
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/ta76s
+ * @return `e_MemCardResult`
+ */
+s32 MemCard_StateResult(void);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/ta76s
+ */
 bool MemCard_WorkSet(e_MemCardIoMode mode, s32 deviceId, s_MemCard_Directory* outDir, char* filename, s32 createBlockCount, s32 fileOffset, void* outBuf, s32 bufSize);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/2ZFUl
+ */
 bool MemCard_MemCardIsIdle(void);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/eM9zU
+ */
 void MemCard_StateUpdate(void);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/ZqZwd
+ */
 s32 MemCard_State_Init(void);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/6XlCR
+ */
 s32 MemCard_State_Check(void);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/SnDHT
+ */
 s32 MemCard_State_Load(void);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/FanVw
+ */
 s32 MemCard_State_DirRead(void);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/yksQ6
+ */
 s32 MemCard_State_FileCreate(void);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/8NOEJ
+ */
 s32 MemCard_State_FileOpen(void);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/DgVXq
+ */
 s32 MemCard_State_FileReadWrite(void);
 
+/** @brief
+ *
+ * Scratch: https://decomp.me/scratch/JLcsG
+ */
 void MemCard_DevicePathGenerate(s32 deviceId, char* res);
 
 /** @brief Updates memory card elements in memory.
+ *
+ * Scratch (USA): https://decomp.me/scratch/xgVSr 
+ * Scratch (JAP): https://decomp.me/scratch/j3Uvz
+ *
  * @return Status of memory cards.
  */
 bool MemCard_ElementsUpdate(void);
