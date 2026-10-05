@@ -224,7 +224,7 @@ void Options_ExtraOptionsMenu_Control(void) // 0x801E318C
     Options_ExtraOptionsMenu_EntryStringsDraw();
     Options_ExtraOptionsMenu_ConfigDraw();
     Options_ExtraOptionsMenu_SelectionHighlightDraw();
-    Options_Menu_VignetteDraw();
+    Options_Menu_BackgroundDraw();
     Screen_BackgroundImgDraw(&g_ItemInspectionImg);
 
     if (g_GameWork.gameStateSteps[0] != OptionsMenuState_ExtraOptions)
@@ -426,7 +426,7 @@ void Options_MainOptionsMenu_Control(void) // 0x801E3770
     Options_MainOptionsMenu_EntryStringsDraw();
     Options_MainOptionsMenu_ConfigDraw();
     Options_MainOptionsMenu_SelectionHighlightDraw();
-    Options_Menu_VignetteDraw();
+    Options_Menu_BackgroundDraw();
     Screen_BackgroundImgDraw(&g_ItemInspectionImg);
     Options_MainOptionsMenu_BgmVolumeBarDraw();
     Options_MainOptionsMenu_SfxVolumeBarDraw();
@@ -1042,7 +1042,7 @@ void Options_MainOptionsMenu_SelectionHighlightDraw(void) // 0x801E472C
     #undef HIGHLIGHT_OFFSET_Y
 }
 
-void Options_Menu_VignetteDraw(void) // 0x801E49F0
+void Options_Menu_BackgroundDraw(void) // 0x801E49F0
 {
     s32      y0;
     s32      y1;

@@ -383,9 +383,8 @@ typedef struct _MapEffectsInfo
                                  * It works basically as a boolean to determine if fog is or not enabled, however,
                                  * the code count with probably unused features as some pieces of code handle cases
                                  * where this variable is set to 2 and 3.
-                                 * * In `Gfx_FogParametersSet` if this variable is set to 3 has the same behaviour of
-                                 * * 0 and 1 (which is setting the target fog distance), but if it is set to 2 the fog.
-                                 * * distance is set to 0.
+                                 * * In `Gfx_FogParametersSet`, if this variable is set to 3, has the same behaviour as
+                                 * * 0 and 1 (which sets the target fog distance). If set to 2, the fog distance is set to 0.
                                  * * In `Gfx_EffectsUpdate` setting the value to 3 sets some special behaviour and
                                  * * adjust the fog distance.
                                  * The only way this value is set is through the defined enviroment preset at `MAP_EFFECTS_INFOS`

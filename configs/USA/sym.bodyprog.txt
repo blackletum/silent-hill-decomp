@@ -2985,8 +2985,8 @@ g_MemCard_SaveHeaderInfo_Slot1               = 0x800B2780;
 g_MemCard_SaveHeaderInfo_Slot2               = 0x800B3680;
 g_MemCard_SaveHeaderInfo_Null                = 0x800B4580;
 g_MemCard_SysAvailibityStatus                = 0x800B5480; // size:0x4
-g_MemCard_Work                               = 0x800B5488; // size:0x80
-g_MemCard_SaveWork                           = 0x800B5508; // size:0x718
+g_MemCardWork                               = 0x800B5488; // size:0x80
+g_MemCardSaveWork                           = 0x800B5508; // size:0x718
 
 //--------------------------------------------------------------------------
 //--- PA: 0x0910C0   VA: 0x800B5C20   subsegment: .bss, text/text_debug_draw

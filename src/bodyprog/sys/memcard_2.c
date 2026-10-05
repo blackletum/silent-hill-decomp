@@ -80,8 +80,8 @@ static bool MemCard_FilesDamagedCheck(s32 deviceId) // 0x800334D8
 
 bool MemCard_ElementsUpdate(void) // 0x80033548
 {
-    u32                         unavailableMemCardSlot[MEMCARD_SLOT_COUNT_MAX]; // Boolean.
-    s32                         isWriteNewSaveAvailable[MEMCARD_DEVICE_COUNT_MAX]; // Boolean. Used to generate `Create New File` and `New Save`.
+    u32                         unavailableMemCardSlot[MEMCARD_SLOT_COUNT_MAX]; // `bool`
+    s32                         isWriteNewSaveAvailable[MEMCARD_DEVICE_COUNT_MAX]; // `bool` | Used to generate `Create New File` and `New Save`.
     u32                         prevStatusCpy;
     s32                         memCardStatus3; /** @brief Memory cards status.
                                                  * This variable is based upon `e_MemCardState`. This variable is first defined with the value `1`

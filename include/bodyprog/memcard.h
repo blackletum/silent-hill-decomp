@@ -85,7 +85,8 @@ typedef enum _SaveLocationId
     SaveLocationId_NextFear    = 24
 } e_SaveLocationId;
 
-typedef enum _MemCardProcess
+// TODO: Name clash with `s_MemCardProcess`.
+typedef enum _MemCardProcessId
 {
     MemCardProcess_None          = 0,
     MemCardProcess_Init          = 1,
@@ -114,7 +115,7 @@ typedef enum _FileState
     FileState_Damaged = 3
 } e_FileState;
 
-/** @brief Memory card processes states. */
+/** @brief Memory card process states. */
 typedef enum _MemCardWorkState
 {
     MemCardWorkState_Idle          = 0,
@@ -143,8 +144,8 @@ typedef enum _MemCardResult
     MemCardResult_InitError       = 2,   /** `MemCard_State_Init` `EvSpNEW` "No writing after connection". */
     MemCardResult_InitComplete    = 3,   /** `MemCard_State_Init` `EvSpIOE` "Connected". */
     MemCardResult_LoadError       = 4,   /** `MemCard_State_Load` `EvSpNEW` "Uninitialized card". */
-    MemCardResult_NewDevice       = 5,   /** `MemCard_State_DirRead` when `g_MemCard_Work.hasNewDevice`. */
-    MemCardResult_NoNewDevice     = 6,   /** `MemCard_State_DirRead` when `!g_MemCard_Work.hasNewDevice`. */
+    MemCardResult_NewDevice       = 5,   /** `MemCard_State_DirRead` when `g_MemCardWork.hasNewDevice`. */
+    MemCardResult_NoNewDevice     = 6,   /** `MemCard_State_DirRead` when `!g_MemCardWork.hasNewDevice`. */
     MemCardResult_FileCreateError = 7,   /** `MemCard_State_FileCreate` after 15 retries. */
     MemCardResult_FileOpenError   = 8,   /** `MemCard_State_FileOpen` after 15 retries. */
     MemCardResult_FileSeekError   = 9,   /** `MemCard_State_FileReadWrite` after 15 retries. */
@@ -183,14 +184,14 @@ typedef struct _PsxSaveBlock
 } s_PsxSaveBlock;
 STATIC_ASSERT_SIZEOF(s_PsxSaveBlock, 512);
 
-typedef struct _MemCard_Directory
+typedef struct _MemCardDirectory
 {
     /* 0x0   */ char filenames[MEMCARD_FILE_COUNT_MAX][21];
     /* 0x13B */ u8   blockCounts[MEMCARD_FILE_COUNT_MAX]; // Size of each file in 8192 byte blocks.
     /* 0x14C */ s8   __pad_14C[2];
-} s_MemCard_Directory;
+} s_MemCardDirectory;
 
-typedef struct _MemCard_Work
+typedef struct _MemCardWork
 {
     /* 0x0  */ s32 devicesPending; /** Bitfield of device IDs, each set bit index is an ID that must be read/initialized first. */
     /* 0x4  */ s32 state;          /** `e_CardState` */
@@ -209,7 +210,7 @@ typedef struct _MemCard_Work
     /* 0x38 */ s32 MemCardIoMode; /** `e_MemCardIoMode` */
     /* 0x3C */ s32 deviceId;
 
-    /* 0x40 */ s_MemCard_Directory* directories; /** Array of files on the card, pointer supplied by caller to `MemCard_WorkSet`. */
+    /* 0x40 */ s_MemCardDirectory* directories; /** Array of files on the card, pointer supplied by caller to `MemCard_WorkSet`. */
 
     /* 0x44 */ char  filePath[28];
     /* 0x60 */ s32   createBlockCount; /** Block count passed to `open` when creating new file. */
@@ -220,8 +221,8 @@ typedef struct _MemCard_Work
     /* 0x74 */ s32   fileHandle;
     /* 0x78 */ s32   retryCount;
     /* 0x7C */ s32   field_7C; /** @unused Dead code. Only ever set to 0. */
-} s_MemCard_Work;
-STATIC_ASSERT_SIZEOF(s_MemCard_Work, 128);
+} s_MemCardWork;
+STATIC_ASSERT_SIZEOF(s_MemCardWork, 128);
 
 typedef struct _MemCard_SaveMetadata
 {
@@ -318,7 +319,7 @@ STATIC_ASSERT_SIZEOF(s_MemCard_DeviceInfo, 28);
 /** @note Some memory card states information. Related to `s_SaveScreenElement`.
  * Very likely used only for process related to memory cards.
  */
-typedef struct _MemCard_Process
+typedef struct _MemCardProcess
 {
     /* 0x0  */ s32 processId;         /** `e_MemCardProcess`. */
     /* 0x4  */ s32 deviceId;
@@ -326,25 +327,25 @@ typedef struct _MemCard_Process
     /* 0xC  */ s32 saveIdx;           /** Index of the save in a determined file. */
     /* 0x10 */ s32 processState;      /** States related to specific memory card events. */
     /* 0x14 */ s32 lastMemCardResult; /** `e_MemCardResult` */
-} s_MemCard_Process;
-STATIC_ASSERT_SIZEOF(s_MemCard_Process, 24);
+} s_MemCardProcess;
+STATIC_ASSERT_SIZEOF(s_MemCardProcess, 24);
 
-/** @brief See `g_MemCard_SaveWork`.
+/** @brief See `g_MemCardSaveWork`.
  *
  * @note OPM16 has `MCM_FUNC_WORK` struct with size 0x6D8, close to this 0x718.
  */
-typedef struct _MemCard_SaveWork
+typedef struct _MemCardSaveWork
 {
     /* 0x0   */ s_MemCard_DeviceInfo     devices[MEMCARD_DEVICE_COUNT_MAX];
-    /* 0xE0  */ s_MemCard_Process        saveWork[2];
+    /* 0xE0  */ s_MemCardProcess        saveWork[2];
     /* 0x110 */ s32                      memCardInitalized; /** `bool` */
     /* 0x114 */ s32                      unused_114;        /** @unused */
     /* 0x118 */ s_PsxSaveBlock           saveBlock;
     /* 0x318 */ s_MemCard_SaveHeader     saveInfo;
     /* 0x418 */ s_Savegame_OptionsConfig optionsConfig;
     /* 0x498 */ s_Savegame_Container     savegame;
-} s_MemCard_SaveWork;
-STATIC_ASSERT_SIZEOF(s_MemCard_SaveWork, 1816);
+} s_MemCardSaveWork;
+STATIC_ASSERT_SIZEOF(s_MemCardSaveWork, 1816);
 
 // ========
 // GLOBALS
@@ -386,8 +387,8 @@ extern s_MemCard_SaveHeader g_MemCard_SaveHeaderInfo_Null[MEMCARD_FILE_COUNT_MAX
 /** @brief Defines if the game can use the memory card. */
 extern bool g_MemCard_SysAvailibityStatus;
 extern s32 __pad_bss_800B5484;
-extern s_MemCard_Work g_MemCard_Work; // 0x800B5488
-extern s_MemCard_SaveWork g_MemCard_SaveWork;
+extern s_MemCardWork g_MemCardWork; // 0x800B5488
+extern s_MemCardSaveWork g_MemCardSaveWork;
 extern s32 g_MemCard_PrevSavegameCount;
 
 // ====================
@@ -445,13 +446,13 @@ void MemCard_SysEnable(void);
  */
 void MemCard_SysDisable(void);
 
-/** @brief Sets `g_MemCard_SaveWork.memCardInitalized` to true.
+/** @brief Sets `g_MemCardSaveWork.memCardInitalized` to true.
  * 
  * Scratch: https://decomp.me/scratch/V506y
  */
 void MemCard_InitStatus(void);
 
-/** @unused @brief Sets `g_MemCard_SaveWork.memCardInitalized`
+/** @unused @brief Sets `g_MemCardSaveWork.memCardInitalized`
  * to false and initalizes a null "Save Work" process with a
  * last saved memory card state as `MemCardResult_NotConnected`.
  * 
@@ -474,7 +475,7 @@ s32 MemCard_AllMemCardsStatusGet(void);
  */
 void func_8002E8D4(void);
 
-/** @unused @brief Sets `g_MemCard_SaveWork.memCardInitalized` to `false` and initalizes a null "Save Work" process with
+/** @unused @brief Sets `g_MemCardSaveWork.memCardInitalized` to `false` and initalizes a null "Save Work" process with
  * a last saved memory card state as `MemCardResult_Success`.
  * 
  * Scratch 1: https://decomp.me/scratch/uHWZ1
@@ -490,7 +491,7 @@ void MemCard_InitStatusSuccess(void);
  */
 s32 func_8002E914(void);
 
-/** @brief Sets `g_MemCard_SaveWork.saveWork[0]` process if none has been set.
+/** @brief Sets `g_MemCardSaveWork.saveWork[0]` process if none has been set.
  * 
  * Scratch: https://decomp.me/scratch/lmp3g
  *
@@ -548,8 +549,8 @@ s32 MemCard_UsedFileCount(s32 deviceId);
  */
 s32 MemCard_FreeFilesCount(s32 deviceId);
 
-/** @brief @unused Checks if no savegame have been created on any inserted memory card and sets the passed params the
- * indicess required to access it, with the biggest total savegame count from any memory card.
+/** @brief @unused Checks if no savegames have been created on any inserted memory card and sets the output arguments to
+ * the indices required to access it, with the biggest total savegame count from any memory card.
  *
  * Scratch: https://decomp.me/scratch/9SoBG
  *
@@ -561,8 +562,8 @@ s32 MemCard_FreeFilesCount(s32 deviceId);
 bool MemCard_NoSavesDoneCheck(s32* outDeviceId, s32* outFileIdx, s32* outSaveIdx);
 
 /** @brief Game's memory card update function.
- * Updates the internal memory card processes state (`g_MemCard_Work.state`) and processes any process set in
- * `g_MemCard_SaveWork.saveWork[X].processId`.
+ * Updates the internal memory card processes state (`g_MemCardWork.state`) and processes any process set in
+ * `g_MemCardSaveWork.saveWork[X].processId`.
  *
  * Scratch 1: https://decomp.me/scratch/QgEOs
  * Scratch 2: https://decomp.me/scratch/cONhw
@@ -576,10 +577,10 @@ void MemCard_Update(void);
  */
 s32 MemCard_BiggestTotalSavegameCountGet(s32 deviceId);
 
-/** @brief Copies savegame into a `s_Savegame_Container` and calculates footer checksum.
+/** @brief Copies asavegame into a `s_Savegame_Container` and computes the footer checksum.
  *
- * @param dest Target element where data will be moved.
- * @param src Origin source save game data.
+ * @param dest Destination where data will be moved.
+ * @param src Source savegame data.
  */
 void MemCard_GameDataCopy(s_Savegame_Container* dest, s_Savegame* src);
 
@@ -608,24 +609,24 @@ void MemCard_SaveWithBiggestTotalSavegameCountGet(s32 deviceId, s_MemCard_TotalS
  */
 void MemCard_ChecksumUpdate(s_Savegame_Footer* saveFooter, s8* saveData, s32 saveDataLength);
 
-/** @brief Generates a checksum of the given saveData and compares it against the checksum value in the footer.
+/** @brief Generates a checksum of the given `saveData` and compares it against the checksum value in the footer.
  *
  * Scratch: https://decomp.me/scratch/oAvuF
  *
- * @return True if the checksums match, otherwise False.
+ * @return `true` if the checksums match, `false` otherwise.
  */
 bool MemCard_ChecksumValidate(s_Savegame_Footer* saveFooter, s8* saveData, s32 saveDataLength);
 
-/** @brief Generates an 8-bit XOR checksum over the given data, only appears used with s_Savegame data.
+/** @brief Generates an 8-bit XOR checksum over the given data. Only used with `s_Savegame` data.
  *
  * Scratch 1: https://decomp.me/scratch/TyNmD
  * Scratch 2: https://decomp.me/scratch/AvFBU
  *
- * @return True if the checksums match, otherwise False.
+ * @return `true` if the checksums match, `false` otherwise.
  */
 u8 MemCard_ChecksumGenerate(s8* saveData, s32 saveDataLength);
 
-/** @brief Generates a save filename for the given save index.
+/** @brief Generates a filename for a given savegame index.
  *
  * Scratch 1: https://decomp.me/scratch/y2zUU
  * Scratch 2: https://decomp.me/scratch/Mt2pD
@@ -638,7 +639,7 @@ void MemCard_FilenameGenerate(char* dest, s32 fileIdx);
  */
 void MemCard_SaveBlockInit(s_PsxSaveBlock* saveBlock, s8 blockCount, s32 saveIdx, s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7, s32 arg8);
 
-/** @unused @brief Appears to write `0xFF` to first 128 bytes of card and check if event is triggered.
+/** @unused @brief Writes `0xFF` to the first 128 bytes of a memory card and checks if an event is triggered.
  *
  * Scratch 1: https://decomp.me/scratch/fi1GL
  * Scratch 2: https://decomp.me/scratch/fKUIm
@@ -784,7 +785,7 @@ s32 MemCard_StateResult(void);
  *
  * Scratch: https://decomp.me/scratch/ta76s
  */
-bool MemCard_WorkSet(e_MemCardIoMode mode, s32 deviceId, s_MemCard_Directory* outDir, char* filename, s32 createBlockCount, s32 fileOffset, void* outBuf, s32 bufSize);
+bool MemCard_WorkSet(e_MemCardIoMode mode, s32 deviceId, s_MemCardDirectory* outDir, char* filename, s32 createBlockCount, s32 fileOffset, void* outBuf, s32 bufSize);
 
 /** @brief
  *
@@ -851,7 +852,7 @@ void MemCard_DevicePathGenerate(s32 deviceId, char* res);
  * Scratch (USA): https://decomp.me/scratch/xgVSr 
  * Scratch (JAP): https://decomp.me/scratch/j3Uvz
  *
- * @return Status of memory cards.
+ * @return Memory cards statu.
  */
 bool MemCard_ElementsUpdate(void);
 

@@ -196,8 +196,8 @@ void Options_ExtraOptionsMenu_SelectionHighlightDraw(void);
  */
 void Options_MainOptionsMenu_SelectionHighlightDraw(void);
 
-/** @brief Draws the background vignette of Harry in the main and extra options menus. */
-void Options_Menu_VignetteDraw(void);
+/** @brief Draws the background of Harry in the main and extra options menus. */
+void Options_Menu_BackgroundDraw(void);
 
 /** @brief Draws configuration strings and blue arrows to the right of the listed entries in the extra options menu. */
 void Options_ExtraOptionsMenu_ConfigDraw(void);
