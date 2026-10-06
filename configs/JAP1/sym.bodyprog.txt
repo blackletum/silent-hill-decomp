@@ -267,7 +267,7 @@ MemCard_Process_Load                         = 0x8002F050; // type:func
 MemCard_Process_Save                         = 0x8002F3A8; // type:func
 MemCard_SaveInfoClear                        = 0x8002F8F0; // type:func
 MemCard_UserConfigCopy                       = 0x8002F940; // type:func
-MemCard_BiggestTotalSavegameCountGet         = 0x8002F9C8; // type:func
+MemCard_FileWithBiggestTotalSavegameCountGet = 0x8002F9C8; // type:func
 MemCard_GameDataCopy                         = 0x8002FA58; // type:func
 MemCard_TotalSavegameCountUpdate             = 0x8002FAE8; // type:func
 MemCard_TotalSavegameCountStepUpdate         = 0x8002FB3C; // type:func
@@ -276,7 +276,7 @@ MemCard_ChecksumUpdate                       = 0x8002FCBC; // type:func
 MemCard_ChecksumValidate                     = 0x8002FD00; // type:func
 MemCard_ChecksumGenerate                     = 0x8002FD5C; // type:func
 MemCard_FilenameGenerate                     = 0x8002FD8C; // type:func
-MemCard_SaveBlockInit                        = 0x8002FE40; // type:func
+MemCard_SaveBlockGenerate                    = 0x8002FE40; // type:func
 MemCard_DeviceTest                           = 0x8002FFF0; // type:func
 MemCard_DeviceFormat                         = 0x80030074; // type:func
 MemCard_FileClear                            = 0x8003009C; // type:func
@@ -3273,8 +3273,8 @@ g_MemCard_SaveHeaderInfo_Slot1               = 0x800B4DD8;
 g_MemCard_SaveHeaderInfo_Slot2               = 0x800B5CD8;
 g_MemCard_SaveHeaderInfo_Null                = 0x800B6BD8;
 g_MemCard_SysAvailibityStatus                = 0x800B7AD8; // size:0x4
-g_MemCardWork                               = 0x800B7AE0;
-g_MemCardSaveWork                           = 0x800B7B60;
+g_MemCardWork                                = 0x800B7AE0;
+g_MemCardSaveWork                            = 0x800B7B60;
 
 //--------------------------------------------------------------------------
 //--- PA: 0x093718   VA: 0x800B8278   subsegment: .bss, text/text_debug_draw

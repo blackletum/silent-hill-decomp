@@ -251,11 +251,11 @@ void GameState_KcetLogo_Update(void) // 0x800C99A4
                     switch (g_GameWork.gameStateSteps[1])
                     {
                         case 0:
-                            MemCard_ProcessSet(MemCardProcess_Load_Game, g_SelectedDeviceId, 0, 0);
+                            MemCard_ProcessSet(MemCardGameProcessId_Load_Game, g_SelectedDeviceId, 0, 0);
                             Game_StateStepIncrement(1);
 
                         case 1:
-                            if (MemCard_LastMemCardResultGet() != MemCardResult_Success)
+                            if (MemCard_LastMemCardResultGet() != MemCardWorkResult_Success)
                             {
                                 Game_StateStepIncrement(1);
                             }

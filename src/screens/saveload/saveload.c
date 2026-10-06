@@ -617,23 +617,23 @@ void SaveScreen_MemCardStateDraw(s32 g_SaveScreen_SaveScreenState, s32 memCardSt
         case SaveScreenState_Save:
             switch (memCardState)
             {
-                case MemCardResult_NotConnected:
+                case MemCardWorkResult_NotConnected:
                     strIdx = 1;
                     break;
 
-                case MemCardResult_Success:
+                case MemCardWorkResult_Success:
                     strIdx = 3;
                     break;
 
-                case MemCardResult_FileCreateError:
+                case MemCardWorkResult_FileCreateError:
                     strIdx = 4;
                     break;
 
-                case MemCardResult_FileIoComplete:
+                case MemCardWorkResult_FileIoComplete:
                     strIdx = 5;
                     break;
 
-                case MemCardResult_FileIoError:
+                case MemCardWorkResult_FileIoError:
                     strIdx = 6;
                     break;
 
@@ -647,27 +647,27 @@ void SaveScreen_MemCardStateDraw(s32 g_SaveScreen_SaveScreenState, s32 memCardSt
             switch (memCardState)
             {
                 // Now loading.
-                case MemCardResult_Success:
+                case MemCardWorkResult_Success:
                     strIdx = 11;
                     break;
 
-                case MemCardResult_DamagedData:
+                case MemCardWorkResult_DamagedData:
                     strIdx = 8;
                     break;
 
-                case MemCardResult_FileIoError:
+                case MemCardWorkResult_FileIoError:
                     strIdx = 9;
                     break;
 
-                case MemCardResult_FileIoComplete:
+                case MemCardWorkResult_FileIoComplete:
                     strIdx = 10;
                     break;
 
-                case MemCardResult_NotConnected:
+                case MemCardWorkResult_NotConnected:
                     strIdx = 1;
                     break;
 
-                case MemCardResult_Full:
+                case MemCardWorkResult_Full:
                     strIdx = 1;
                     break;
 
@@ -699,7 +699,7 @@ void SaveScreen_MemCardStateDraw(s32 g_SaveScreen_SaveScreenState, s32 memCardSt
             g_SaveScreen_MemCardStateDisplay++;
 
         case 1:
-            if (g_SaveScreen_SaveScreenState == SaveScreenState_Save && memCardState == MemCardResult_Success)
+            if (g_SaveScreen_SaveScreenState == SaveScreenState_Save && memCardState == MemCardWorkResult_Success)
             {
                 g_SaveScreen_IsGameSaving = memCardState;
             }
@@ -1931,19 +1931,19 @@ void SaveScreen_FormatCard(void) // 0x801E69E8
             break;
 
         case 2:
-            MemCard_ProcessSet(MemCardProcess_Format, g_SelectedDeviceId, 0, 0);
+            MemCard_ProcessSet(MemCardGameProcessId_Format, g_SelectedDeviceId, 0, 0);
             Game_StateStepIncrement(1);
             break;
 
         case 3:
             switch (MemCard_LastMemCardResultGet())
             {
-                case MemCardResult_FileIoError:
+                case MemCardWorkResult_FileIoError:
                     g_SaveScreen_MemCardStateTextTimer = STR_TIMER_MAX;
                     Game_StateStepSet(0, 1);
                     break;
 
-                case MemCardResult_FileIoComplete:
+                case MemCardWorkResult_FileIoComplete:
                     Game_StateStepIncrement(0);
                     break;
             }
@@ -1983,7 +1983,7 @@ void SaveScreen_SaveGame(void) // 0x801E6B18
             saveEntry->add290Hours              = g_SavegamePtr->add290Hours;
             saveEntry->pickedUpSpecialItemCount = g_SavegamePtr->pickedUpSpecialItemCount;
 
-            MemCard_ProcessSet(MemCardProcess_Save_5, g_SelectedDeviceId, g_SelectedFileIdx, g_Savegame_SelectedElementIdx);
+            MemCard_ProcessSet(MemCardGameProcessId_Save_Game, g_SelectedDeviceId, g_SelectedFileIdx, g_Savegame_SelectedElementIdx);
             Game_StateStepIncrement(1);
 
         case 1:
@@ -1993,12 +1993,12 @@ void SaveScreen_SaveGame(void) // 0x801E6B18
                     Game_StateStepSet(0, 1);
                     break;
 
-                case MemCardResult_Success:
+                case MemCardWorkResult_Success:
                     g_SaveScreen_MemCardStateTextTimer = 30;
                     break;
 
-                case MemCardResult_FileIoComplete:
-                    MemCard_ProcessSet(MemCardProcess_Save_3, g_SelectedDeviceId, g_SelectedFileIdx, 0);
+                case MemCardWorkResult_FileIoComplete:
+                    MemCard_ProcessSet(MemCardGameProcessId_Save_Settings, g_SelectedDeviceId, g_SelectedFileIdx, 0);
                     Game_StateStepIncrement(1);
                     break;
             }
@@ -2007,11 +2007,11 @@ void SaveScreen_SaveGame(void) // 0x801E6B18
         case 2:
             switch (MemCard_LastMemCardResultGet())
             {
-                case MemCardResult_Success:
+                case MemCardWorkResult_Success:
                     g_SaveScreen_MemCardStateTextTimer = 30;
                     break;
 
-                case MemCardResult_FileIoComplete:
+                case MemCardWorkResult_FileIoComplete:
                     g_GameWork.autosave = g_GameWork.savegame;
 
                 default:
@@ -2032,21 +2032,21 @@ void SaveScreen_LoadSave(void) // 0x801E6DB0
         case 0:
             g_SaveScreen_State = SaveScreenState_Load;
 
-            MemCard_ProcessSet(MemCardProcess_Load_Settings, g_SelectedDeviceId, g_SelectedFileIdx, g_Savegame_SelectedElementIdx);
+            MemCard_ProcessSet(MemCardGameProcessId_Load_Settings, g_SelectedDeviceId, g_SelectedFileIdx, g_Savegame_SelectedElementIdx);
             Game_StateStepIncrement(1);
 
         case 1:
             memCardStateResult = MemCard_LastMemCardResultGet();
-            if (memCardStateResult != MemCardResult_Success)
+            if (memCardStateResult != MemCardWorkResult_Success)
             {
-                if (memCardStateResult != MemCardResult_FileIoComplete)
+                if (memCardStateResult != MemCardWorkResult_FileIoComplete)
                 {
                     g_SaveScreen_IsLoadError = true;
                     Game_StateStepSet(0, 1);
                     break;
                 }
 
-                MemCard_ProcessSet(MemCardProcess_Load_Game, g_SelectedDeviceId, 0, 0);
+                MemCard_ProcessSet(MemCardGameProcessId_Load_Game, g_SelectedDeviceId, 0, 0);
                 Game_StateStepIncrement(1);
                 break;
             }
@@ -2056,13 +2056,13 @@ void SaveScreen_LoadSave(void) // 0x801E6DB0
 
         case 2:
             memCardStateResult = MemCard_LastMemCardResultGet();
-            if (memCardStateResult == MemCardResult_Success)
+            if (memCardStateResult == MemCardWorkResult_Success)
             {
                 g_SaveScreen_MemCardStateTextTimer = 30;
                 break;
             }
 
-            if (memCardStateResult != MemCardResult_FileIoComplete)
+            if (memCardStateResult != MemCardWorkResult_FileIoComplete)
             {
                 g_SaveScreen_IsLoadError = true;
                 Game_StateStepSet(0, 1);
@@ -2084,7 +2084,7 @@ void SaveScreen_Continue(void) // 0x801E6F38
         case 0:
             MemCard_SysDisable();
 
-            D_800A97D7             = 1;
+            D_800A97D7          = 1;
             g_GameWork.autosave = g_GameWork.savegame;
 
             GameBoot_WorldInit();

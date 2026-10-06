@@ -9,7 +9,6 @@
 #ifndef PAD_HACK_IGNORE
     s16 __pad_bss_800BCD2A;
     s16 __pad_bss_800BCD32;
-    s8  __pad_bss_800BCD39;
 #endif
 
 // ========================================
@@ -18,12 +17,13 @@
 
 s16                  g_MemCard_SavegameCount;
 s_SaveScreenElement* g_MemCard_ActiveMemCardSlotSaves;
-u8                   g_Savegame_ElementCount0[MEMCARD_SLOT_COUNT_MAX];
-u32                  g_MemCard_AllMemCardsStatus;
-s8                   g_SaveScreen_SaveScreenState;
-s16                  g_MemCard_TotalElementsCount;
-u8                   g_Savegame_ElementCount1[MEMCARD_SLOT_COUNT_MAX];
-u8                   g_Savegame_SelectedElementIdx;
+u8                   g_Savegame_ElementCount0[MEMCARD_SLOT_COUNT_MAX]; /** @brief Amount of elements in each memory card. */
+u32                  g_MemCard_AllMemCardsStatus; /** @brief Stores statuses of all memory cards/devices. */
+s8                   g_SaveScreen_SaveScreenState; /** @brief Some determinator for the state of the save screen. 2 - Saving, 3 - Loading. */
+s8                   g_SaveScreen_IsLoadError; // `bool`
+s16                  g_MemCard_TotalElementsCount; /** @brief Counts all elements of all inserted memory cards. */
+u8                   g_Savegame_ElementCount1[MEMCARD_SLOT_COUNT_MAX]; /** @brief Amount of elements in each memory card. */
+u8                   g_Savegame_SelectedElementIdx; /** @brief Index of selected element in the selected file from the memory card. */
 s8                   g_SelectedFileIdx;
 s8                   g_SelectedDeviceId;
 
@@ -31,7 +31,7 @@ u8 g_SlotElementSelectedIdx[MEMCARD_SLOT_COUNT_MAX] = { 0, 0 };
 s8 g_SelectedSaveSlotIdx                            = 0;
 u8 D_800A97D7                                       = 0;
 s8 g_SaveScreen_IsInSaveScreen                      = 0xFF;
-s8 D_800A97D9                                       = 0; // @unused Dead code. Only used for a check which ask if this is 0.
+s8 D_800A97D9                                       = 0;
 
 // ========================================
 // INLINE FUNCTIONS
