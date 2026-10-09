@@ -577,7 +577,7 @@ WorldGfx_MapReset                            = 0x8003C0E4; // type:func
 WorldGfx_IpdSamplePointStore                 = 0x8003C140; // type:func
 WorldGfx_IpdSamplePointReset                 = 0x8003C178; // type:func
 WorldGfx_CloseRangeChunksInit                = 0x8003C184; // type:func
-WorldGfx_ChunkInitCheck                      = 0x8003C628; // type:func
+Ipd_ChunkInitCheck                           = 0x8003C628; // type:func
 WorldGfx_Draw                                = 0x8003C650; // type:func
 WorldObject_ModelNameSet                     = 0x8003C6D0; // type:func
 WorldObjects_Add                             = 0x8003C704; // type:func
@@ -931,15 +931,15 @@ func_8004C564                                = 0x8004D660; // type:func
 Game_TimerUpdate                             = 0x8004D9D8; // type:func
 GameState_ItemScreens_Update                 = 0x8004DAAC; // type:func
 Gfx_Results_Save                             = 0x8004E2B4; // type:func
-Inventory_Logic                              = 0x8004E718; // type:func
+Inventory_Update                             = 0x8004E718; // type:func
 Inventory_ItemUse                            = 0x8004F8D4; // type:func
 Gfx_Inventory_CmdOptionsDraw                 = 0x8004FA70; // type:func
 Gfx_Inventory_ScrollArrowsDraw               = 0x8004FE88; // type:func
 Player_ItemRemove                            = 0x800500A0; // type:func
-func_8004EF48                                = 0x80050154; // type:func
+Inventory_ItemCommandSet                     = 0x80050154; // type:func
 func_8004F10C                                = 0x80050318; // type:func
 func_8004F190                                = 0x8005039C; // type:func
-Gfx_Inventory_UnavailableMapText             = 0x80050788; // type:func
+Inventory_UnavailableMapTextDraw             = 0x80050788; // type:func
 
 //-----------------------------------------------------------------------
 //--- PA: 0x02BD34   VA: 0x80050894   subsegment: c, items/item_screens_3

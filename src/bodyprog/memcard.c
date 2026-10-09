@@ -1223,14 +1223,12 @@ void MemCard_TotalSavegameCountStepUpdate(s32 deviceId, s32 fileIdx, s32 saveIdx
     g_MemCardSaveWork.devices[deviceId].saveHeader[fileIdx].saveMetadata[saveIdx].totalSavegameCount = totalSavegameCount + 1;
 }
 
-/** @brief Retrieves the saves with the biggest total save count
- * in the indicated memory card.
+/** @brief Retrieves the savegames with the highest total save count on the indicated memory card.
  *
  * Scratch: https://decomp.me/scratch/cam86
  *
  * @param deviceId Memory card index.
- * @param result Pointer to variable meant to store the index of the
- * save with the biggest total save count in the memory card.
+ * @param result Info containing the savegame index with the highest total save count on the memory card.
  */
 static void MemCard_SaveWithBiggestTotalSavegameCountGet(s32 deviceId, s_MemCard_TotalSavesInfo* result)
 {
@@ -1336,18 +1334,18 @@ static void MemCard_FilenameGenerate(char* dest, s32 fileIdx)
     strcat(dest, buf);
 }
 
-/** @brief Generates PS1 save block.
+/** @brief Generates a PS1 save block.
  *
  * Scratch: https://decomp.me/scratch/62slY
  *
- * @param saveBlock Save block information.
- * @param blockCount Blocks count.
- * @param fileIdx Index of the file of the memory card where the block is being generated.
- * @param arg3 Unknown; Dead code.
- * @param arg5 Unknown; Dead code.
- * @param arg6 Unknown; Dead code.
- * @param arg7 Unknown; Dead code.
- * @param arg8 Unknown; Dead code. 
+ * @param saveBlock Savegame block information.
+ * @param blockCount Block count.
+ * @param fileIdx File index on the memory card where the block is being generated.
+ * @param arg3 Unknown, dead code.
+ * @param arg5 Unknown, dead code.
+ * @param arg6 Unknown, dead code.
+ * @param arg7 Unknown, dead code.
+ * @param arg8 Unknown, dead code. 
  */
 static void MemCard_SaveBlockGenerate(s_PsxSaveBlock* saveBlock, s8 blockCount, s32 fileIdx, s32 arg3, s32 arg4, s32 arg5, s32 arg6, s32 arg7, s32 arg8)
 {

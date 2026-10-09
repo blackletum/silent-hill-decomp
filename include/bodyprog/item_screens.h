@@ -337,7 +337,7 @@ void GameState_ItemScreens_Update(void); // 0x8004C9B0
 void Gfx_Results_Save(void); // 0x8004D1A0
 
 /** Function mainly responsible for handling the inventory screen. */
-void Inventory_Logic(void); // 0x8004D518
+void Inventory_Update(void); // 0x8004D518
 
 /** @brief Used for environmental item interactions such as keys, puzzle objects, or
  * events like the Cybil boss fight.
@@ -357,16 +357,18 @@ void Gfx_Inventory_ScrollArrowsDraw(s32* invSelectionId); // 0x8004EC7C
 bool Player_ItemRemove(u8 itemId, u8 count);
 
 /** Sets the possible interaction commands for all items in the inventory. */
-void func_8004EF48();
+void Inventory_ItemCommandSet();
 
+// Returns inventory item slot count.
 s32 func_8004F190(s_Savegame* save);
 
+/** @unused */
 void func_8004F10C(s32* arg0);
 
 /** @brief Draws the two messages that indicate when the player can't open
  * the map in the inventory.
  */
-void Gfx_Inventory_UnavailableMapText(s32 strIdx); // 0x8004F57C
+void Inventory_UnavailableMapTextDraw(s32 strIdx); // 0x8004F57C
 
 void Inventory_DirectionalInputSet(void); // 0x8004F5DC
 
@@ -404,7 +406,7 @@ void Gfx_Primitive2dTextureSet(s32 x, s32 y, s32 otIdx, s32 abr);
 
 /** @brief Toggles the visibility of object while the inventory scrolls.
  *
- * Used in: `Inventory_Logic`
+ * Used in: `Inventory_Update`
  */
 void func_800539A4(s32 arg0, s32 arg1);
 

@@ -402,7 +402,7 @@ void WorldGfx_CloseRangeChunksInit(void) // 0x8003C3AC
     #undef PROJ_DIST_FAR
 }
 
-bool WorldGfx_ChunkInitCheck(void) // 0x8003C850
+bool Ipd_ChunkInitCheck(void) // 0x8003C850
 {
     WorldGfx_CloseRangeChunksInit();
     return WorldMap_ActiveModelsLoadStateCheck();

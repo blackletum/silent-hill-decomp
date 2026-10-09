@@ -39,7 +39,7 @@
 // ENUMERATORS
 // ============
 
-// Game specific.
+// Game-specific.
 
 /** @brief Used by `s_SaveScreenElement`. */
 typedef enum _SavegameEntryType
@@ -58,7 +58,7 @@ typedef enum _SavegameEntryType
 } e_SavegameEntryType;
 
 /** @brief Memory card game process.
- * Determines what process, from the specific game memory card system, is being done on the memory card.
+ * Determines the process from the specific game memory card system being executed.
  */
 typedef enum _MemCardGameProcessId
 {
@@ -157,9 +157,9 @@ typedef enum _MemCardWorkResult
  */
 
 /** @unused @brief Pocket Station save header data.
- * Serves no purpose, it could have even be completely ignored, however,
+ * Serves no purpose, it could have even be completely ignored. However,
  * `MemCard_SaveBlockGenerate` has a piece of code dedicated to clean this
- * space and there the usage of `sizeof()` mixed with this struct fits well
+ * space and there the usage of `sizeof` mixed with this struct fits well
  * enough. This may have been never intended to be used and just a leftover
  * as it is possible this memory card code may have been inherited from
  * other KCET (just like the game's audio system).
@@ -181,7 +181,7 @@ typedef struct _PsxSaveBlock
     /* 0x3  */  u8                    blockCount;
     /* 0x4  */  u16                   titleNameShiftJis[32];
     /* 0x44 */  s_PocketStationHeader pocketStationHeader;
-    /* 0x60 */  s8                    iconPalette[32]; // CLUT data copied from `TIM_IMAGE.caddr`.
+    /* 0x60 */  s8                    iconPalette[32];       // CLUT data copied from `TIM_IMAGE.caddr`.
     /* 0x80 */  s8                    frameIconData[3][128]; // Copied from `TIM_IMAGE.paddr`.
 } s_PsxSaveBlock;
 
@@ -215,7 +215,7 @@ typedef struct _MemCardWork
     
     /* 0x40 */ s_MemCardDirectory* directories; /** Array of files on the card, pointer supplied by caller to `MemCard_WorkSet`. */
     /* 0x44 */ char                filePath[28];
-    /* 0x60 */ s32                 createBlockCount;          /** Block count passed to `open` when creating new file. */
+    /* 0x60 */ s32                 createBlockCount; /** Block count passed to `open` when creating new file. */
     /* 0x64 */ s32                 seekOffset;
     /* 0x68 */ void*               dataBuffer;
     /* 0x6C */ s32                 dataSize;
@@ -225,7 +225,7 @@ typedef struct _MemCardWork
     /* 0x7C */ s32                 field_7C; /** Dead code. Only ever set to 0. */
 } s_MemCardWork;
 
-/** @brief Save metadata for displaying it in the save screen. */
+/** @brief Savegame metadata for displaying in the save screen. */
 typedef struct _MemCard_SaveMetadata
 {
     /* 0x0   */ s32 totalSavegameCount;
@@ -314,11 +314,11 @@ typedef struct _MemCard_DeviceInfo
 
 /** @note Information about game specific memory card process.
  *
- * Stores information about process done by game specific memory card system.
+ * Stores information about processes done by game-specific memory card system.
  */
 typedef struct _MemCard_GameProcess
 {
-    /* 0x0  */ s32 processId;         /** `e_MemCardGameProcess`. */
+    /* 0x0  */ s32 processId;         /** `e_MemCardGameProcess` */
     /* 0x4  */ s32 deviceId;
     /* 0x8  */ s32 fileIdx;
     /* 0xC  */ s32 saveIdx;
@@ -343,9 +343,8 @@ typedef struct _MemCardSaveWork
 } s_MemCardSaveWork;
 
 /** @brief Save count information.
- * Used specifically for `MemCard_SaveWithBiggestTotalSavegameCountGet` to
- * temporarily store access information about a the save with the most
- * amount of saves.
+ * Used specifically fby `MemCard_SaveWithBiggestTotalSavegameCountGet` to temporarily store access information about
+ * the savegame with the highest save countsaves.
  */
 typedef struct _MemCard_TotalSavesInfo
 {
@@ -358,7 +357,7 @@ typedef struct _MemCard_TotalSavesInfo
 // GLOBALS
 // ========
 
-/** @brief Basic information required to draw information of elements in save slots.
+/** @brief Basic information required to draw info elements in save slots.
  * Address access is based on the slot: slot 1 = 0x801E09E0, slot 2 = 0x801E1440.
  *
  * @note Macros for its references are:
@@ -547,8 +546,8 @@ s32 MemCard_UsedFileCount(s32 deviceId);
 s32 MemCard_FreeFilesCount(s32 deviceId);
 
 /** @brief @unused Checks if savegames have been created on any inserted memory card.
- * In case of finding savegames the values of the arguments are changed to the the index
- * of the memory card, file and save with the biggest total savegame count from any memory card.
+ * If savegames are found, output arguments are set to the index
+ * of the memory card, file index, and savegame index with the highest total savegame count from any memory card.
  *
  * Scratch: https://decomp.me/scratch/9SoBG
  *
@@ -572,8 +571,8 @@ void MemCard_Update(void);
 
 /** @brief Updates the footer with the checksum of the given data.
  *
- * @param saveFooter Pointer data's footer with the checksum.
- * @param saveData Pointer to save data.
+ * @param saveFooter Savegame data footer with the checksum.
+ * @param saveData Savegame data.
  * @param saveDataLength Size of save data.
  * Scratch: https://decomp.me/scratch/Gj9Ox
  */
@@ -583,9 +582,9 @@ void MemCard_ChecksumUpdate(s_Savegame_Footer* saveFooter, s8* saveData, s32 sav
  *
  * Scratch: https://decomp.me/scratch/oAvuF
  *
- * @param saveFooter Pointer data's footer with the checksum.
- * @param saveData Pointer to save data.
- * @param saveDataLength Size of save data.
+ * @param saveFooter Savegame data footer with the checksum.
+ * @param saveData Savegame data data.
+ * @param saveDataLength Savegame data size.
  * @return `true` if the checksums match, `false` otherwise.
  */
 bool MemCard_ChecksumValidate(s_Savegame_Footer* saveFooter, s8* saveData, s32 saveDataLength);

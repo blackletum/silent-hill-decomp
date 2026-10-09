@@ -17,13 +17,13 @@
 
 s16                  g_MemCard_SavegameCount;
 s_SaveScreenElement* g_MemCard_ActiveMemCardSlotSaves;
-u8                   g_Savegame_ElementCount0[MEMCARD_SLOT_COUNT_MAX]; /** @brief Amount of elements in each memory card. */
-u32                  g_MemCard_AllMemCardsStatus; /** @brief Stores statuses of all memory cards/devices. */
-s8                   g_SaveScreen_SaveScreenState; /** @brief Some determinator for the state of the save screen. 2 - Saving, 3 - Loading. */
-s8                   g_SaveScreen_IsLoadError; // `bool`
-s16                  g_MemCard_TotalElementsCount; /** @brief Counts all elements of all inserted memory cards. */
-u8                   g_Savegame_ElementCount1[MEMCARD_SLOT_COUNT_MAX]; /** @brief Amount of elements in each memory card. */
-u8                   g_Savegame_SelectedElementIdx; /** @brief Index of selected element in the selected file from the memory card. */
+u8                   g_Savegame_ElementCount0[MEMCARD_SLOT_COUNT_MAX]; /** Number of elements in each memory card. */
+u32                  g_MemCard_AllMemCardsStatus;                      /** Stores statuses of all memory cards/devices. */
+s8                   g_SaveScreen_SaveScreenState;                     /** Some determinator for the state of the save screen. 2 - Saving, 3 - Loading. */
+s8                   g_SaveScreen_IsLoadError;                         /** `bool` */
+s16                  g_MemCard_TotalElementsCount;                     /** Counts all elements of all inserted memory cards. */
+u8                   g_Savegame_ElementCount1[MEMCARD_SLOT_COUNT_MAX]; /** Number of elements in each memory card. */
+u8                   g_Savegame_SelectedElementIdx;                    /** Index of selected element in the selected file from the memory card. */
 s8                   g_SelectedFileIdx;
 s8                   g_SelectedDeviceId;
 

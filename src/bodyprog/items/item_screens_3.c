@@ -2015,7 +2015,7 @@ void Inventory_PlayerItemScroll(u32* selectedItemId) // 0x800523D8
                 g_GameWork.gameStateSteps[1] = 1;
                 D_800C3BA8                   = temp3;
 
-                func_8004EF48();
+                Inventory_ItemCommandSet();
                 func_8004C564(0, NO_VALUE);
             }
             else
@@ -2053,7 +2053,7 @@ void Inventory_PlayerItemScroll(u32* selectedItemId) // 0x800523D8
                 g_GameWork.gameStateSteps[1] = v0;
                 D_800C3BA8                   = temp3;
 
-                func_8004EF48();
+                Inventory_ItemCommandSet();
                 func_8004C564(0, NO_VALUE);
             }
             else
@@ -2112,7 +2112,7 @@ void Inventory_PlayerItemScroll(u32* selectedItemId) // 0x800523D8
                     }
                     while (0); // @hack
 
-                    func_8004EF48();
+                    Inventory_ItemCommandSet();
                 }
                 else
                 {
@@ -2138,7 +2138,7 @@ void Inventory_PlayerItemScroll(u32* selectedItemId) // 0x800523D8
                     g_SavegamePtr->items[g_SysWork.playerCombat.weaponInventoryIdx + 1].id = InvItemId_Empty;
                     g_Inventory_ScrollTransitionTimer = 0;
 
-                    func_8004EF48();
+                    Inventory_ItemCommandSet();
 
                     *selectedItemId              = 0;
                     D_800AE188                   = 0;
@@ -2256,7 +2256,7 @@ void Inventory_PlayerItemScroll(u32* selectedItemId) // 0x800523D8
                     }
                     while (0); // @hack
 
-                    func_8004EF48();
+                    Inventory_ItemCommandSet();
                 }
                 else
                 {
@@ -2281,7 +2281,7 @@ void Inventory_PlayerItemScroll(u32* selectedItemId) // 0x800523D8
                     g_SavegamePtr->items[g_SysWork.invItemSelectedIdx + 1].id = InvItemId_Empty;
                     g_Inventory_ScrollTransitionTimer = 0;
 
-                    func_8004EF48();
+                    Inventory_ItemCommandSet();
 
                     *selectedItemId              = 0;
                     D_800AE188                   = 0;
@@ -2366,7 +2366,7 @@ void Inventory_PlayerItemScroll(u32* selectedItemId) // 0x800523D8
                     g_GameWork.gameStateSteps[1] = 1;
                     D_800C3BA8                      = temp4;
 
-                    func_8004EF48();
+                    Inventory_ItemCommandSet();
                 }
                 else
                 {
