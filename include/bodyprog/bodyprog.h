@@ -961,7 +961,7 @@ void WorldGfx_MapInit(s_MapOverlayHdr* mapHdr, s32 playerPosX, s32 playerPosZ);
  *
  * @param `true` if chunks in view are loaded, `false` otherwise.
  */
-bool Ipd_ChunkInitCheck(void);
+bool WorldGfx_ChunkInitCheck(void);
 
 /** @brief Draws world objects, chunks, and 2D screen effects.
  *

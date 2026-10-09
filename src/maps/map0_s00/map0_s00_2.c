@@ -613,7 +613,7 @@ void MapEvent_CutsceneCherylSpotted(void) // 0x800DA5A0
             break;
 
         case 7:
-            if (Ipd_ChunkInitCheck())
+            if (WorldGfx_ChunkInitCheck())
             {
                 SysWork_StateStepIncrement(0);
             }
