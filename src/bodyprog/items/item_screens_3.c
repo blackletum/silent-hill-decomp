@@ -20,17 +20,17 @@ GsF_LIGHT D_800C3A88[4];
 
 GsF_LIGHT D_800C3AC8[2];
 
-GsCOORDINATE2 D_800C3AE8; // 0x800C3AE8
+GsCOORDINATE2 g_ItemScreen_CameraCoord;
 
-SVECTOR3 D_800C3B38; // 0x800C3B38
+SVECTOR3 g_ItemScreen_CameraRotation;
 
 s16 __pad_bss_800C3B3E[5];
 
-VbRVIEW D_800C3B48; // 0x800C3B48
+VbRVIEW g_ItemScreen_CameraView;
 
-DVECTOR D_800C3B68[4][4]; // 0x800C3BE8 - Type assumed.
+DVECTOR D_800C3B68[4][4]; // Type assumed.
 
-s32 g_Inventory_ScrollTransitionTimer; // 0x800AE1A4
+s32 g_Inventory_ScrollTransitionTimer;
 
 s32 D_800C3BA8;
 
@@ -38,17 +38,17 @@ s32 D_800C3BAC;
 
 s32 __pad_bss_800C3BB0[2];
 
-u8 g_Item_MapLoadableItems[48]; // 0x800C3BB8
+u8 g_Item_MapLoadableItems[48];
 
-GsCOORD2PARAM g_Items_Transforms[DISPLAYED_ITEM_COUNT_MAX]; // 0x800C3BE8
+GsCOORD2PARAM g_Items_Transforms[DISPLAYED_ITEM_COUNT_MAX];
 
-GsDOBJ2 g_Items_ItemsModelData[9]; // 0x800C3D78
+GsDOBJ2 g_Items_ItemsModelData[9];
 
 GsDOBJ2 D_800C3E08;
 
-s32 D_800C3E18[7]; // 0x800C3E18
+s32 D_800C3E18[7];
 
-s32 g_Inventory_EquippedItemIdx; // 0x800C3E34
+s32 g_Inventory_EquippedItemIdx;
 
 s32 __pad_bss_800C3E38[2];
 
@@ -56,7 +56,7 @@ u8 D_800C3E40;
 
 s8 __pad_bss_800C3E41[7];
 
-GsCOORDINATE2 g_Items_Coords[DISPLAYED_ITEM_COUNT_MAX]; // 0x800C3E48
+GsCOORDINATE2 g_Items_Coords[DISPLAYED_ITEM_COUNT_MAX];
 
 #include "item_rotations.h"
 
@@ -687,7 +687,7 @@ void Gfx_Inventory_2dBackgroundDraw(s32* arg0) // 0x8004FBCC
     POLY_FT4* poly_ft4;
     LINE_G2*  line_g2;
 
-    s_Inventory_SelectionOutlineVector selectionOutlineInner[] = {
+    s_Inventory_SelectionOutlineVector INNER_OUTLINE[] = {
         { { -32, -52 }, { 64, 128 } },
         { { -48, -200 }, { 96, 144 } },
     #if VERSION_REGION_IS(NTSCJ)
@@ -705,7 +705,7 @@ void Gfx_Inventory_2dBackgroundDraw(s32* arg0) // 0x8004FBCC
         { { -48, -200 }, { 192, 256 } }
     };
 
-    s_Inventory_SelectionOutlineVector selectionOutlineCorner[] = {
+    s_Inventory_SelectionOutlineVector CORNER_OUTLINE[] = {
         { { -34, -56 }, { 34, 80 } },
         { { -50, -204 }, { 50, -52 } },
     #if VERSION_REGION_IS(NTSCJ)
@@ -803,39 +803,39 @@ void Gfx_Inventory_2dBackgroundDraw(s32* arg0) // 0x8004FBCC
                             case GameDifficulty_Easy:
                                 if (i == var_t6 && j == var_t5)
                                 {
-                                    setRGB0(poly_g4, spA0 - 0x80, 0xC0, spA0 * 3);
-                                    setRGB2(poly_g4, spA0 - 0x80, 0xC0, spA0 * 3);
+                                    setRGB0(poly_g4, spA0 - 128, 192, spA0 * 3);
+                                    setRGB2(poly_g4, spA0 - 128, 192, spA0 * 3);
                                 }
                                 else
                                 {
-                                    setRGB0(poly_g4, 0x80, 0xC0, 0);
-                                    setRGB2(poly_g4, 0x80, 0xC0, 0);
+                                    setRGB0(poly_g4, 128, 192, 0);
+                                    setRGB2(poly_g4, 128, 192, 0);
                                 }
                                 break;
 
                             case GameDifficulty_Normal:
                                 if (i == var_t6 && j == var_t5)
                                 {
-                                    setRGB0(poly_g4, spA0 * 3, spA0 - 0x80, 0xC0);
-                                    setRGB2(poly_g4, spA0 * 3, spA0 - 0x80, 0xC0);
+                                    setRGB0(poly_g4, spA0 * 3, spA0 - 128, 192);
+                                    setRGB2(poly_g4, spA0 * 3, spA0 - 128, 192);
                                 }
                                 else
                                 {
-                                    setRGB0(poly_g4, 0, 0x80, 0xC0);
-                                    setRGB2(poly_g4, 0, 0x80, 0xC0);
+                                    setRGB0(poly_g4, 0, 128, 192);
+                                    setRGB2(poly_g4, 0, 128, 192);
                                 }
                                 break;
 
                             case GameDifficulty_Hard:
                                 if (i == var_t6 && j == var_t5)
                                 {
-                                    setRGB0(poly_g4, spA0 - 0x80, spA0 * 3, 0xC0);
-                                    setRGB2(poly_g4, spA0 - 0x80, spA0 * 3, 0xC0);
+                                    setRGB0(poly_g4, spA0 - 128, spA0 * 3, 192);
+                                    setRGB2(poly_g4, spA0 - 128, spA0 * 3, 192);
                                 }
                                 else
                                 {
-                                    setRGB0(poly_g4, 0x80, 0, 0xC0);
-                                    setRGB2(poly_g4, 0x80, 0, 0xC0);
+                                    setRGB0(poly_g4, 128, 0, 192);
+                                    setRGB2(poly_g4, 128, 0, 192);
                                 }
                                 break;
                         }
@@ -931,23 +931,24 @@ void Gfx_Inventory_2dBackgroundDraw(s32* arg0) // 0x8004FBCC
         }
     }
 
-    temp_t3   = (Math_Cos(g_Inventory_SelectionBordersDraw << 7) * Math_Cos(g_Inventory_SelectionBordersDraw << 7) * 16) >> 16;
+    temp_t3   = (Math_Cos(g_Inventory_SelectionBordersDraw << 7) *
+                 Math_Cos(g_Inventory_SelectionBordersDraw << 7) * 16) >> 16;
 
-    D_800C3B68[0][0].vx = selectionOutlineInner[*arg0].field_0.vx +
-    FP_FROM((new_var = selectionOutlineInner[g_Inventory_PrevSelectionId].field_0.vx - selectionOutlineInner[*arg0].field_0.vx) * temp_t3, Q12_SHIFT);
+    D_800C3B68[0][0].vx = INNER_OUTLINE[*arg0].field_0.vx +
+    FP_FROM((new_var = INNER_OUTLINE[g_Inventory_PrevSelectionId].field_0.vx - INNER_OUTLINE[*arg0].field_0.vx) * temp_t3, Q12_SHIFT);
 
-    D_800C3B68[0][0].vy = selectionOutlineInner[*arg0].field_0.vy +
-        FP_FROM((selectionOutlineInner[g_Inventory_PrevSelectionId].field_0.vy - selectionOutlineInner[*arg0].field_0.vy) * temp_t3, Q12_SHIFT);
+    D_800C3B68[0][0].vy = INNER_OUTLINE[*arg0].field_0.vy +
+        FP_FROM((INNER_OUTLINE[g_Inventory_PrevSelectionId].field_0.vy - INNER_OUTLINE[*arg0].field_0.vy) * temp_t3, Q12_SHIFT);
 
     D_800C3B68[0][1].vx = D_800C3B68[0][0].vx;
 
-    D_800C3B68[0][1].vy = selectionOutlineInner[*arg0].field_0.vy + selectionOutlineInner[*arg0].field_4.vy +
-        FP_FROM(((selectionOutlineInner[g_Inventory_PrevSelectionId].field_0.vy + selectionOutlineInner[g_Inventory_PrevSelectionId].field_4.vy) -
-        (selectionOutlineInner[*arg0].field_0.vy + selectionOutlineInner[*arg0].field_4.vy)) * temp_t3, Q12_SHIFT);
+    D_800C3B68[0][1].vy = INNER_OUTLINE[*arg0].field_0.vy + INNER_OUTLINE[*arg0].field_4.vy +
+        FP_FROM(((INNER_OUTLINE[g_Inventory_PrevSelectionId].field_0.vy + INNER_OUTLINE[g_Inventory_PrevSelectionId].field_4.vy) -
+        (INNER_OUTLINE[*arg0].field_0.vy + INNER_OUTLINE[*arg0].field_4.vy)) * temp_t3, Q12_SHIFT);
 
-    D_800C3B68[0][2].vx = selectionOutlineInner[*arg0].field_0.vx + selectionOutlineInner[*arg0].field_4.vx +
-        FP_FROM(((selectionOutlineInner[g_Inventory_PrevSelectionId].field_0.vx + selectionOutlineInner[g_Inventory_PrevSelectionId].field_4.vx) -
-        (selectionOutlineInner[*arg0].field_0.vx + selectionOutlineInner[*arg0].field_4.vx)) * temp_t3, Q12_SHIFT);
+    D_800C3B68[0][2].vx = INNER_OUTLINE[*arg0].field_0.vx + INNER_OUTLINE[*arg0].field_4.vx +
+        FP_FROM(((INNER_OUTLINE[g_Inventory_PrevSelectionId].field_0.vx + INNER_OUTLINE[g_Inventory_PrevSelectionId].field_4.vx) -
+        (INNER_OUTLINE[*arg0].field_0.vx + INNER_OUTLINE[*arg0].field_4.vx)) * temp_t3, Q12_SHIFT);
     D_800C3B68[0][3].vx = D_800C3B68[0][2].vx;
     D_800C3B68[0][2].vy = D_800C3B68[0][1].vy;
     D_800C3B68[0][3].vy = D_800C3B68[0][0].vy;
@@ -1104,19 +1105,19 @@ void Gfx_Inventory_2dBackgroundDraw(s32* arg0) // 0x8004FBCC
 
         if (i / 3)
         {
-            setXY2(line_g2, selectionOutlineCorner[*arg0].field_4.vx,
-                   (i == 4) ? (selectionOutlineCorner[*arg0].field_4.vy - 1) : selectionOutlineCorner[*arg0].field_4.vy,
-                   (i != 5) ? (selectionOutlineCorner[*arg0].field_4.vx - (selectionOutlineInner[*arg0].field_4.vx >> 1)) : selectionOutlineCorner[*arg0].field_4.vx,
-                   (i == 5) ? (selectionOutlineCorner[*arg0].field_4.vy - (selectionOutlineInner[*arg0].field_4.vy >> 1)) :
-                   (i == 4) ? (selectionOutlineCorner[*arg0].field_4.vy - 1) : selectionOutlineCorner[*arg0].field_4.vy);
+            setXY2(line_g2, CORNER_OUTLINE[*arg0].field_4.vx,
+                   (i == 4) ? (CORNER_OUTLINE[*arg0].field_4.vy - 1) : CORNER_OUTLINE[*arg0].field_4.vy,
+                   (i != 5) ? (CORNER_OUTLINE[*arg0].field_4.vx - (INNER_OUTLINE[*arg0].field_4.vx >> 1)) : CORNER_OUTLINE[*arg0].field_4.vx,
+                   (i == 5) ? (CORNER_OUTLINE[*arg0].field_4.vy - (INNER_OUTLINE[*arg0].field_4.vy >> 1)) :
+                   (i == 4) ? (CORNER_OUTLINE[*arg0].field_4.vy - 1) : CORNER_OUTLINE[*arg0].field_4.vy);
         }
         else
         {
-            setXY2(line_g2, selectionOutlineCorner[*arg0].field_0.vx,
-                   (i == 1) ? (selectionOutlineCorner[*arg0].field_0.vy - 1) : selectionOutlineCorner[*arg0].field_0.vy,
-                   (i != 2) ? (selectionOutlineCorner[*arg0].field_0.vx + (selectionOutlineInner[*arg0].field_4.vx >> 1)) : selectionOutlineCorner[*arg0].field_0.vx,
-                   (i == 2) ? (selectionOutlineCorner[*arg0].field_0.vy + (selectionOutlineInner[*arg0].field_4.vy >> 1)) :
-                   (i == 1) ? (selectionOutlineCorner[*arg0].field_0.vy - 1) : selectionOutlineCorner[*arg0].field_0.vy);
+            setXY2(line_g2, CORNER_OUTLINE[*arg0].field_0.vx,
+                   (i == 1) ? (CORNER_OUTLINE[*arg0].field_0.vy - 1) : CORNER_OUTLINE[*arg0].field_0.vy,
+                   (i != 2) ? (CORNER_OUTLINE[*arg0].field_0.vx + (INNER_OUTLINE[*arg0].field_4.vx >> 1)) : CORNER_OUTLINE[*arg0].field_0.vx,
+                   (i == 2) ? (CORNER_OUTLINE[*arg0].field_0.vy + (INNER_OUTLINE[*arg0].field_4.vy >> 1)) :
+                   (i == 1) ? (CORNER_OUTLINE[*arg0].field_0.vy - 1) : CORNER_OUTLINE[*arg0].field_0.vy);
         }
 
         addPrim(&ot0->org[7], line_g2);
@@ -3102,7 +3103,7 @@ void Gfx_Items_Draw(void) // 0x80054200
 
     D_800AE190 = 0;
 
-    ItemScreen_CamSet(&D_800C3B48, &D_800C3AE8, &D_800C3B38, 0);
+    ItemScreen_CameraSet(&g_ItemScreen_CameraView, &g_ItemScreen_CameraCoord, &g_ItemScreen_CameraRotation, 0);
 
     // Define position, rotation, and scale of inventory item initially equipped by player.
     for (i = 0; i < DISPLAYED_ITEM_COUNT_MAX; i++)
@@ -3425,7 +3426,7 @@ void func_80054A04(u8 itemId) // 0x80054A04
     g_Items_Transforms[9].scale.vx = Q12(1.0f);
 
     func_800549A0();
-    ItemScreen_CamSet(&D_800C3B48, &D_800C3AE8, &D_800C3B38, 0);
+    ItemScreen_CameraSet(&g_ItemScreen_CameraView, &g_ItemScreen_CameraCoord, &g_ItemScreen_CameraRotation, 0);
 }
 
 bool Gfx_PickupItemAnimate(u8 itemId) // 0x80054AD8
@@ -3477,7 +3478,7 @@ bool Gfx_PickupItemAnimate(u8 itemId) // 0x80054AD8
     g_Items_PickupScale  = CLAMP(g_Items_PickupScale, Q12(0.0f), Q12(0.5f));
 
     PushMatrix();
-    func_8004BBF4(&D_800C3B48, &D_800C3AE8, &D_800C3B38);
+    func_8004BBF4(&g_ItemScreen_CameraView, &g_ItemScreen_CameraCoord, &g_ItemScreen_CameraRotation);
 
     obj = &D_800C3E08;
 

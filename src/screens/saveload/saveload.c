@@ -150,7 +150,7 @@ void (*g_GameState_AutoLoadSavegame_Funcs[])() = {
 
 static s32 D_801E7560; // Unused/Pad.
 
-/** @brief Dead code.
+/** @brief @unused Dead code.
  * Only used when booting the save screen where both
  * values are defined as 0, the memory card is being
  * loaded, or the user has the last save selected in
@@ -161,7 +161,7 @@ static s32 D_801E7560; // Unused/Pad.
  */
 static s32 D_801E7564[MEMCARD_SLOT_COUNT_MAX];
 
-/** @brief Dead code.
+/** @brief @unused Dead code.
  * Constantly updates changing the value from 0 up to
  * the amount of files available in the slot.
  *
@@ -174,7 +174,7 @@ static s16 D_801E756C[MEMCARD_SLOT_COUNT_MAX];
  */
 static s16 g_SaveScreen_HiddenSaves[MEMCARD_SLOT_COUNT_MAX];
 
-/** @brief Dead code.
+/** @brief @unused Dead code.
  * The only usage it is given is to check it is in `SaveScreen_SavesSlotDraw`
  * where it is used to check if the value is not the same as
  * `g_SaveScreen_HiddenSaves` if the condition is true then it assigns
@@ -196,7 +196,7 @@ static s16 g_SaveScreen_VisualElementIdx[MEMCARD_SLOT_COUNT_MAX];
 
 static s8 D_801E757C[8]; // Unused/Pad.
 
-/** @brief Dead code. */
+/** @brief @unused Dead code. */
 static s8 D_801E7584[SAVEGAME_COUNT_MAX * MEMCARD_SLOT_COUNT_MAX];
 
 /** @brief Stores the index of the last save done.

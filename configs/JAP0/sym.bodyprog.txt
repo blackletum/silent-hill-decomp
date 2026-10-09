@@ -838,7 +838,7 @@ Gfx_StringDraw_JP                            = 0x8004BFC0; // type:func
 ItemScreen_TmdGsFCallInitTG3                 = 0x8004CB54; // type:func
 ItemScreen_TmdGsFCallInitG3G4                = 0x8004CB6C; // type:func
 ItemScreen_TmdGsFCallInitTG4                 = 0x8004CB90; // type:func
-ItemScreen_CamSet                            = 0x8004CBA4; // type:func
+ItemScreen_CameraSet                         = 0x8004CBA4; // type:func
 func_8004BBF4                                = 0x8004CC4C; // type:func
 GameFs_TmdDataAlloc                          = 0x8004CD14; // type:func
 ItemScreen_ItemRotate                        = 0x8004CD34; // type:func
@@ -3437,11 +3437,11 @@ D_800C3920                                   = 0x800C5E54;
 //----------------------------------------------------------------------------
 //--- PA: 0x0A12F8   VA: 0x800C5E58   subsegment: .bss, items/item_screens_cam
 //----------------------------------------------------------------------------
-D_800C3928                                   = 0x800C5E58;
-g_Player_WeaponAttack                        = 0x800C5E80;
-D_800C3954                                   = 0x800C5E84;
-D_800C3958                                   = 0x800C5E88;
-D_800C395C                                   = 0x800C5E8C;
+g_ItemScreen_CameraTransform                 = 0x800C5E58;
+g_ItemScreen_PlayerWeaponAttack              = 0x800C5E80;
+g_ItemScreen_ViewDistance                    = 0x800C5E84;
+g_ItemScreen_GeomOffsetX                     = 0x800C5E88;
+g_ItemScreen_GeomOffsetY                     = 0x800C5E8C;
 
 //--------------------------------------------------------------------------
 //--- PA: 0x0A1330   VA: 0x800C5E90   subsegment: .bss, items/item_screens_1
@@ -3476,9 +3476,9 @@ D_800C39A0                                   = 0x800C5ED0;
 g_Items_Lights                               = 0x800C5ED8;
 D_800C3A88                                   = 0x800C5FB8;
 D_800C3AC8                                   = 0x800C5FF8;
-D_800C3AE8                                   = 0x800C6018;
-D_800C3B38                                   = 0x800C6068;
-D_800C3B48                                   = 0x800C6078;
+g_ItemScreen_CameraCoord                     = 0x800C6018;
+g_ItemScreen_CameraRotation                  = 0x800C6068;
+g_ItemScreen_CameraView                      = 0x800C6078;
 D_800C3B68                                   = 0x800C6098;
 D_800C3BA8                                   = 0x800C60D8;
 D_800C3BAC                                   = 0x800C60DC;

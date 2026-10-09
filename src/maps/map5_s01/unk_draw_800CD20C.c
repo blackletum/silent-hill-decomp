@@ -230,7 +230,7 @@ void func_800CD860(void) // 0x800CD860
     D_800F159D = 0;
     D_800ED5C8 = 3;
 
-    ItemScreen_CamSet(&D_800F1570, &D_800F1510, (SVECTOR3*)&D_800F1560, 0);
+    ItemScreen_CameraSet(&D_800F1570, &D_800F1510, (SVECTOR3*)&D_800F1560, 0);
 
     for (i = 0; i < 6; i++)
     {

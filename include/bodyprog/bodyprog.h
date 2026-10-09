@@ -1899,7 +1899,7 @@ void PaperMap_DrawScaled(u16 scrollX, u16 scrollY, q4_12 scale);
 
 void Player_FlexRotationYReset(void);
 
-void func_8004BBF4(VbRVIEW* arg0, GsCOORDINATE2* arg1, SVECTOR* arg2);
+void func_8004BBF4(VbRVIEW* camView, GsCOORDINATE2* camCoord, SVECTOR* camRot);
 
 void Settings_ScreenAndVolUpdate(void);
 

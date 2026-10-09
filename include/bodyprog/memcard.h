@@ -222,7 +222,7 @@ typedef struct _MemCardWork
     /* 0x70 */ bool                hasNewDevice;
     /* 0x74 */ s32                 fileHandle;
     /* 0x78 */ s32                 retryCount;
-    /* 0x7C */ s32                 field_7C; /** Dead code. Only ever set to 0. */
+    /* 0x7C */ s32                 field_7C; /** @unused Dead code. Only ever set to 0. */
 } s_MemCardWork;
 
 /** @brief Savegame metadata for displaying in the save screen. */
@@ -369,13 +369,13 @@ extern u8 g_SlotElementSelectedIdx[2]; // 0 - Slot 1, 1 - Slot 2.
 
 extern s8 g_SelectedSaveSlotIdx; // 0 - Slot 1, 1 - Slot 2.
 
-/** @brief Dead code. Defined as 0 and whenever `SaveScreen_Continue` is triggered it turns 1. */
+/** @brief @unused Dead code. Defined as 0 and whenever `SaveScreen_Continue` is triggered it turns 1. */
 extern u8 D_800A97D7;
 
 /** @brief Defines if the player is or not in the save screen under the save game mode or in the load game mode. */
 extern s8 g_SaveScreen_IsInSaveScreen;
 
-/** @brief Dead code. Only used for a check which ask if this is 0. */
+/** @brief @unused Dead code. Only used for a check which ask if this is 0. */
 extern s8 D_800A97D9;
 
 // ====================

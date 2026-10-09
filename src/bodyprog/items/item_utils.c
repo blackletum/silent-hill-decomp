@@ -32,12 +32,12 @@ void Inventory_ExitAnimEquippedItemUpdate(u8* weaponId) // 0x8004C088
     if (playerExtra.state < PlayerState_Idle &&
         playerState >= PlayerState_None)
     {
-        if (g_Player_WeaponAttack != g_SysWork.playerCombat.weaponAttack)
+        if (g_ItemScreen_PlayerWeaponAttack != g_SysWork.playerCombat.weaponAttack)
         {
             g_SysWork.playerCombat.isAiming = false;
         }
 
-        weaponId = WEAPON_ATTACK_ID_GET(g_Player_WeaponAttack);
+        weaponId = WEAPON_ATTACK_ID_GET(g_ItemScreen_PlayerWeaponAttack);
         if (weaponId == EquippedWeaponId_Chainsaw &&
             g_SysWork.playerCombat.weaponAttack != weaponId)
         {
@@ -64,7 +64,7 @@ void Inventory_ExitAnimEquippedItemUpdate(u8* weaponId) // 0x8004C088
             default:
 
                 if (playerExtra.state == PlayerState_Combat &&
-                    g_Player_WeaponAttack != g_SysWork.playerCombat.weaponAttack)
+                    g_ItemScreen_PlayerWeaponAttack != g_SysWork.playerCombat.weaponAttack)
                 {
                     playerExtra.state = PlayerState_None;
                     playerProps.flags = PlayerFlag_None;
@@ -72,7 +72,7 @@ void Inventory_ExitAnimEquippedItemUpdate(u8* weaponId) // 0x8004C088
 
                 if (playerExtra.lowerBodyState >= PlayerLowerBodyState_Aim &&
                     g_SysWork.playerCombat.weaponAttack != NO_VALUE &&
-                    g_Player_WeaponAttack == g_SysWork.playerCombat.weaponAttack)
+                    g_ItemScreen_PlayerWeaponAttack == g_SysWork.playerCombat.weaponAttack)
                 {
                     extraModelPtr0 = &playerExtra.model;
                     if (extraModelPtr0->anim.status >= ANIM_STATUS(33, false))
@@ -105,7 +105,7 @@ void Inventory_ExitAnimEquippedItemUpdate(u8* weaponId) // 0x8004C088
                 }
 
                 playerProps.moveSpeed = Q12(0.0f);
-                playerProps.afkTimer         = Q12(0.0f);
+                playerProps.afkTimer  = Q12(0.0f);
         }
     }
 
@@ -232,7 +232,7 @@ s32 Inventory_HyperBlasterUnlockTest(void) // 0x8004C45C
     if (g_SavegamePtr->mapIdx > MapIdx_MAP0_S00)
     {
         // Konami gun controller connected.
-        if (g_GameWork.controllers[1].analogController.status         == 0 &&
+        if (g_GameWork.controllers[1].analogController.status        == 0 &&
             g_GameWork.controllers[1].analogController.receivedBytes == 1 &&
             g_GameWork.controllers[1].analogController.terminalType  == PadTerminalType_GunControllerKonami)
         {
@@ -255,17 +255,17 @@ s32 Inventory_HyperBlasterFunctionalTest(void) // 0x8004C4F8
     {
         if ((g_SavegamePtr->clearGameEndings & GameEndingFlag_Ufo) != 0)
         {
-            // Game completed with Ufo ending.
+            // Game completed with UFO ending.
             return 2;
         }
 
-        // Returns 1 if controller port 2 has Konami gun controller connected.
-        return g_GameWork.controllers[1].analogController.status         == 0 &&
+        // Return 1 if controller port 2 has Konami gun controller connected.
+        return g_GameWork.controllers[1].analogController.status        == 0 &&
                g_GameWork.controllers[1].analogController.receivedBytes == 1 &&
                g_GameWork.controllers[1].analogController.terminalType  == PadTerminalType_GunControllerKonami;
     }
 
-    // Neither of the conditions has been completed.
+    // Neither condition is met.
     return 0;
 }
 
@@ -277,6 +277,7 @@ s32 Game_HyperBlasterBeamColorGet(void) // 0x8004C54C
 void func_8004C564(u8 arg0, s8 weaponAttack) // 0x8004C564
 {
     s32 temp_v1;
+
     static s8 D_800C3960;
     static s8 D_800C3961;
     static s8 D_800C3962;
