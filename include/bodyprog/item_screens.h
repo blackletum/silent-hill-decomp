@@ -151,19 +151,6 @@ extern s32 g_ItemScreen_GeomOffsetX;
 
 extern s32 g_ItemScreen_GeomOffsetY;
 
-// 1.c
-
-/** `e_MapIdx` */
-extern s8 D_800C3960;
-
-extern s8 D_800C3961;
-
-extern s8 D_800C3962;
-
-extern u8 D_800C3963;
-
-extern s32 __pad_bss_800C3964;
-
 // 2.c
 
 extern bool g_Inventory_IsUpClicked;
