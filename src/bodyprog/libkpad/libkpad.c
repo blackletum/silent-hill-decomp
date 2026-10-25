@@ -440,7 +440,7 @@ bool KPad_ActuatorDataUpdate(s_KPadWork* work) // 0x8009E718
 
     in  = work->channels_C;
     out = &work->actuatorData_4;
-    for (i = (u8)work->channelInfo_8.count_2; i != 0; i--)
+    for (i = work->channelInfo_8.count_2; i != 0; i--)
     {
         // Contains up to 4 actuator data bytes packed into a `u32`, even though there are only two actuators max.
         packedVal = in->strength_4;

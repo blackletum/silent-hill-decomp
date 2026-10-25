@@ -94,7 +94,7 @@ STATIC_ASSERT_SIZEOF(s_KPad_Status, 4);
 typedef struct
 {
     s32 field_0    : 16;
-    s32 count_2    : 8; // Number of active entries in `s_KPadWork::channels_C`.
+    u8 count_2     : 8; // Number of active entries in `s_KPadWork::channels_C`.
     u32 capacity_3 : 8; // Number of entries allocated in `s_KPadWork::channels_C`.
 } s_KPad_ChannelInfo;
 STATIC_ASSERT_SIZEOF(s_KPad_ChannelInfo, 4);
