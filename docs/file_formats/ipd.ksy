@@ -23,7 +23,7 @@ seq:
 
 instances:
   collision:
-    pos: 0x54
+    pos: header.collision_offset
     type: collision
 
   lm:
@@ -92,6 +92,10 @@ types:
       - id: model_order_list_offset
         type: u4
 
+    instances:
+      collision_offset:
+        value: 0x54
+
   model_info:
     seq:
       - id: is_global_plm
@@ -114,7 +118,7 @@ types:
       - id: field_1
         type: u1
 
-      - id: subcell_count
+      - id: cell_count
         type: u1
 
       - size: 1
@@ -138,7 +142,7 @@ types:
         type: u4
         doc: Q7.8.
 
-      - id: subcell_positions_offset
+      - id: cell_positions_offset
         type: u4
         doc: Q7.8.
 
@@ -272,106 +276,113 @@ types:
         type: s4
         doc: Q23.8
 
-      - id: split_vertex_count
+      - id: cell_split_vertex_count
         type: b8
 
-      - id: surface_count
+      - id: cell_surface_count
         type: b8
 
-      - id: subcell_count
+      - id: cell_count
         type: b8
 
-      - id: ptr_18_count
+      - id: cell_attribs_count
         type: b8
 
-      - id: split_vertices_offset
+      - id: cell_split_vertices_offset
         type: u4
 
-      - id: surfaces_offset
+      - id: cell_surfaces_offset
         type: u4
 
-      - id: subcells_offset
+      - id: cells_offset
         type: u4
 
-      - id: ptrs_18_offset
+      - id: cell_attribs_offset
         type: u4
 
-      - id: subcell_size
+      - id: cell_size
         type: s2
 
-      - id: subcell_x_count
+      - id: cell_count_x
         type: u1
 
-      - id: subcell_z_count
+      - id: cell_count_z
         type: u1
 
-      - id: subcell_ranges_offset
+      - id: cell_ranges_offset
         type: u4
 
-      - id: field_24
+      - id: unk_idxs_count_28
         type: u2
 
-      - id: field_26
+      - id: unk_idxs_count_2c
         type: u2
 
-      - id: ptr_28
+      - id: unk_idxs_offset_28
         type: u4
 
-      - id: ptr_2c
+      - id: unk_idxs_offset_2c
         type: u4
 
-      - id: subcell_check_count
+      - id: cell_check_count
         type: u1
 
       - size: 3
 
-      - id: subcell_check_idxs
+      - id: cell_check_idx_buffer
         size: 256
-        doc: Static pool of `u1` with size `subcell_check_count`.
+        doc: Static pool of `u1` with `cell_count` valid entries used by engine.
 
     instances:
       split_vertices:
-        pos: split_vertices_offset
+        pos: _root.header.collision_offset + cell_split_vertices_offset
         type: svector_3
         repeat: expr
-        repeat-expr: split_vertex_count
-        doc: Q3.12? TODO Wrong offset?
+        repeat-expr: cell_split_vertex_count
 
       surfaces:
-        pos: surfaces_offset
-        type: collision_surface
+        pos: _root.header.collision_offset + cell_surfaces_offset
+        type: cell_surface
         repeat: expr
-        repeat-expr: surface_count
-        doc: TODO Wrong offset?
+        repeat-expr: cell_surface_count
 
-      subcells:
-        pos: subcells_offset
-        type: collision_subcell
+      cells:
+        pos: _root.header.collision_offset + cells_offset
+        type: cell
         repeat: expr
-        repeat-expr: subcell_count
-        doc: TODO Wrong offset?
+        repeat-expr: cell_count
 
-      ptrs_18:
-        pos: ptrs_18_offset
+      cell_attribs:
+        pos: _root.header.collision_offset + cell_attribs_offset
         type: collision_18
         repeat: expr
-        repeat-expr: ptr_18_count
-        doc: TODO Wrong offset?
+        repeat-expr: cell_attribs_count
 
-      subcell_ranges:
-        pos: subcell_ranges_offset
-        type: collision_subcell_range
+      cell_ranges:
+        pos: _root.header.collision_offset + cell_ranges_offset
+        type: cell_range
         repeat: expr
-        repeat-expr: subcell_size
-        doc: TODO Wrong offset? Also which field has the count??
+        repeat-expr: (cell_count_x * cell_count_z) + 1
 
-  collision_surface:
+      unk_idxs_28:
+        pos: _root.header.collision_offset + unk_idxs_offset_28
+        type: u1
+        repeat: expr
+        repeat-expr: unk_idxs_count_28
+
+      unk_idxs_2c:
+        pos: _root.header.collision_offset + unk_idxs_offset_2c
+        type: u1
+        repeat: expr
+        repeat-expr: unk_idxs_count_2c
+
+  cell_surface:
     seq:
       - id: field_0
         type: s2
         doc: Q7.8.
 
-      - id: field_2
+      - id: base_floor_height
         type: s2
         doc: Q7.8.
 
@@ -379,7 +390,7 @@ types:
         type: s2
         doc: Q7.8.
 
-      - id: ground_type
+      - id: floor_type
         type: b5
 
       - id: disable_height
@@ -402,7 +413,7 @@ types:
         type: s2
         doc: Q3.12.
 
-  collision_subcell:
+  cell:
     seq:
       - id: field_0_0
         type: b14
@@ -438,7 +449,7 @@ types:
 
   collision_18:
     seq:
-      - id: ground_type
+      - id: floor_type
         type: b5
 
       - id: disable_height
@@ -461,7 +472,7 @@ types:
         type: u2
         doc: Q7.8.
 
-  collision_subcell_range:
+  cell_range:
     seq:
       - id: field_0
         type: s2

@@ -195,7 +195,7 @@ void Fs_EncodeFileName(s32* outName0123, s32* outName4567, const char* srcName);
  */
 s32 Fs_GetFileSectorAlignedSize(s32 fileIdx);
 
-/** @brief Finds a file of the specified type in the file table.
+/** @brief @unused Finds a file of the specified type in the file table.
  *
  * Starts a linear search from the file table index `startIdx`,
  * going forwards if `direction` is positive, or backwards if it's negative.

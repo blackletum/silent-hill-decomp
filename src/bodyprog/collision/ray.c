@@ -438,11 +438,11 @@ void func_8006E53C(s_RayState* state, s_IpdCellRange* cellRanges, s_IpdCollision
 
     for (i = cellRanges[0].idx_0; i < cellRanges[1].idx_0; i++)
     {
-        idx = collData->ptr_28[i];
+        idx = collData->unkIdxs_28[i];
 
-        if (collData->cellCheckCount >= collData->cellCheckIdxs[idx])
+        if (collData->cellCheckCount >= collData->cellCheckIdxBuffer[idx])
         {
-            collData->cellCheckIdxs[idx] = collData->cellCheckCount + 1;
+            collData->cellCheckIdxBuffer[idx] = collData->cellCheckCount + 1;
 
             if (idx < collData->cellCount)
             {

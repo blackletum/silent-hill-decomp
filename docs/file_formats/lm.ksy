@@ -226,13 +226,13 @@ types:
 
     instances:
       x:
-        value: x_int.as<f4> / 128.0
+        value: x_int / 128.0
 
       y:
-        value: y_int.as<f4> / 128.0
+        value: y_int / 128.0
 
       z:
-        value: z_int.as<f4> / 128.0
+        value: z_int / 128.0
 
       length_sqr:
         value: (x * x) + (y * y) + (z * z)

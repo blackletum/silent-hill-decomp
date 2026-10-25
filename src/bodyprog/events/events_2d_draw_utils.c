@@ -31,7 +31,7 @@ void Gfx_CursorDraw(s32 x0, s16 y0, s32 x1, s16 y1, s16 u, s16 v, s16 width, s32
     setXY2Fast(poly, x0 - x1, y0 + y1);
     setXY3Fast(poly, x0 + x1, y0 + y1);
 
-    // Set UVs. @todo Use macros here?
+    // Set UVs. TODO: Use macros here?
     *(u32*)(&poly->u0) = u + (v << 8) + (getClut(clutX, clutY) << 16);
     *(u32*)(&poly->u1) = (u + width) + (v << 8) + (getTPage(0, 0, tPage << 6, (((tPage >> 4) & 0x1) << 8)) << 16);
     *(u16*)(&poly->u2) = u + ((v + height) << 8);

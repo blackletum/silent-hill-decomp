@@ -44,7 +44,7 @@ void Sd_BgmSongSet(s32 bgmIdx);
 void Sd_BgmUpdateTrack(void);
 
 /** @brief Update channels being used by songs.
- * @todo Properly document after investigating game's channel functionallity.
+ * TODO: Properly document after investigating game's channel functionallity.
  */
 void Sd_BgmChannelSet(void);
 

@@ -87,7 +87,7 @@
  * 
  * Messages can then be switched out by checking `#if LANGUAGE_IS(ENG)` inside map message code.
  *
- * @todo We should handle JPN text the same way to be consistent, needs more Makefile changes though.
+ * TODO: We should handle JPN text the same way to be consistent, needs more Makefile changes though.
  *
  * @param lang Language identifier (ENG, GER, FRN, SPN, ITL).
  */

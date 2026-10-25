@@ -25,7 +25,7 @@
 const s32 pad = 0;
 #endif
 
-// @todo Temporary hack while JAP data is unmigrated, remove this once data is brought over.
+// TODO: Temporary hack while JAP data is unmigrated, remove this once data is brought over.
 #if VERSION_REGION_IS(NTSCJ)
     #define SAVE_BSS extern
 #else
@@ -221,7 +221,7 @@ SAVE_BSS s16 g_SaveScreen_HiddenSaves[MEMCARD_SLOT_COUNT_MAX];
  * `D_801E7514` a true value. However, the only instance where a value
  * is assigned is when booting the save screen when it get assigned
  * the value of -1 so it's always realizing the conditional.
- * (@todo JPN makes use of it in `SaveScreen_SavesSlotDraw` - comment may need 
+ * (TODO: JPN makes use of it in `SaveScreen_SavesSlotDraw` - comment may need 
  * updating)
  */
 SAVE_BSS s16 D_801E7574[MEMCARD_SLOT_COUNT_MAX];
@@ -246,7 +246,7 @@ SAVE_BSS s16 g_SaveScreen_VisualElementIdx[MEMCARD_SLOT_COUNT_MAX];
 
 SAVE_BSS s8 D_801E757C[8]; // Unused/Pad.
 
-/** @brief @unused Dead code in USA. (@todo JPN makes more use of it) */
+/** @brief @unused Dead code in USA. (TODO: JPN makes more use of it) */
 SAVE_BSS u8 D_801E7584[MEMCARD_SLOT_COUNT_MAX][SAVEGAME_COUNT_MAX];
 
 /** @brief Stores the index of the last save done.

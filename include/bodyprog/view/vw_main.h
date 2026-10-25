@@ -30,7 +30,7 @@ void vwGetViewAngle(SVECTOR* ang);
  */
 void Vw_SetLookAtMatrix(const VECTOR3* pos, const VECTOR3* lookAt);
 
-// @todo Doc.
+// TODO: Doc.
 void vwSetCoordRefAndEntou(GsCOORDINATE2* parent_p,
                            q19_12 ref_x, q19_12 ref_y, q19_12 ref_z,
                            q3_12 cam_ang_y, q3_12 cam_ang_z, q19_12 cam_y, q19_12 cam_xz_r);

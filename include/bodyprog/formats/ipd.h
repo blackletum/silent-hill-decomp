@@ -57,7 +57,7 @@ typedef struct _IpdCellSurface
 } s_IpdCellSurface;
 STATIC_ASSERT_SIZEOF(s_IpdCellSurface, 12);
 
-/** @brief IPD collision cell with two cellSurfaces. */
+/** @brief IPD collision cell with two cell surfaces. */
 typedef struct _IpdCell
 {
     /* 0x0+0  */ q7_8 field_0_0  : 14; // Z. Unsure, used as X in one place. Maybe Z?
@@ -72,14 +72,14 @@ typedef struct _IpdCell
 } s_IpdCell;
 STATIC_ASSERT_SIZEOF(s_IpdCell, 10);
 
-// Name uncertain.
+/** @brief IPD collision cell attributes. TODO: Name uncertain. */
 typedef struct _IpdCellAttribs
 {
     /* 0x0+0  */ u16      floorType     : 5; /** `e_FloorType` */
     /* 0x0+5  */ u16      disableHeight : 3; /** `bool` */
     /* 0x0+8  */ u16      field_0_8     : 4; // Some flag index.
-    /* 0x0+12 */ u16      field_0_12    : 3;
-    /* 0x0+15 */ u16      field_0_15    : 1;
+    /* 0x0+12 */ u16      field_0_12    : 3; // Unused?
+    /* 0x0+15 */ u16      field_0_15    : 1; // `bool` | Unused?
     /* 0x2    */ SVECTOR3 offset;            /** Q7.8 */
     /* 0x8    */ q7_8     radiusOffset;
 } s_IpdCellAttribs;
@@ -88,37 +88,35 @@ STATIC_ASSERT_SIZEOF(s_IpdCellAttribs, 10);
 // TODO: Name might be wrong, maybe surface indices?
 typedef struct _IpdCellRange
 {
-    /* 0x0 */ s16 idx_0; // Base index into `s_IpdCollisionData::ptr_28`.
-    /* 0x2 */ s16 idx_2; // Another index into `s_IpdCollisionData::ptr_28`.
+    /* 0x0 */ s16 idx_0; // Base index into `s_IpdCollisionData::unkIdxs_28`.
+    /* 0x2 */ s16 idx_2; // Another index into `s_IpdCollisionData::unkIdxs_28`.
 } s_IpdCellRange;
 STATIC_ASSERT_SIZEOF(s_IpdCellRange, 4);
 
 /** @brief IPD collision data. */
 typedef struct _IpdCollisionData
 {
-    /* 0x0    */ q23_8                  positionX;
-    /* 0x4    */ q23_8                  positionZ;
-    /* 0x8+0  */ u32                    cellSplitVertexCount : 8; /** `cellSplitVertices` size. */
-    /* 0x8+8  */ u32                    cellSurfaceCount     : 8; /** `cellSurfaces` size. */
-    /* 0x8+16 */ u32                    cellCount            : 8; /** `cells` size. */
-    /* 0x8+24 */ u32                    cellAttribsCount     : 8; /** `cellAttribs` size. */
-    /* 0xC    */ SVECTOR3*              cellSplitVertices;        /** Pairs define a cell line split. */
-    /* 0x10   */ s_IpdCellSurface*      cellSurfaces;             /** Tangible surfaces for cells. */
-    /* 0x14   */ s_IpdCell*             cells;                    /** Tangible collision cells. */
-    /* 0x18   */ s_IpdCellAttribs*      cellAttribs;              /** Collision cell attributes. */
-    /* 0x1C   */ q7_8                   cellSize;
-    /* 0x1E   */ u8                     cellCountX; // } Not cell count, but subchunk? Some kind of wide area of cells.
-    /* 0x1F   */ u8                     cellCountZ; // }
-    /* 0x20   */ s_IpdCellRange*        cellRanges;
-    /* 0x24   */ u16                    field_24; // `ptr_28` size. `field_24`/`field_26` defined in ipd2obj but haven't seen used yet, might be size of `ptr_28`/`ptr_2C`.
-    /* 0x26   */ u16                    field_26; // `ptr_2C` size.
-    /* 0x28   */ u8*                    ptr_28;   // Data aligned 1:1 with `cells`. Array of indices into `cellCheckIdxs` by `func_8006E53C`.
-    /* 0x2C   */ u8*                    ptr_2C;   // Surface indices?    
-    /* 0x30   */ u8                     cellCheckCount;
-    /* 0x31   */ s8                     __pad[3];
-    /* 0x34   */ u8                     cellCheckIdxs[256]; // Cell indices. This should be the same size as of the value assigned to
-                                                            // `s_IpdCollisionData::cellCount`, but instead is assigned the
-                                                            // the max number that variable handles, which is 256 (same as a `char`).
+    /* 0x0    */ q23_8             positionX;
+    /* 0x4    */ q23_8             positionZ;
+    /* 0x8+0  */ u32               cellSplitVertexCount : 8; /** `cellSplitVertices` size. */
+    /* 0x8+8  */ u32               cellSurfaceCount     : 8; /** `cellSurfaces` size. */
+    /* 0x8+16 */ u32               cellCount            : 8; /** `cells` size. */
+    /* 0x8+24 */ u32               cellAttribsCount     : 8; /** `cellAttribs` size. */
+    /* 0xC    */ SVECTOR3*         cellSplitVertices;        /** Pairs define a cell line split. */
+    /* 0x10   */ s_IpdCellSurface* cellSurfaces;             /** Tangible collision cell surfaces. */
+    /* 0x14   */ s_IpdCell*        cells;                    /** Tangible collision cells. */
+    /* 0x18   */ s_IpdCellAttribs* cellAttribs;              /** Collision cell attributes. */
+    /* 0x1C   */ q7_8              cellSize;
+    /* 0x1E   */ u8                cellCountX; // } Not cell count, but subchunk? Some kind of wide area of cells.
+    /* 0x1F   */ u8                cellCountZ; // }
+    /* 0x20   */ s_IpdCellRange*   cellRanges;
+    /* 0x24   */ u16               unkIdxsCount_28; // `field_24`/`field_26` defined in ipd2obj but haven't seen used yet.
+    /* 0x26   */ u16               unkIdxsCount_2C; // 
+    /* 0x28   */ u8*               unkIdxs_28;      // Data aligned 1:1 with `cells`. Array of indices into `cellCheckIdxBuffer` by `func_8006E53C`.
+    /* 0x2C   */ u8*               unkIdxs_2C;      // Surface indices?    
+    /* 0x30   */ u8                cellCheckCount;
+    /* 0x31   */ s8                __pad_31[3];
+    /* 0x34   */ u8                cellCheckIdxBuffer[256]; // Cell indices, unkown purpose. Contains `s_IpdCollisionData::cellCount` valid entries.
 } s_IpdCollisionData;
 STATIC_ASSERT_SIZEOF(s_IpdCollisionData, 308);
 

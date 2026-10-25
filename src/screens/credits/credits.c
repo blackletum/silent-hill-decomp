@@ -390,7 +390,7 @@ u8 D_801E5E6C[8] = {
     '.', 'Y', 'V', 'U',
     'T', 'S', 'R',
 
-    // @todo Garbage padding, maybe can be moved to postbuild.
+    // TODO: Garbage padding, maybe can be moved to postbuild.
 #if VERSION_REGION_IS(NTSC)
     '\x20'
 #elif VERSION_IS(JAP0)

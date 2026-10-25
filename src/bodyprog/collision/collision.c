@@ -85,12 +85,12 @@ void Collision_NearbyTriggersGet(q19_12 posX, q19_12 posZ, const s_CollisionTrig
 void Collision_ChunkHeaderPtrsInit(s_IpdCollisionData* collData) // 0x8006993C
 {
     collData->cellSplitVertices = (u8*)collData->cellSplitVertices + (u32)collData;
-    collData->cellSurfaces  = (u8*)collData->cellSurfaces  + (u32)collData;
-    collData->cells         = (u8*)collData->cells         + (u32)collData;
-    collData->cellAttribs   = (u8*)collData->cellAttribs   + (u32)collData;
-    collData->cellRanges    = (u8*)collData->cellRanges    + (u32)collData;
-    collData->ptr_28        = (u8*)collData->ptr_28        + (u32)collData;
-    collData->ptr_2C        = (u8*)collData->ptr_2C        + (u32)collData;
+    collData->cellSurfaces      = (u8*)collData->cellSurfaces      + (u32)collData;
+    collData->cells             = (u8*)collData->cells             + (u32)collData;
+    collData->cellAttribs       = (u8*)collData->cellAttribs       + (u32)collData;
+    collData->cellRanges        = (u8*)collData->cellRanges        + (u32)collData;
+    collData->unkIdxs_28        = (u8*)collData->unkIdxs_28        + (u32)collData;
+    collData->unkIdxs_2C        = (u8*)collData->unkIdxs_2C        + (u32)collData;
 }
 
 void Collision_CellChecksReset(s_IpdCollisionData* collData) // 0x80069994
@@ -98,13 +98,13 @@ void Collision_CellChecksReset(s_IpdCollisionData* collData) // 0x80069994
     s32* curCellCheckIdx;
 
     collData->cellCheckCount++;
-    if (collData->cellCheckCount > (sizeof(collData->cellCheckIdxs) - 4))
+    if (collData->cellCheckCount > (sizeof(collData->cellCheckIdxBuffer) - 4))
     {
         collData->cellCheckCount = 0;
 
         // TODO: Is this `memset`/`bzero`?
-        for (curCellCheckIdx = &collData->cellCheckIdxs[0];
-             curCellCheckIdx < &collData->cellCheckIdxs[sizeof(collData->cellCheckIdxs)];
+        for (curCellCheckIdx = &collData->cellCheckIdxBuffer[0];
+             curCellCheckIdx < &collData->cellCheckIdxBuffer[sizeof(collData->cellCheckIdxBuffer)];
              curCellCheckIdx++)
         {
             *curCellCheckIdx = 0;
@@ -987,13 +987,13 @@ void func_8006B1C8(s_CollisionState* state, s_IpdCollisionData* collData, s_IpdC
 
     for (i = cellRanges[0].idx_0; i < cellRanges[1].idx_0; i++)
     {
-        idx = collData->ptr_28[i];
+        idx = collData->unkIdxs_28[i];
         
         // Check if cell element hasn't been analyzed.
-        if (collData->cellCheckCount >= collData->cellCheckIdxs[idx])
+        if (collData->cellCheckCount >= collData->cellCheckIdxBuffer[idx])
         {
-            collData->cellCheckIdxs[idx] = collData->cellCheckCount + 1;
-            cellCount                    = collData->cellCount;
+            collData->cellCheckIdxBuffer[idx] = collData->cellCheckCount + 1;
+            cellCount                         = collData->cellCount;
             
             // Check if cell index is inside defined cell.
             if (idx < cellCount)
@@ -1393,7 +1393,7 @@ void func_8006BB50(s_CollisionState* state, s32 arg1) // 0x8006BB50
     }
 
     temp2 = state->charaState.radius - state->point.field_20.radiusCollDiffDist;
-    func_8006BCC4(&state->field_44, &state->point.ipdCollisionData->cellCheckIdxs[state->point.cellIdx], arg1, charaCollDistX, charaCollDistZ, temp2);
+    func_8006BCC4(&state->field_44, &state->point.ipdCollisionData->cellCheckIdxBuffer[state->point.cellIdx], arg1, charaCollDistX, charaCollDistZ, temp2);
 }
 
 q23_8 func_8006BC34(s_CollisionState* state)
@@ -1592,7 +1592,7 @@ void func_8006BF88(s_CollisionState* state, const SVECTOR3* splitVert) // 0x8006
         state->field_34 = 2;
         temp2               = state->charaPositionFrom.offset.vx + Q12_MULT(state->charaState.offset.vx, distAlpha);
         state->field_3A = Q12_TO_Q4(state->charaState.distance * distAlpha);
-        state->field_40 = &state->point.ipdCollisionData->cellCheckIdxs[state->point.cellIdx];
+        state->field_40 = &state->point.ipdCollisionData->cellCheckIdxBuffer[state->point.cellIdx];
 
         state->field_3C = temp2 - splitVert->vx;
         temp3               = state->charaPositionFrom.offset.vz + Q12_MULT(state->charaState.offset.vz, distAlpha);
@@ -1612,7 +1612,7 @@ void func_8006C0C8(s_CollisionState* state, q3_12 distAlpha, q7_8 arg2) // 0x800
     temp = ((state->point.cellSplitVertex1.vy - state->point.cellSplitVertex0.vy) * arg2) / state->point.field_6.vz;
     if (temp + state->point.cellSplitVertex0.vy < state->charaState.bottom)
     {
-        state->field_40 = &state->point.ipdCollisionData->cellCheckIdxs[state->point.cellIdx];
+        state->field_40 = &state->point.ipdCollisionData->cellCheckIdxBuffer[state->point.cellIdx];
         state->field_34 = 1;
         state->field_38 = distAlpha;
         state->field_3A = Q12_TO_Q4(state->charaState.distance * distAlpha);
@@ -1833,7 +1833,7 @@ void func_8006C45C(s_CollisionState* state) // 0x8006C45C
         state->field_34 = 1;
         temp                = state->charaPositionFrom.offset.vx + Q12_MULT(state->charaState.offset.vx, distAlpha);
         state->field_3A = Q12_TO_Q4(state->charaState.distance * distAlpha);
-        state->field_40 = &state->point.ipdCollisionData->cellCheckIdxs[state->point.cellIdx];
+        state->field_40 = &state->point.ipdCollisionData->cellCheckIdxBuffer[state->point.cellIdx];
         state->field_3C = temp - state->point.field_6.vx;
         temp2               = state->charaPositionFrom.offset.vz + Q12_MULT(state->charaState.offset.vz, distAlpha);
         state->field_3E = temp2 - state->point.field_6.vz;
@@ -1845,7 +1845,7 @@ void func_8006C794(s_CollisionState* state, s32 unkState, q23_8 dist) // 0x8006C
     if (state->charaState.bottom >= (state->point.field_6.vy + (dist - state->point.field_C.radiusOffset)))
     {
         func_8006BCC4(&state->field_44,
-                      &state->point.ipdCollisionData->cellCheckIdxs[state->point.cellIdx],
+                      &state->point.ipdCollisionData->cellCheckIdxBuffer[state->point.cellIdx],
                       unkState,
                       state->charaPositionFrom.offset.vx - state->point.field_6.vx,
                       state->charaPositionFrom.offset.vz - state->point.field_6.vz,
@@ -1926,7 +1926,7 @@ void func_8006CA18(s_CollisionState* state, s_IpdCollisionData* collData, s_IpdC
     }
 
     // Run through surfaces.
-    for (curSurfaceIdx = &collData->ptr_2C[startIdx]; curSurfaceIdx < &collData->ptr_2C[endIdx]; curSurfaceIdx++)
+    for (curSurfaceIdx = &collData->unkIdxs_2C[startIdx]; curSurfaceIdx < &collData->unkIdxs_2C[endIdx]; curSurfaceIdx++)
     {
         curSurface = &collData->cellSurfaces[*curSurfaceIdx];
 
