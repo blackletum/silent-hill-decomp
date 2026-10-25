@@ -38,20 +38,20 @@ typedef enum _FloorType
 /** @brief IPD collision cell surface split. */
 typedef struct _IpdCellSurface
 {
-    /* 0x0    */ q7_8 field_0;           // Relative X.
-    /* 0x2    */ q7_8 baseFloorHeight;   // Base floor height with slope unaccounted for?
-    /* 0x4    */ q7_8 field_4;           // Relative Z.
-    /* 0x6+0  */ u16  floorType     : 5; /** `e_FloorType` */
-    /* 0x6+5  */ u16  disableHeight : 3; /** `bool` */
-    /* 0x6+8  */ u16  field_6_8     : 3; // Causes special collision triggers to behave differently.
-                                         // The properties should be based upon a value set at
-                                         // `s_CollisionState::field_A0::s_0::field_8` and it shouldn't
-                                         // be bigger than 3.
-                                         // Side note: Maybe the bits number is incorrect as in reality
-                                         // it gives values up to 7 when it should have been `2` as it would
-                                         // only ever give a value up to 4, but some dev didn't paid attention
-                                         // and assigned 3 instead.
-    /* 0x6+11 */ u16  field_6_11    : 4; /** `bool` | Indicates the surface has a slope? */
+    /* 0x0    */ q7_8 field_0;            // Relative X.
+    /* 0x2    */ q7_8 baseFloorHeight;    // Base floor height with slope unaccounted for?
+    /* 0x4    */ q7_8 field_4;            // Relative Z.
+    /* 0x6+0  */ u16  floorType      : 5; /** `e_FloorType` */
+    /* 0x6+5  */ u16  disableHeight  : 3; /** `bool` */
+    /* 0x6+8  */ u16  field_6_8      : 3; // Causes special collision triggers to behave differently.
+                                          // The properties should be based upon a value set at
+                                          // `s_CollisionState::field_A0::s_0::field_8` and it shouldn't
+                                          // be bigger than 3.
+                                          // Side note: Maybe the bits number is incorrect as in reality
+                                          // it gives values up to 7 when it should have been `2` as it would
+                                          // only ever give a value up to 4, but some dev didn't paid attention
+                                          // and assigned 3 instead.
+    /* 0x6+11 */ u16  triggerFlagIdx : 4; /** `e_CollisionTriggerFlags` index. */
     /* 0x8    */ q7_8 tiltAngleX;
     /* 0xA    */ q7_8 tiltAngleZ;
 } s_IpdCellSurface;
@@ -85,11 +85,11 @@ typedef struct _IpdCellAttribs
 } s_IpdCellAttribs;
 STATIC_ASSERT_SIZEOF(s_IpdCellAttribs, 10);
 
-// TODO: Name might be wrong, maybe surface indices?
+// TODO: Wrong name.
 typedef struct _IpdCellRange
 {
-    /* 0x0 */ s16 idx_0; // Base index into `s_IpdCollisionData::unkIdxs_28`.
-    /* 0x2 */ s16 idx_2; // Another index into `s_IpdCollisionData::unkIdxs_28`.
+    /* 0x0 */ s16 unkCellIdx;    /** Index into `s_IpdCollisionData::unkCellIdxs`.  */
+    /* 0x2 */ s16 unkSurfaceIdx; /** Index into `s_IpdCollisionData::unkSurfaceIdxs`.  */
 } s_IpdCellRange;
 STATIC_ASSERT_SIZEOF(s_IpdCellRange, 4);
 
@@ -110,10 +110,10 @@ typedef struct _IpdCollisionData
     /* 0x1E   */ u8                cellCountX; // } Not cell count, but subchunk? Some kind of wide area of cells.
     /* 0x1F   */ u8                cellCountZ; // }
     /* 0x20   */ s_IpdCellRange*   cellRanges;
-    /* 0x24   */ u16               unkIdxsCount_28; // `field_24`/`field_26` defined in ipd2obj but haven't seen used yet.
-    /* 0x26   */ u16               unkIdxsCount_2C; // 
-    /* 0x28   */ u8*               unkIdxs_28;      // Data aligned 1:1 with `cells`. Array of indices into `cellCheckIdxBuffer` by `func_8006E53C`.
-    /* 0x2C   */ u8*               unkIdxs_2C;      // Surface indices?    
+    /* 0x24   */ u16               unkCellIdxCount;
+    /* 0x26   */ u16               unkSurfaceIdxCount;
+    /* 0x28   */ u8*               unkCellIdxs; // Data aligned 1:1 with `cells`. Array of indices into `cellCheckIdxBuffer` by `func_8006E53C`.
+    /* 0x2C   */ u8*               unkSurfaceIdxs;
     /* 0x30   */ u8                cellCheckCount;
     /* 0x31   */ s8                __pad_31[3];
     /* 0x34   */ u8                cellCheckIdxBuffer[256]; // Cell indices, unkown purpose. Contains `s_IpdCollisionData::cellCount` valid entries.

@@ -190,8 +190,8 @@ typedef struct _CollisionState
                      {
                          /* 0x0 */ u8                  closestXCellIdx;
                          /* 0x1 */ u8                  closestZCellIdx;
-                         /* 0x2 */ u8                  closeFarXCellIdxDiff;
-                         /* 0x3 */ u8                  closeFarZCellIdxDiff;
+                         /* 0x2 */ u8                  cellSpanX;
+                         /* 0x3 */ u8                  cellSpanZ;
                          /* 0x4 */ s_IpdCellRange*     cellRange;
                          /* 0x8 */ s_CollisionState_A8 field_8[4];
                      } s_0;

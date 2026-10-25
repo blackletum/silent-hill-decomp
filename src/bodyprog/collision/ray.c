@@ -425,32 +425,32 @@ void func_8006E490(s_func_8006E490* arg0, u32 flags, q19_12 posX, q19_12 posZ) /
 void func_8006E53C(s_RayState* state, s_IpdCellRange* cellRanges, s_IpdCollisionData* collData) // 0x8006E53C
 {
     s32               i;
-    s32               temp_v0;
+    s32               flag;
     s32               temp_v0_2;
     bool              hasSurface;
     bool              cond1;
     bool              cond2;
     s32               surfaceIdx0;
     s32               surfaceIdx1;
-    s32               idx;
+    s32               cellIdx;
     s_IpdCellAttribs* curCellAttribs;
     s_IpdCell*        curCell;
 
-    for (i = cellRanges[0].idx_0; i < cellRanges[1].idx_0; i++)
+    for (i = cellRanges[0].unkCellIdx; i < cellRanges[1].unkCellIdx; i++)
     {
-        idx = collData->unkIdxs_28[i];
+        cellIdx = collData->unkCellIdxs[i];
 
-        if (collData->cellCheckCount >= collData->cellCheckIdxBuffer[idx])
+        if (collData->cellCheckCount >= collData->cellCheckIdxBuffer[cellIdx])
         {
-            collData->cellCheckIdxBuffer[idx] = collData->cellCheckCount + 1;
+            collData->cellCheckIdxBuffer[cellIdx] = collData->cellCheckCount + 1;
 
-            if (idx < collData->cellCount)
+            if (cellIdx < collData->cellCount)
             {
-                curCell = &collData->cells[idx];
+                curCell = &collData->cells[cellIdx];
 
-                temp_v0 = (u16)state->field_4 >> ((curCell->field_0_14 * 4) | curCell->field_2_14);
-
-                if (temp_v0 & (1 << 0))
+                // TODO: `CHECK_FLAG_IDX` macro doesn't match.
+                flag = (u16)state->field_4 >> ((curCell->field_0_14 * 4) | curCell->field_2_14);
+                if (flag & (1 << 0))
                 {
                     surfaceIdx0 = curCell->surfaceIdx0;
                     surfaceIdx1 = curCell->surfaceIdx1;
@@ -493,7 +493,7 @@ void func_8006E53C(s_RayState* state, s_IpdCellRange* cellRanges, s_IpdCollision
             }
             else
             {
-                curCellAttribs = &collData->cellAttribs[idx - collData->cellCount];
+                curCellAttribs = &collData->cellAttribs[cellIdx - collData->cellCount];
                 temp_v0_2 = (u16)state->field_4 >> curCellAttribs->field_0_8; // Flag check.
 
                 if ((temp_v0_2 & (1 << 0)) &&

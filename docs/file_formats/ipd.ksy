@@ -312,16 +312,16 @@ types:
       - id: cell_ranges_offset
         type: u4
 
-      - id: unk_idxs_count_28
+      - id: unk_cell_idx_count
         type: u2
 
-      - id: unk_idxs_count_2c
+      - id: unk_sufrace_idx_count
         type: u2
 
-      - id: unk_idxs_offset_28
+      - id: unk_cell_idxs_offset
         type: u4
 
-      - id: unk_idxs_offset_2c
+      - id: unk_surface_idxs_offset
         type: u4
 
       - id: cell_check_count
@@ -339,6 +339,7 @@ types:
         type: svector_3
         repeat: expr
         repeat-expr: cell_split_vertex_count
+        doc: Q7.8.
 
       surfaces:
         pos: _root.header.collision_offset + cell_surfaces_offset
@@ -365,16 +366,16 @@ types:
         repeat-expr: (cell_count_x * cell_count_z) + 1
 
       unk_idxs_28:
-        pos: _root.header.collision_offset + unk_idxs_offset_28
+        pos: _root.header.collision_offset + unk_cell_idxs_offset
         type: u1
         repeat: expr
-        repeat-expr: unk_idxs_count_28
+        repeat-expr: unk_cell_idx_count
 
       unk_idxs_2c:
-        pos: _root.header.collision_offset + unk_idxs_offset_2c
+        pos: _root.header.collision_offset + unk_surface_idxs_offset
         type: u1
         repeat: expr
-        repeat-expr: unk_idxs_count_2c
+        repeat-expr: unk_sufrace_idx_count
 
   cell_surface:
     seq:
@@ -415,21 +416,21 @@ types:
 
   cell:
     seq:
-      - id: field_0_0
+      - id: position_x
         type: b14
         doc: Q7.8.
 
       - id: field_0_14
         type: b2
 
-      - id: field_2_0
+      - id: position_y
         type: b14
         doc: Q7.8.
 
       - id: field_2_14
         type: b2
 
-      - id: field_4
+      - id: position_z
         type: s2
         doc: Q7.8.
 
@@ -446,6 +447,16 @@ types:
         type: u1
 
       - size: 2
+
+    instances:
+      position_x_flt:
+        value: position_x / (1 << 8).as<f4>
+
+      position_y_flt:
+        value: position_y / (1 << 8).as<f4>
+
+      position_z_flt:
+        value: position_z / (1 << 8).as<f4>
 
   collision_18:
     seq:
@@ -473,11 +484,12 @@ types:
         doc: Q7.8.
 
   cell_range:
+    doc: TODO Wrong name.
     seq:
-      - id: field_0
+      - id: unk_cell_idx
         type: s2
 
-      - id: field_2
+      - id: unk_surface_idx
         type: s2
 
   material:

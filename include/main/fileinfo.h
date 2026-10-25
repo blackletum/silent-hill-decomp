@@ -181,7 +181,7 @@ void Fs_GetFileInfoName(char* outName, const s_FileInfo* const fileEntry);
  * encoded name will be stored.
  * @param[out] outName4567 Pointer to the integer where the second part of the
  * encoded name will be stored.
- * @param[in] srcName The file name string to encode.
+ * @param[in] srcName File name string to encode.
  */
 void Fs_EncodeFileName(s32* outName0123, s32* outName4567, const char* srcName);
 
@@ -190,8 +190,8 @@ void Fs_EncodeFileName(s32* outName0123, s32* outName4567, const char* srcName);
  * Takes an index in the file table and returns that file's size in bytes, rounded up to
  * CD sector size (2048 bytes).
  *
- * @param fileIdx The index of the file entry to look up.
- * @return The size of the specified file entry in bytes rounded up to CD sector boundary.
+ * @param fileIdx Index of the file entry to look up.
+ * @return Size of the specified file entry in bytes rounded up to CD sector boundary.
  */
 s32 Fs_GetFileSectorAlignedSize(s32 fileIdx);
 
@@ -200,13 +200,13 @@ s32 Fs_GetFileSectorAlignedSize(s32 fileIdx);
  * Starts a linear search from the file table index `startIdx`,
  * going forwards if `direction` is positive, or backwards if it's negative.
  * Returns the index of the first file it encounters whose `type` field is `fileType`,
- * or -1 if it reaches the end of the table without finding anything.
+ * or `NO_VALUE` if it reaches the end of the table without finding anything.
  *
- * @param fileType The file type to search for.
- * @param startIdx The table index from which to start the search.
- * @param dir The direction of the search: positive for incrementing,
+ * @param fileType File type to search for.
+ * @param startIdx Table index from which to start the search.
+ * @param dir Direction of the search: positive for incrementing,
  * negative for decrementing.
- * @return The index of the first matching file entry, or -1 if not found.
+ * @return Index of the first matching file entry, or `NO_VALUE` if not found.
  */
 s32 Fs_FindNextFileOfType(s32 fileType, s32 startIdx, s32 dir);
 
@@ -214,13 +214,13 @@ s32 Fs_FindNextFileOfType(s32 fileType, s32 startIdx, s32 dir);
  *
  * Starts a linear search from the file table index `startIdx` and moves forward.
  * Returns the index of the first file it encounters whose `type` field is `fileType`
- * and whose name is the same as `name`, or -1 if it reaches the end of the table
+ * and whose name is the same as `name`, or `NO_VALUE` if it reaches the end of the table
  * without finding anything.
  *
- * @param name The file name to search for.
- * @param fileType The file type ID to match.
- * @param startIdx The offset from which to start the search.
- * @return The index of the matching file entry, or -1 if not found.
+ * @param name File name to search for.
+ * @param fileType File type ID to match.
+ * @param startIdx Offset from which to start the search.
+ * @return Index of the matching file entry, or `NO_VALUE` if not found.
  */
 s32 Fs_FindNextFile(const char* name, s32 fileType, s32 startIdx);
 
