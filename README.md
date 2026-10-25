@@ -12,9 +12,9 @@ An in-progress decompilation of <i>Silent Hill</i> on the PlayStation 1.
 **PORT CONCERN** — This project itself **is not**, and **will not**, produce a port, to PC or any other platform. This is a **decompilation** of the original PlayStation 1 game code which can be compiled back into a binary identical to the original. This codebase is **not** port-ready due missing documentation and constant reorganization. This project is led by volunteered hand, so there is no rush.
 
 > [!IMPORTANT]
-**AI CONCERN** — The decompilation project is human-driven. **No AI-generated code has knowingly been added into the decompilation**, instead being manually worked out by several contributors over the past few years.
-(At most some throwaway decompilation-helper scripts were made with AI, but the actual game code is being studied/reversed by humans).  
-Forks of the project may use AI for porting/fixes/adding features, but this decompilation remains human-led.
+**AI CONCERN** — This project is human-driven. **No AI-generated code has knowingly been added into the decompilation**, instead being manually worked out by several contributors over the past few years.
+At most some throwaway decompilation-helper scripts were made with AI, but the actual game code is being studied and reverse-engineered by humans.
+While forks may use AI for ports/fixes/adding features, **they are NOT endorsed whatsoever**. 
 
 ## Progress
 
@@ -408,4 +408,4 @@ Progress bars powered by <a href="https://decomp.dev">decomp.dev</a>
 ## Contributing
 Contributions are welcome! Feel free to open a pull request. To help familiarize yourself with the setup and decompilation workflow for *Silent Hill*, refer to our [Wiki Page](/../../wiki/Home).
 
-You can also reach out to us by opening an issue or joining the `#silent-hill` channel on the [PS1/PS2 Decompilation](https://discord.gg/VwCPdfbxgm) Discord server.
+You can also reach out to us by opening an issue or joining the `#silent-hill` channel on the [PS1/PS2 Re-Arc (Reverse Engineering, Archaeology, and Reconstruction of Code)](https://discord.gg/SCY699rts) Discord server.
