@@ -2188,6 +2188,34 @@ _spu_pitch2note                              = 0x8009DC78; // type:func
 //---------------------------------------------------------------
 SpuGetVoiceAttr                              = 0x8009DDA8; // type:func
 
+//------------------------------------------------------------------
+//--- PA: 0x079638   VA: 0x8009E198   subsegment: c, libkpad/libkpad
+//------------------------------------------------------------------
+KPad_WorkInit                                = 0x8009E198; // type:func
+KPad_VibrationResume                         = 0x8009E230; // type:func
+KPad_VibrationPause                          = 0x8009E268; // type:func
+KPad_VibrationEnable                         = 0x8009E2A0; // type:func
+KPad_VibrationDisable                        = 0x8009E2D8; // type:func
+KPad_ChannelsInit                            = 0x8009E310; // type:func
+KPad_Handler_NoPad                           = 0x8009E3B0; // type:func
+KPad_Handler_Ctp1                            = 0x8009E438; // type:func
+KPad_HandlerList_Init                        = 0x8009E4F8; // type:func
+KPad_HandlerList_Find                        = 0x8009E520; // type:func
+KPad_DeviceDetect                            = 0x8009E550; // type:func
+KPad_ActuatorSetup                           = 0x8009E61C; // type:func
+KPad_ActuatorDataUpdate                      = 0x8009E718; // type:func
+KPad_HandlerList_AddCtp1SingleMotor          = 0x8009E7D8; // type:func
+KPad_Handler_Ctp1SingleMotor                 = 0x8009E82C; // type:func
+KPad_HandlerList_AddDualShock                = 0x8009E97C; // type:func
+KPad_Handler_DualShock                       = 0x8009E9D0; // type:func
+KPad_EffectListInit                          = 0x8009EBB8; // type:func
+KPad_EffectRemove                            = 0x8009EC1C; // type:func
+KPad_EffectEvictLowest                       = 0x8009EC64; // type:func
+KPad_EffectAdd                               = 0x8009ECCC; // type:func
+KPad_EffectListHeadGet                       = 0x8009ED74; // type:func
+KPad_EffectNextGet                           = 0x8009ED7C; // type:func
+KPad_EffectPrevGet                           = 0x8009ED90; // type:func
+
 //----------------------------------------------------------------
 //--- PA: 0x07A244   VA: 0x8009EDA4   subsegment: c, libsd/smf_snd
 //----------------------------------------------------------------
@@ -2954,6 +2982,15 @@ _spu_zerobuf                                 = 0x800B0ECC;
 _spu_NTable                                  = 0x800B12CC;
 _spu_FTable                                  = 0x800B12E4;
 
+//----------------------------------------------------------------------
+//--- PA: 0x08C88C   VA: 0x800B13EC   subsegment: .data, libkpad/libkpad
+//----------------------------------------------------------------------
+g_KPad_HandlerNoPad                          = 0x800B13EC; // type:KPad_Handler size:0x10
+g_KPad_HandlerStandardPad                    = 0x800B13FC; // type:KPad_Handler size:0x10
+g_KPad_HandlerCtp1                           = 0x800B140C; // type:KPad_Handler size:0x10
+g_KPad_HandlerCtp1SingleMotor                = 0x800B141C; // type:KPad_Handler size:0x10
+g_KPad_HandlerDualShock                      = 0x800B142C; // type:KPad_Handler size:0x10
+
 //---------------------------------------------------------------------
 //--- PA: 0x08C8DC   VA: 0x800B143C   subsegment: .data, libsd/smf_main
 //---------------------------------------------------------------------
@@ -2982,6 +3019,11 @@ smf_file_no                                  = 0x800B25BC;
 print_start                                  = 0x800B25C0;
 eof_char                                     = 0x800B25C4; // type:s8 size:3 static?
 chantype                                     = 0x800B25C8; // type:s32 static for readtrack?
+
+//-----------------------------------------------------------------------
+//--- PA: 0x08DAB0   VA: 0x800B2610   subsegment: .sdata, libkpad/libkpad
+//-----------------------------------------------------------------------
+g_KPad_DualShockAlignData                    = 0x800B2610; // size:0x6
 
 
 

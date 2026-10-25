@@ -17,16 +17,26 @@ typedef enum _PadTerminalType
     PadTerminalType_MultitapAdapter     = 8
 } e_PadTerminalType;
 
+/** @brief Pad kinds used by the `s_KPad_Handler` functions. */
+typedef enum _KPadDeviceType
+{
+    KPadDeviceType_None            = 0,
+    KPadDeviceType_DualShock       = 1, /** Expanded protocol pad with a small on/off and a large variable motor. */
+    KPadDeviceType_Ctp1SingleMotor = 2, /** Non-expanded Sony pad, driven like the one motor SCPH-1180. */
+    KPadDeviceType_StandardPad     = 3,
+    KPadDeviceType_Other           = 4  /** Any other non-expanded device, e.g. mouse, NeGcon or light gun. */
+} e_KPadDeviceType;
+
 /** @brief Describes one pad actuator. Unread fields may include what `PadInfoAct` reports. */
 typedef struct
 {
-    u32 bits_0_0        : 8;
-    u32 bits_0_8        : 1;
-    u32 bits_0_9        : 7; // Possibly current draw in 10 mA units.
-    u32 dataOffset_0_16 : 3; // First byte in `s_KPadWork::actuatorData_4` driving this actuator.
-    u32 bits_0_19       : 5; // Always 1, possibly the actuator function (vibration).
-    u32 dataSize_0_24   : 3; // Data bytes, 0 for an on/off motor that takes a single byte.
-    u32 bits_0_27       : 5; // 2 for on/off motors, 1 for variable speed.
+    u32 bits_0_0         : 8;
+    u32 bits_0_8         : 1;
+    u32 currentDrain_0_9 : 7; // libpad current drain units, 10 for an on/off motor and 20 for a variable one.
+    u32 dataOffset_0_16  : 3; // First byte in `s_KPadWork::actuatorData_4` driving this actuator.
+    u32 bits_0_19        : 5; // Always 1, possibly the actuator function (vibration).
+    u32 dataSize_0_24    : 3; // Data bytes, 0 for an on/off motor that takes a single byte.
+    u32 bits_0_27        : 5; // 2 for on/off motors, 1 for variable speed.
 } s_KPad_ActuatorInfo;
 STATIC_ASSERT_SIZEOF(s_KPad_ActuatorInfo, 4);
 
@@ -76,7 +86,7 @@ typedef struct
     u32 actCount_0_19    : 3; // Number of actuator bytes passed to `PadSetAct`.
     u32 isAlignDone_0_22 : 1; // Set once `PadSetActAlign` succeeds.
     u32 isActSet_0_23    : 1; // Set once `PadSetAct` was called, cleared to resend.
-    u32 deviceType_0_24  : 8; // `s_KPad_Handler::deviceType_4` of the handler for the connected pad.
+    u32 deviceType_0_24  : 8; // `e_KPadDeviceType` of the connected pad.
 } s_KPad_Status;
 STATIC_ASSERT_SIZEOF(s_KPad_Status, 4);
 
@@ -109,60 +119,62 @@ STATIC_ASSERT_SIZEOF(s_KPadWork, 32);
 typedef struct _KPad_Handler
 {
     struct _KPad_Handler* next_0;
-    u8                    deviceType_4;
-    s8                    pad_5[3];
+    u8                    deviceType_4; // `e_KPadDeviceType` this handler detects.
+    u8                    isDualMotor_5; // Assumed name, never read/written, only set to 1 for DualShock handler.
+    u8                    numMotors_6;   // Assumed name, never read/written, value set matches channel count `func_C` handles.
+    // 1 byte padding.
     s32                   alignData_8; // Data passed to `PadSetActAlign`.
-    s32                   (*func_C)(s_KPadWork* ptr, s32 padState, s32 padInfoCurId, s32 padInfoCurExId);
+    s32                   (*func_C)(s_KPadWork* work, s32 padState, s32 padInfoCurId, s32 padInfoCurExId);
 } s_KPad_Handler;
 STATIC_ASSERT_SIZEOF(s_KPad_Handler, 16);
 
-bool func_8009E198(s_KPadWork* arg0, u32 port);
+bool KPad_WorkInit(s_KPadWork* work, u32 port);
 
-s32 func_8009E230(s_KPadWork* arg0);
+s32 KPad_VibrationResume(s_KPadWork* work);
 
-s32 func_8009E268(s_KPadWork* arg0);
+s32 KPad_VibrationPause(s_KPadWork* work);
 
-s32 func_8009E2A0(s_KPadWork* arg0);
+s32 KPad_VibrationEnable(s_KPadWork* work);
 
-s32 func_8009E2D8(s_KPadWork* arg0);
+s32 KPad_VibrationDisable(s_KPadWork* work);
 
-s32 func_8009E310(s_KPadWork* arg0, s_KPad_Channel* arg1, s32 arg2);
+s32 KPad_ChannelsInit(s_KPadWork* work, s_KPad_Channel* arg1, s32 arg2);
 
-bool func_8009E3B0(s_KPadWork* arg0, s32 padState, s32 padInfoCurId, s32 padInfoCurExId);
+bool KPad_Handler_NoPad(s_KPadWork* work, s32 padState, s32 padInfoCurId, s32 padInfoCurExId);
 
-bool func_8009E438(s_KPadWork* arg0, s32 padState, s32 padInfoCurId, s32 padInfoCurExId);
+bool KPad_Handler_Ctp1(s_KPadWork* work, s32 padState, s32 padInfoCurId, s32 padInfoCurExId);
 
-s_KPad_Handler* func_8009E4F8(void);
+s_KPad_Handler* KPad_HandlerList_Init(void);
 
-s_KPad_Handler* func_8009E520(s_KPad_Handler* node, s32 key);
+s_KPad_Handler* KPad_HandlerList_Find(s_KPad_Handler* node, s32 key);
 
-s32 func_8009E550(s_KPadWork* arg0, s_KPad_Handler* node);
+s32 KPad_DeviceDetect(s_KPadWork* work, s_KPad_Handler* node);
 
-bool func_8009E61C(s_KPadWork* arg0, s32 state, s_KPad_Handler* head);
+bool KPad_ActuatorSetup(s_KPadWork* work, s32 padState, s_KPad_Handler* head);
 
-bool func_8009E718(s_KPadWork* arg0);
+bool KPad_ActuatorDataUpdate(s_KPadWork* work);
 
-bool func_8009E7D8(s_KPad_Handler* node);
+bool KPad_HandlerList_AddCtp1SingleMotor(s_KPad_Handler* node);
 
-bool func_8009E82C(s_KPadWork*, s32, s32, s32);
+bool KPad_Handler_Ctp1SingleMotor(s_KPadWork* work, s32 padState, s32 padInfoCurId, s32 padInfoCurExId);
 
-bool func_8009E97C(s_KPad_Handler* node);
+bool KPad_HandlerList_AddDualShock(s_KPad_Handler* node);
 
-bool func_8009E9D0(s_KPadWork* work, s32 padState, s_KPad_Channel* arg2, s32 arg3);
+bool KPad_Handler_DualShock(s_KPadWork* work, s32 padState, s32 padInfoCurId, s32 padInfoCurExId);
 
-bool func_8009EBB8(s_KPadWork* list, s_KPad_Effect* node, s32 count);
+bool KPad_EffectListInit(s_KPadWork* work, s_KPad_Effect* node, s32 count);
 
-bool func_8009EC1C(s_KPadWork* list, s_KPad_Effect* node);
+bool KPad_EffectRemove(s_KPadWork* work, s_KPad_Effect* node);
 
-/** @brief Ensures a node in a linked list is sorted based on its key value. */
-bool func_8009EC64(s_KPadWork* work, s16 val);
+/** @brief @unused Frees the lowest priority effect if the free list is empty and `priority` is not below it. */
+bool KPad_EffectEvictLowest(s_KPadWork* work, s16 priority);
 
-s_KPad_Effect* func_8009ECCC(s_KPadWork* arg0, s32 key);
+s_KPad_Effect* KPad_EffectAdd(s_KPadWork* work, s32 key);
 
-s_KPad_Effect* func_8009ED74(s_KPadWork* list);
+s_KPad_Effect* KPad_EffectListHeadGet(s_KPadWork* work);
 
-s_KPad_Effect* func_8009ED7C(s_KPad_Effect* node);
+s_KPad_Effect* KPad_EffectNextGet(s_KPad_Effect* node);
 
-s_KPad_Effect* func_8009ED90(s_KPad_Effect* node);
+s_KPad_Effect* KPad_EffectPrevGet(s_KPad_Effect* node);
 
 #endif

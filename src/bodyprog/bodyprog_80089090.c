@@ -96,14 +96,14 @@ void func_80089090(s32 arg0) // 0x80089090
 
 void func_800890B8(void) // 0x800890B8
 {
-    func_8009E198(&g_SysWork.kpad_2514, 0);
-    func_8009E310(&g_SysWork.kpad_2514, g_SysWork.kpadChannels_2534, ARRAY_SIZE(g_SysWork.kpadChannels_2534));
-    func_8009EBB8(&g_SysWork.kpad_2514, g_SysWork.kpadEffects_2544, ARRAY_SIZE(g_SysWork.kpadEffects_2544));
+    KPad_WorkInit(&g_SysWork.kpad_2514, 0);
+    KPad_ChannelsInit(&g_SysWork.kpad_2514, g_SysWork.kpadChannels_2534, ARRAY_SIZE(g_SysWork.kpadChannels_2534));
+    KPad_EffectListInit(&g_SysWork.kpad_2514, g_SysWork.kpadEffects_2544, ARRAY_SIZE(g_SysWork.kpadEffects_2544));
 
-    g_SysWork.kpadHandlers_2510 = func_8009E4F8();
+    g_SysWork.kpadHandlers_2510 = KPad_HandlerList_Init();
 
-    func_8009E7D8(g_SysWork.kpadHandlers_2510);
-    func_8009E97C(g_SysWork.kpadHandlers_2510);
+    KPad_HandlerList_AddCtp1SingleMotor(g_SysWork.kpadHandlers_2510);
+    KPad_HandlerList_AddDualShock(g_SysWork.kpadHandlers_2510);
 }
 
 s32 func_80089128(void) // 0x80089128
@@ -128,18 +128,18 @@ s32 func_80089128(void) // 0x80089128
 
     if (g_GameWork.config.vibrationEnabled)
     {
-        func_8009E2A0(var_s2);
+        KPad_VibrationEnable(var_s2);
         var_s2->status_0.strength_0_8 = 128; // Full strength.
     }
     else
     {
-        func_8009E2D8(var_s2);
+        KPad_VibrationDisable(var_s2);
         var_s2->status_0.strength_0_8 = 0;
     }
 
     if (PadChkVsync())
     {
-        func_8009E61C(var_s2, func_8009E550(var_s2, temp_s0), temp_s0);
+        KPad_ActuatorSetup(var_s2, KPad_DeviceDetect(var_s2, temp_s0), temp_s0);
     }
 
     var_s5 = 0;
@@ -147,8 +147,8 @@ s32 func_80089128(void) // 0x80089128
     var_s2->channels_C[0].strength_4 = 0;
     var_s2->channels_C[1].strength_4 = 0;
 
-    temp_v0 = func_8009ED74(var_s2);
-    var_s0  = func_8009ED7C(temp_v0);
+    temp_v0 = KPad_EffectListHeadGet(var_s2);
+    var_s0  = KPad_EffectNextGet(temp_v0);
 
     if (!var_s2->status_0.isPaused_0_17)
     {
@@ -163,17 +163,17 @@ s32 func_80089128(void) // 0x80089128
 
     for (; var_s0 != temp_v0; var_s5++)
     {
-        temp_s1 = func_8009ED7C(var_s0);
+        temp_s1 = KPad_EffectNextGet(var_s0);
 
         if (!func_80089644(var_s2, var_s0, var_s6 & 0xFFFF, var_s3))
         {
-            func_8009EC1C(var_s2, var_s0);
+            KPad_EffectRemove(var_s2, var_s0);
         }
 
         var_s0 = temp_s1;
     }
 
-    func_8009E718(var_s2);
+    KPad_ActuatorDataUpdate(var_s2);
 
     return var_s5;
 }
@@ -368,19 +368,19 @@ bool func_8008973C(s_KPadWork* arg0, s_KPad_Effect* arg1, s_VibScriptStep* ptr, 
     switch (ptr->data_4.command.command_5)
     {
         case VibScriptCommand_Enable:
-            func_8009E2A0(arg0);
+            KPad_VibrationEnable(arg0);
             break;
 
         case VibScriptCommand_Disable:
-            func_8009E2D8(arg0);
+            KPad_VibrationDisable(arg0);
             break;
 
         case VibScriptCommand_Pause:
-            func_8009E268(arg0);
+            KPad_VibrationPause(arg0);
             break;
 
         case VibScriptCommand_Resume:
-            func_8009E230(arg0);
+            KPad_VibrationResume(arg0);
             break;
 
         case VibScriptCommand_ClearAll:
@@ -420,7 +420,7 @@ void func_80089840(s_KPadWork* arg0) // 0x80089840
     while (curr != head)
     {
         next = curr->links_0.next_0;
-        func_8009EC1C(arg0, curr);
+        KPad_EffectRemove(arg0, curr);
         curr = next;
     }
 }
@@ -445,7 +445,7 @@ void func_8008989C(s_KPadWork* arg0, u16 arg1, s32 (*arg2)(u16, s32)) // 0x80089
 
         if (arg2(curr->mask_1E, arg1) != 0)
         {
-            func_8009EC1C(arg0, curr);
+            KPad_EffectRemove(arg0, curr);
         }
 
         curr = next;
@@ -472,7 +472,7 @@ void func_8008992C(s_KPadWork* arg0, u16 arg1, s32 (*arg2)(u16, s32)) // 0x80089
 
         if (arg2(curr->tag_1C, arg1) != 0)
         {
-            func_8009EC1C(arg0, curr);
+            KPad_EffectRemove(arg0, curr);
         }
 
         curr = next;
@@ -499,7 +499,7 @@ void func_800899BC(s_KPadWork* arg0, s32 arg1) // 0x800899BC
 
         if (curr->id_C == arg1)
         {
-            func_8009EC1C(arg0, curr);
+            KPad_EffectRemove(arg0, curr);
         }
 
         curr = next;
@@ -562,7 +562,7 @@ bool func_80089A30(s_KPadWork* arg0, s_KPad_Effect* arg1, s_VibScriptStep* arg2,
                 next = current->links_0.next_0;
                 if ((ptr == NULL || current != ptr) && current->id_C == temp_s3)
                 {
-                    func_8009EC1C(arg0, current);
+                    KPad_EffectRemove(arg0, current);
                 }
                 current = next;
             }
@@ -571,7 +571,7 @@ bool func_80089A30(s_KPadWork* arg0, s_KPad_Effect* arg1, s_VibScriptStep* arg2,
 
     if (ptr == NULL)
     {
-        ptr = func_8009ECCC(arg0, arg2->data_4.start.priority_C);
+        ptr = KPad_EffectAdd(arg0, arg2->data_4.start.priority_C);
         if (ptr == NULL)
         {
             return false;
@@ -610,7 +610,7 @@ bool func_80089BB8(s_KPadWork* arg0, s_KPad_Effect* arg1, s_VibScriptStep* arg2,
     if (arg1 == NULL)
     {
         var_s1 = arg2->data_4.chain.priority_C;
-        arg1   = func_8009ECCC(arg0, var_s1);
+        arg1   = KPad_EffectAdd(arg0, var_s1);
         if (arg1 == NULL)
         {
             return false;
@@ -638,7 +638,7 @@ bool func_80089BB8(s_KPadWork* arg0, s_KPad_Effect* arg1, s_VibScriptStep* arg2,
         arg1->tag_1C = arg2->data_4.chain.tag_6;
     }
 
-    temp_v0 = func_8009ECCC(arg0, var_s1);
+    temp_v0 = KPad_EffectAdd(arg0, var_s1);
     if (temp_v0 != NULL)
     {
         temp_a0                                 = temp_v0->links_0.next_0;
@@ -682,7 +682,7 @@ bool func_80089D0C(s_KPadWork* arg0, s_KPad_Effect* arg1, s_VibScriptStep* arg2,
         }
         else
         {
-            arg1 = func_8009ECCC(arg0, arg2->data_4.pulse.priority_C);
+            arg1 = KPad_EffectAdd(arg0, arg2->data_4.pulse.priority_C);
             if (arg1 != NULL)
             {
                 arg1->step_10    = arg2;

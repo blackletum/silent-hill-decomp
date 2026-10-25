@@ -2484,30 +2484,30 @@ SpuGetVoiceAttr                              = 0x800A0144; // type:func
 //------------------------------------------------------------------
 //--- PA: 0x07B9D4   VA: 0x800A0534   subsegment: c, libkpad/libkpad
 //------------------------------------------------------------------
-func_8009E198                                = 0x800A0534; // type:func
-func_8009E230                                = 0x800A05CC; // type:func
-func_8009E268                                = 0x800A0604; // type:func
-func_8009E2A0                                = 0x800A063C; // type:func
-func_8009E2D8                                = 0x800A0674; // type:func
-func_8009E310                                = 0x800A06AC; // type:func
-func_8009E3B0                                = 0x800A074C; // type:func
-func_8009E438                                = 0x800A07D4; // type:func
-func_8009E4F8                                = 0x800A0894; // type:func
-func_8009E520                                = 0x800A08BC; // type:func
-func_8009E550                                = 0x800A08EC; // type:func
-func_8009E61C                                = 0x800A09B8; // type:func
-func_8009E718                                = 0x800A0AB4; // type:func
-func_8009E7D8                                = 0x800A0B74; // type:func
-func_8009E82C                                = 0x800A0BC8; // type:func
-func_8009E97C                                = 0x800A0D18; // type:func
-func_8009E9D0                                = 0x800A0D6C; // type:func
-func_8009EBB8                                = 0x800A0F54; // type:func
-func_8009EC1C                                = 0x800A0FB8; // type:func
-func_8009EC64                                = 0x800A1000; // type:func
-func_8009ECCC                                = 0x800A1068; // type:func
-func_8009ED74                                = 0x800A1110; // type:func
-func_8009ED7C                                = 0x800A1118; // type:func
-func_8009ED90                                = 0x800A112C; // type:func
+KPad_WorkInit                                = 0x800A0534; // type:func
+KPad_VibrationResume                         = 0x800A05CC; // type:func
+KPad_VibrationPause                          = 0x800A0604; // type:func
+KPad_VibrationEnable                         = 0x800A063C; // type:func
+KPad_VibrationDisable                        = 0x800A0674; // type:func
+KPad_ChannelsInit                            = 0x800A06AC; // type:func
+KPad_Handler_NoPad                           = 0x800A074C; // type:func
+KPad_Handler_Ctp1                            = 0x800A07D4; // type:func
+KPad_HandlerList_Init                        = 0x800A0894; // type:func
+KPad_HandlerList_Find                        = 0x800A08BC; // type:func
+KPad_DeviceDetect                            = 0x800A08EC; // type:func
+KPad_ActuatorSetup                           = 0x800A09B8; // type:func
+KPad_ActuatorDataUpdate                      = 0x800A0AB4; // type:func
+KPad_HandlerList_AddCtp1SingleMotor          = 0x800A0B74; // type:func
+KPad_Handler_Ctp1SingleMotor                 = 0x800A0BC8; // type:func
+KPad_HandlerList_AddDualShock                = 0x800A0D18; // type:func
+KPad_Handler_DualShock                       = 0x800A0D6C; // type:func
+KPad_EffectListInit                          = 0x800A0F54; // type:func
+KPad_EffectRemove                            = 0x800A0FB8; // type:func
+KPad_EffectEvictLowest                       = 0x800A1000; // type:func
+KPad_EffectAdd                               = 0x800A1068; // type:func
+KPad_EffectListHeadGet                       = 0x800A1110; // type:func
+KPad_EffectNextGet                           = 0x800A1118; // type:func
+KPad_EffectPrevGet                           = 0x800A112C; // type:func
 
 //----------------------------------------------------------------
 //--- PA: 0x07C5E0   VA: 0x800A1140   subsegment: c, libsd/smf_snd
@@ -3307,11 +3307,11 @@ D_800B13E2                                   = 0x800B3912;
 //----------------------------------------------------------------------
 //--- PA: 0x08EDBC   VA: 0x800B391C   subsegment: .data, libkpad/libkpad
 //----------------------------------------------------------------------
-D_800B13EC                                   = 0x800B391C;
-D_800B13FC                                   = 0x800B392C;
-D_800B140C                                   = 0x800B393C;
-D_800B141C                                   = 0x800B394C;
-D_800B142C                                   = 0x800B395C;
+g_KPad_HandlerNoPad                          = 0x800B391C;
+g_KPad_HandlerStandardPad                    = 0x800B392C;
+g_KPad_HandlerCtp1                           = 0x800B393C;
+g_KPad_HandlerCtp1SingleMotor                = 0x800B394C;
+g_KPad_HandlerDualShock                      = 0x800B395C;
 
 //---------------------------------------------------------------------
 //--- PA: 0x08EE0C   VA: 0x800B396C   subsegment: .data, libsd/smf_main
@@ -3347,7 +3347,7 @@ chantype                                     = 0x800B4AF8; // type:s32 static fo
 //-----------------------------------------------------------------------
 //--- PA: 0x08FFE0   VA: 0x800B4B40   subsegment: .sdata, libkpad/libkpad
 //-----------------------------------------------------------------------
-D_800B2610                                   = 0x800B4B40;
+g_KPad_DualShockAlignData                    = 0x800B4B40;
 
 
 

@@ -7,66 +7,86 @@
 
 #include "bodyprog/math/math.h"
 
-// Data passed to `PadSetActAlign`
-u8 D_800B2610[6] = { 0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFF }; 
+/** KPad library (assumed name), code used by SH1 to handle different kinds of vibration/rumble supported PS1 pads.
+ * Unlike SH1's GCC 2.8.1 this was compiled with GCC 2.7.2. Likely built separate to SH1 and included as a library.
+ *
+ * Library is initialized with `KPad_WorkInit` which zeroes the passed `s_KPadWork` pointer.
+ * `KPad_ChannelsInit` and `KPad_EffectListInit` are called afterward with pointers for channel/effect data to be zeroed.
+ * Lastly `KPad_HandlerList_Init` is called which links some basic controller handlers into the handler list:
+ * - g_KPad_HandlerNoPad
+ * - g_KPad_HandlerStandardPad
+ * - g_KPad_HandlerCtp1
+ *
+ * After initialization, games can then optionally link in support for either single-motor controllers (DualAnalog) or dual-motor (DualShock), or both.
+ * via `KPad_HandlerList_AddCtp1SingleMotor` and `KPad_HandlerList_AddDualShock`, which links in the following handlers:
+ * - g_KPad_HandlerCtp1SingleMotor
+ * - g_KPad_HandlerDualShock
+ *
+ * Handler list works by `KPad_DeviceDetect` passing the pad through each entry in the list, until a handler decides it's a pad that it should handle.
+ * The handler can then pass actuator data to the controller using the right protocol, and returns true to prevent later handlers from running on the pad.
+ * Optional handlers above get installed before the regular handlers, so StandardPad/Ctp1 handlers would only execute if both DualShock/SingleMotor handlers refused it.
+ *
+ * In SH1, the order of the handlers should end up as
+ * - g_KPad_HandlerNoPad
+ * - g_KPad_HandlerDualShock
+ * - g_KPad_HandlerCtp1SingleMotor
+ * - g_KPad_HandlerStandardPad
+ * - g_KPad_HandlerCtp1
+ *
+ * TODO: Describe more of the effect list side, add function @briefs.
+ */
 
-// TODO: Could be array?
-s_KPad_Handler D_800B13EC = {
-    .next_0       = NULL,
-    .deviceType_4 = 0,
-    .pad_5        = { 0, 0, 0 },
-    .alignData_8  = 0,
-    .func_C       = func_8009E3B0, // Handles `PadStateDiscon` / `PadStateFindPad`
+// Data passed to `PadSetActAlign`
+u8 g_KPad_DualShockAlignData[6] = { 0x00, 0x01, 0xFF, 0xFF, 0xFF, 0xFF };
+
+s_KPad_Handler g_KPad_HandlerNoPad = {
+    .deviceType_4 = KPadDeviceType_None,
+    .func_C       = KPad_Handler_NoPad, // Handles `PadStateDiscon` / `PadStateFindPad`
 };
 
-s_KPad_Handler D_800B13FC = {
-    .next_0       = NULL,
-    .deviceType_4 = 3,
-    .pad_5        = { 0, 0, 0 },
-    .alignData_8  = 0,
+// Never claims a pad itself, `KPad_Handler_Ctp1` sets this type for digital/analog pads that no motor handler took.
+// Entry only gives `KPad_HandlerList_Find` a match for that type, no align data so `KPad_ActuatorSetup` skips alignment.
+s_KPad_Handler g_KPad_HandlerStandardPad = {
+    .deviceType_4 = KPadDeviceType_StandardPad,
     .func_C       = NULL,
 };
 
-s_KPad_Handler D_800B140C = {
-    .next_0       = NULL,
-    .deviceType_4 = 4,
-    .pad_5        = { 0, 0, 0 },
-    .alignData_8  = 0,
-    .func_C       = func_8009E438, // Handles `PadStateFindCTP1`
+s_KPad_Handler g_KPad_HandlerCtp1 = {
+    .deviceType_4 = KPadDeviceType_Other,
+    .func_C       = KPad_Handler_Ctp1, // Handles `PadStateFindCTP1`
 };
 
-s_KPad_Handler D_800B141C = {
-    .next_0       = NULL,
-    .deviceType_4 = 2,
-    .pad_5        = { 0, 1, 0 },
-    .alignData_8  = 0,
-    .func_C       = func_8009E82C,
+s_KPad_Handler g_KPad_HandlerCtp1SingleMotor = {
+    .deviceType_4  = KPadDeviceType_Ctp1SingleMotor,
+    .isDualMotor_5 = 0,
+    .numMotors_6   = 1,
+    .func_C        = KPad_Handler_Ctp1SingleMotor,
 };
 
-s_KPad_Handler D_800B142C = {
-    .next_0       = NULL,
-    .deviceType_4 = 1,
-    .pad_5        = { 1, 2, 0 },
-    .alignData_8  = D_800B2610,
-    .func_C       = func_8009E9D0,
+s_KPad_Handler g_KPad_HandlerDualShock = {
+    .deviceType_4  = KPadDeviceType_DualShock,
+    .isDualMotor_5 = 1,
+    .numMotors_6   = 2,
+    .alignData_8   = g_KPad_DualShockAlignData,
+    .func_C        = KPad_Handler_DualShock,
 };
 
-bool func_8009E198(s_KPadWork* arg0, u32 port) // 0x8009E198
+bool KPad_WorkInit(s_KPadWork* work, u32 port) // 0x8009E198
 {
     s_KPad_Status status;
     s32           ret;
     const s32     strength = 0x80;
 
-    ret = arg0 != NULL;
+    ret = work != NULL;
     if (ret)
     {
         s16 result = ret;
         port      &= 0x13;
 
-        arg0->actuatorData_4        = 0;
-        arg0->channelInfo_8         = (s_KPad_ChannelInfo){ 0 };
-        arg0->channels_C            = NULL;
-        arg0->freeEffects_10.next_0 = NULL;
+        work->actuatorData_4        = 0;
+        work->channelInfo_8         = (s_KPad_ChannelInfo){ 0 };
+        work->channels_C            = NULL;
+        work->freeEffects_10.next_0 = NULL;
 
         status = (s_KPad_Status){
             .port_0_0         = 0,
@@ -77,13 +97,13 @@ bool func_8009E198(s_KPadWork* arg0, u32 port) // 0x8009E198
             .actCount_0_19    = 0,
             .isAlignDone_0_22 = 0,
             .isActSet_0_23    = 0,
-            .deviceType_0_24  = 0,
+            .deviceType_0_24  = KPadDeviceType_None,
         };
 
         ret             = port;
         status.port_0_0 = ret;
 
-        arg0->status_0 = status;
+        work->status_0 = status;
 
         result = (u8)result;
         return result; // @hack This is close to the pattern used in other functions below, 
@@ -93,12 +113,12 @@ bool func_8009E198(s_KPadWork* arg0, u32 port) // 0x8009E198
     return ret;
 }
 
-s32 func_8009E230(s_KPadWork* arg0) // 0x8009E230
+s32 KPad_VibrationResume(s_KPadWork* work) // 0x8009E230
 {
     s_KPad_Status status;
     s32           ret;
 
-    status = arg0->status_0;
+    status = work->status_0;
     ret    = status.isPaused_0_17;
     if (ret)
     {
@@ -107,7 +127,7 @@ s32 func_8009E230(s_KPadWork* arg0) // 0x8009E230
         ret                  = ret & 2;
         status.isActSet_0_23 = ret;
         status.isPaused_0_17 = 0;
-        arg0->status_0       = status;
+        work->status_0       = status;
 
         result = (u8)result;
         ret    = result;
@@ -116,12 +136,12 @@ s32 func_8009E230(s_KPadWork* arg0) // 0x8009E230
     return ret;
 }
 
-s32 func_8009E268(s_KPadWork* arg0) // 0x8009E268
+s32 KPad_VibrationPause(s_KPadWork* work) // 0x8009E268
 {
     s_KPad_Status status;
     s32           ret;
 
-    status = arg0->status_0;
+    status = work->status_0;
     ret    = status.isPaused_0_17 ^ 1;
     if (ret)
     {
@@ -130,7 +150,7 @@ s32 func_8009E268(s_KPadWork* arg0) // 0x8009E268
         ret                  = ret & 2;
         status.isActSet_0_23 = ret;
         status.isPaused_0_17 = 1;
-        arg0->status_0       = status;
+        work->status_0       = status;
 
         result = (u8)result;
         ret    = result;
@@ -139,12 +159,12 @@ s32 func_8009E268(s_KPadWork* arg0) // 0x8009E268
     return ret;
 }
 
-s32 func_8009E2A0(s_KPadWork* arg0) // 0x8009E2A0
+s32 KPad_VibrationEnable(s_KPadWork* work) // 0x8009E2A0
 {
     s_KPad_Status status;
     s32           ret;
 
-    status = arg0->status_0;
+    status = work->status_0;
     ret    = status.isEnabled_0_18 ^ 1;
     if (ret)
     {
@@ -153,7 +173,7 @@ s32 func_8009E2A0(s_KPadWork* arg0) // 0x8009E2A0
         ret                   = ret & 2;
         status.isActSet_0_23  = ret;
         status.isEnabled_0_18 = 1;
-        arg0->status_0        = status;
+        work->status_0        = status;
 
         result = (u8)result;
         ret    = result;
@@ -162,12 +182,12 @@ s32 func_8009E2A0(s_KPadWork* arg0) // 0x8009E2A0
     return ret;
 }
 
-s32 func_8009E2D8(s_KPadWork* arg0) // 0x8009E2D8
+s32 KPad_VibrationDisable(s_KPadWork* work) // 0x8009E2D8
 {
     s_KPad_Status status;
     s32           ret;
 
-    status = arg0->status_0;
+    status = work->status_0;
     ret    = status.isEnabled_0_18;
     if (ret)
     {
@@ -176,7 +196,7 @@ s32 func_8009E2D8(s_KPadWork* arg0) // 0x8009E2D8
         ret                   = ret & 2;
         status.isActSet_0_23  = ret;
         status.isEnabled_0_18 = 0;
-        arg0->status_0        = status;
+        work->status_0        = status;
 
         result = (u8)result;
         ret    = result;
@@ -185,18 +205,18 @@ s32 func_8009E2D8(s_KPadWork* arg0) // 0x8009E2D8
     return ret;
 }
 
-s32 func_8009E310(s_KPadWork* arg0, s_KPad_Channel* arg1, s32 arg2) // 0x8009E310
+s32 KPad_ChannelsInit(s_KPadWork* work, s_KPad_Channel* arg1, s32 arg2) // 0x8009E310
 {
     s_KPad_ActuatorInfo tmp;
     s32                 ret;
 
-    ret = arg0 != NULL;
+    ret = work != NULL;
     if (ret == 0)
     {
         return ret;
     }
 
-    ret = arg0->status_0.isInit_0_16;
+    ret = work->status_0.isInit_0_16;
     if (ret != 0)
     {
         if (arg1 == NULL)
@@ -204,18 +224,18 @@ s32 func_8009E310(s_KPadWork* arg0, s_KPad_Channel* arg1, s32 arg2) // 0x8009E31
             arg2 = 0;
         }
 
-        arg0->channels_C               = arg1;
-        arg0->channelInfo_8.capacity_3 = arg2;
+        work->channels_C               = arg1;
+        work->channelInfo_8.capacity_3 = arg2;
 
         while (arg2 > 0)
         {
-            tmp.bits_0_0        = 0;
-            tmp.bits_0_8        = 0;
-            tmp.bits_0_9        = 0;
-            tmp.dataOffset_0_16 = 0;
-            tmp.bits_0_19       = 0;
-            tmp.dataSize_0_24   = 0;
-            tmp.bits_0_27       = 0;
+            tmp.bits_0_0         = 0;
+            tmp.bits_0_8         = 0;
+            tmp.currentDrain_0_9 = 0;
+            tmp.dataOffset_0_16  = 0;
+            tmp.bits_0_19        = 0;
+            tmp.dataSize_0_24    = 0;
+            tmp.bits_0_27        = 0;
             arg2--;
             arg1->info_0     = tmp;
             arg1->strength_4 = 0;
@@ -226,17 +246,17 @@ s32 func_8009E310(s_KPadWork* arg0, s_KPad_Channel* arg1, s32 arg2) // 0x8009E31
     return ret;
 }
 
-bool func_8009E3B0(s_KPadWork* arg0, s32 padState, s32 padInfoCurId, s32 padInfoCurExId) // 0x8009E3B0
+bool KPad_Handler_NoPad(s_KPadWork* work, s32 padState, s32 padInfoCurId, s32 padInfoCurExId) // 0x8009E3B0
 {
     s_KPad_Status tmp;
 
-    tmp = arg0->status_0;
+    tmp = work->status_0;
 
     if (padState == PadStateDiscon || padState == PadStateFindPad)
     {
-        if (tmp.deviceType_0_24 != 0)
+        if (tmp.deviceType_0_24 != KPadDeviceType_None)
         {
-            tmp.deviceType_0_24  = 0;
+            tmp.deviceType_0_24  = KPadDeviceType_None;
             tmp.actCount_0_19    = 0;
             tmp.isActSet_0_23    = 0;
             tmp.isAlignDone_0_22 = 0;
@@ -246,77 +266,76 @@ bool func_8009E3B0(s_KPadWork* arg0, s32 padState, s32 padInfoCurId, s32 padInfo
                 tmp.isEnabled_0_18 = 0;
             }
 
-            arg0->actuatorData_4        = 0;
-            arg0->channelInfo_8.field_0 = 0;
-            arg0->channelInfo_8.count_2 = 0;
-            arg0->status_0              = tmp;
+            work->actuatorData_4        = 0;
+            work->channelInfo_8.field_0 = 0;
+            work->channelInfo_8.count_2 = 0;
+            work->status_0              = tmp;
         }
 
         return true;
     }
 
-    if (tmp.deviceType_0_24 == 0)
+    if (tmp.deviceType_0_24 == KPadDeviceType_None)
     {
         return false;
     }
 
-    return tmp.deviceType_0_24 != 3;
+    return tmp.deviceType_0_24 != KPadDeviceType_StandardPad;
 }
 
-bool func_8009E438(s_KPadWork* arg0, s32 padState, s32 padInfoCurId, s32 padInfoCurExId) // 0x8009E438
+bool KPad_Handler_Ctp1(s_KPadWork* work, s32 padState, s32 padInfoCurId, s32 padInfoCurExId) // 0x8009E438
 {
     s_KPad_Status tmp;
     bool          isChanged;
 
-    tmp = arg0->status_0;
+    tmp = work->status_0;
 
     // "Check for controller connection with controllers other than DUAL SHOCK (Complete the acquisition of controller information)".
     if (padState == PadStateFindCTP1)
     {
-        // TODO: 16Button is just standard controller?
         if (padInfoCurId == PadTerminalType_16Button |
             padInfoCurId == PadTerminalType_AnalogJoystick |
             padInfoCurId == PadTerminalType_AnalogController) // `|` Dev mistake?
         {
-            isChanged           = tmp.deviceType_0_24 != 3;
-            tmp.deviceType_0_24 = 3;
+            isChanged           = tmp.deviceType_0_24 != KPadDeviceType_StandardPad;
+            tmp.deviceType_0_24 = KPadDeviceType_StandardPad;
         }
         else
         {
-            isChanged           = tmp.deviceType_0_24 != 4;
-            tmp.deviceType_0_24 = 4;
+            isChanged           = tmp.deviceType_0_24 != KPadDeviceType_Other;
+            tmp.deviceType_0_24 = KPadDeviceType_Other;
         }
     }
     else
     {
-        isChanged           = tmp.deviceType_0_24 != 0;
-        tmp.deviceType_0_24 = 0;
+        isChanged           = tmp.deviceType_0_24 != KPadDeviceType_None;
+        tmp.deviceType_0_24 = KPadDeviceType_None;
     }
 
     if (isChanged)
     {
-        arg0->actuatorData_4        = 0;
-        arg0->channelInfo_8.field_0 = 0;
-        arg0->channelInfo_8.count_2 = 0;
-        tmp.actCount_0_19           = 0;
-        tmp.isActSet_0_23           = 0;
-        tmp.isAlignDone_0_22        = 0;
-        arg0->status_0              = tmp;
+        work->actuatorData_4        = 0;
+        work->channelInfo_8.field_0 = 0;
+        work->channelInfo_8.count_2 = 0;
+        tmp.actCount_0_19    = 0;
+        tmp.isActSet_0_23    = 0;
+        tmp.isAlignDone_0_22 = 0;
+        work->status_0              = tmp;
     }
 
     return true;
 }
 
-s_KPad_Handler* func_8009E4F8(void) // 0x8009E4F8
+s_KPad_Handler* KPad_HandlerList_Init(void) // 0x8009E4F8
 {
-    D_800B13EC.next_0 = &D_800B13FC;
-    D_800B13FC.next_0 = &D_800B140C;
-    D_800B140C.next_0 = NULL;
+    g_KPad_HandlerNoPad.next_0       = &g_KPad_HandlerStandardPad;
+    g_KPad_HandlerStandardPad.next_0 = &g_KPad_HandlerCtp1;
+    g_KPad_HandlerCtp1.next_0        = NULL;
 
-    return &D_800B13EC;
+    return &g_KPad_HandlerNoPad;
 }
 
-s_KPad_Handler* func_8009E520(s_KPad_Handler* node, s32 key) // 0x8009E520
+s_KPad_Handler* KPad_HandlerList_Find(s_KPad_Handler* node, s32 key) // 0x8009E520
 {
     for (; node; node = node->next_0)
     {
@@ -329,21 +348,21 @@ s_KPad_Handler* func_8009E520(s_KPad_Handler* node, s32 key) // 0x8009E520
     return NULL;
 }
 
-s32 func_8009E550(s_KPadWork* arg0, s_KPad_Handler* node) // 0x8009E550
+s32 KPad_DeviceDetect(s_KPadWork* work, s_KPad_Handler* node) // 0x8009E550
 {
     s32 padState;
     s32 padInfoCurId;
     s32 padInfoCurExId;
     u8  padPort;
 
-    padPort        = arg0->status_0.port_0_0;
+    padPort        = work->status_0.port_0_0;
     padState       = PadGetState(padPort);
     padInfoCurId   = PadInfoMode(padPort, InfoModeCurID, 0);
     padInfoCurExId = PadInfoMode(padPort, InfoModeCurExID, 0);
 
     while (node)
     {
-        if (node->func_C != NULL && node->func_C(arg0, padState, padInfoCurId, padInfoCurExId) == 1)
+        if (node->func_C != NULL && node->func_C(work, padState, padInfoCurId, padInfoCurExId) == 1)
         {
             break;
         }
@@ -354,18 +373,18 @@ s32 func_8009E550(s_KPadWork* arg0, s_KPad_Handler* node) // 0x8009E550
     return padState;
 }
 
-bool func_8009E61C(s_KPadWork* arg0, s32 state, s_KPad_Handler* head) // 0x8009E61C
+bool KPad_ActuatorSetup(s_KPadWork* work, s32 padState, s_KPad_Handler* head) // 0x8009E61C
 {
     s_KPad_Status status;
     u8*           pattern;
     u8*           act;
     s32           length;
 
-    status = arg0->status_0;
+    status = work->status_0;
 
     if (!status.isActSet_0_23)
     {
-        pattern = &arg0->actuatorData_4;
+        pattern = &work->actuatorData_4;
         if (status.isEnabled_0_18 && !status.isPaused_0_17)
         {
             length = status.actCount_0_19;
@@ -380,24 +399,24 @@ bool func_8009E61C(s_KPadWork* arg0, s32 state, s_KPad_Handler* head) // 0x8009E
 
     if (!status.isAlignDone_0_22)
     {
-        head = func_8009E520(head, status.deviceType_0_24);
+        head = KPad_HandlerList_Find(head, status.deviceType_0_24);
         act  = (head == NULL) ? NULL : head->alignData_8;
         if (act == NULL)
         {
             status.isAlignDone_0_22 = true;
         }
-        else if (state == 6)
+        else if (padState == PadStateStable)
         {
             status.isAlignDone_0_22 = PadSetActAlign(status.port_0_0, act);
         }
     }
 
-    arg0->status_0 = status;
+    work->status_0 = status;
 
     return status.isAlignDone_0_22;
 }
 
-bool func_8009E718(s_KPadWork* arg0) // 0x8009E718
+bool KPad_ActuatorDataUpdate(s_KPadWork* work) // 0x8009E718
 {
     s_KPad_Status   status;
     u32             packedVal;
@@ -410,7 +429,7 @@ bool func_8009E718(s_KPadWork* arg0) // 0x8009E718
     s_KPad_Channel* in;
     u8*             out;
 
-    status = arg0->status_0;
+    status = work->status_0;
     if (!(status.isEnabled_0_18 && !status.isPaused_0_17))
     {
         return false;
@@ -419,9 +438,9 @@ bool func_8009E718(s_KPadWork* arg0) // 0x8009E718
     // 0-128, but seems to only ever be set to 128.
     scale = status.strength_0_8;
 
-    in  = arg0->channels_C;
-    out = &arg0->actuatorData_4;
-    for (i = (u8)arg0->channelInfo_8.count_2; i != 0; i--)
+    in  = work->channels_C;
+    out = &work->actuatorData_4;
+    for (i = (u8)work->channelInfo_8.count_2; i != 0; i--)
     {
         // Contains up to 4 actuator data bytes packed into a `u32`, even though there are only two actuators max.
         packedVal = in->strength_4;
@@ -473,26 +492,26 @@ bool func_8009E718(s_KPadWork* arg0) // 0x8009E718
     return true;
 }
 
-bool func_8009E7D8(s_KPad_Handler* node) // 0x8009E7D8
+bool KPad_HandlerList_AddCtp1SingleMotor(s_KPad_Handler* node) // 0x8009E7D8
 {
     s_KPad_Handler* curNode;
 
     for (curNode = node; curNode; curNode = curNode->next_0)
     {
-        if (curNode == &D_800B141C)
+        if (curNode == &g_KPad_HandlerCtp1SingleMotor)
         {
             return false;
         }
     }
 
-    curNode           = node->next_0;
-    node->next_0      = &D_800B141C;
-    D_800B141C.next_0 = curNode;
+    curNode                              = node->next_0;
+    node->next_0                         = &g_KPad_HandlerCtp1SingleMotor;
+    g_KPad_HandlerCtp1SingleMotor.next_0 = curNode;
 
     return true;
 }
 
-bool func_8009E82C(s_KPadWork* work, s32 padState, s32 padInfoCurId, s32 padInfoCurExId)
+bool KPad_Handler_Ctp1SingleMotor(s_KPadWork* work, s32 padState, s32 padInfoCurId, s32 padInfoCurExId) // 0x8009E82C
 {
     s32                 actCount;
     s_KPad_Channel*     cur;
@@ -510,7 +529,7 @@ bool func_8009E82C(s_KPadWork* work, s32 padState, s32 padInfoCurId, s32 padInfo
 
         status                  = work->status_0;
         cur                     = work->channels_C;
-        status.deviceType_0_24  = 2;
+        status.deviceType_0_24  = KPadDeviceType_Ctp1SingleMotor;
         status.isActSet_0_23    = 0;
         status.isAlignDone_0_22 = 0;
         actCount                = 0;
@@ -522,13 +541,13 @@ bool func_8009E82C(s_KPadWork* work, s32 padState, s32 padInfoCurId, s32 padInfo
         }
         if (i > 0)
         {
-            tmp.bits_0_0        = 1;
-            tmp.bits_0_8        = 0;
-            tmp.bits_0_9        = 10;
-            tmp.dataOffset_0_16 = 1;
-            tmp.dataSize_0_24   = 0;
-            tmp.bits_0_19       = 1;
-            tmp.bits_0_27       = 2;
+            tmp.bits_0_0         = 1;
+            tmp.bits_0_8         = 0;
+            tmp.currentDrain_0_9 = 10;
+            tmp.dataOffset_0_16  = 1;
+            tmp.dataSize_0_24    = 0;
+            tmp.bits_0_19        = 1;
+            tmp.bits_0_27        = 2;
             cur->info_0         = tmp;
             actCount            = 2;
             i                   = 1;
@@ -553,31 +572,32 @@ bool func_8009E82C(s_KPadWork* work, s32 padState, s32 padInfoCurId, s32 padInfo
     return false;
 }
 
-bool func_8009E97C(s_KPad_Handler* node) // 0x8009E97C
+bool KPad_HandlerList_AddDualShock(s_KPad_Handler* node) // 0x8009E97C
 {
     s_KPad_Handler* curNode;
 
     for (curNode = node; curNode; curNode = curNode->next_0)
     {
-        if (curNode == &D_800B142C)
+        if (curNode == &g_KPad_HandlerDualShock)
         {
             return false;
         }
     }
 
-    curNode           = node->next_0;
-    node->next_0      = &D_800B142C;
-    D_800B142C.next_0 = curNode;
+    curNode                        = node->next_0;
+    node->next_0                   = &g_KPad_HandlerDualShock;
+    g_KPad_HandlerDualShock.next_0 = curNode;
 
     return true;
 }
 
-bool func_8009E9D0(s_KPadWork* work, s32 padState, s_KPad_Channel* arg2, s32 arg3)
+bool KPad_Handler_DualShock(s_KPadWork* work, s32 padState, s32 padInfoCurId, s32 padInfoCurExId) // 0x8009E9D0
 {
     s_KPad_Status       status;
+    s_KPad_Channel*     cur;
     s_KPad_ActuatorInfo tmp;
     s32                 actCount;
-    s32                 unk_B_0;
+    s32                 channelsCapacity;
     s32                 i;
     u32                 mask = (1 << padState);
     u8                  unused[24];
@@ -586,56 +606,56 @@ bool func_8009E9D0(s_KPadWork* work, s32 padState, s_KPad_Channel* arg2, s32 arg
 
     if (mask & ((1 << PadStateReqInfo) | (1 << PadStateExecCmd)))
     {
-        return status.deviceType_0_24 == 1;
+        return status.deviceType_0_24 == KPadDeviceType_DualShock;
     }
     if (padState != PadStateStable)
     {
         return false;
     }
 
-    if (((0x90u >> arg3) & 0x1))
+    if (((0x90u >> padInfoCurExId) & 0x1))
     {
-        status.deviceType_0_24  = 1;
+        status.deviceType_0_24  = KPadDeviceType_DualShock;
         status.isActSet_0_23    = 0;
         status.isAlignDone_0_22 = 0;
 
-        arg2                        = work->channels_C;
-        unk_B_0                     = work->channelInfo_8.capacity_3;
+        cur                        = work->channels_C;
+        channelsCapacity            = work->channelInfo_8.capacity_3;
         work->actuatorData_4        = 0;
         work->channelInfo_8.field_0 = 0;
 
         actCount = 0;
         i        = 2;
 
-        if (unk_B_0 < 3)
+        if (channelsCapacity < 3)
         {
-            i = unk_B_0;
+            i = channelsCapacity;
         }
 
         if (i > 0)
         {
-            tmp.bits_0_0        = 2;
-            tmp.bits_0_8        = 0;
-            tmp.bits_0_9        = 10;
-            tmp.dataOffset_0_16 = 0;
-            tmp.dataSize_0_24   = 0;
-            tmp.bits_0_19       = 1;
-            tmp.bits_0_27       = 2;
-            arg2->info_0        = tmp;
+            tmp.bits_0_0         = 2;
+            tmp.bits_0_8         = 0;
+            tmp.currentDrain_0_9 = 10;
+            tmp.dataOffset_0_16  = 0;
+            tmp.dataSize_0_24    = 0;
+            tmp.bits_0_19        = 1;
+            tmp.bits_0_27        = 2;
+            cur->info_0        = tmp;
             actCount            = 1;
         }
 
         if (i >= 2)
         {
-            tmp.bits_0_0        = 3;
-            tmp.bits_0_8        = 0;
-            tmp.bits_0_9        = 20;
-            tmp.dataOffset_0_16 = 1;
-            tmp.dataSize_0_24   = 1;
-            tmp.bits_0_19       = 1;
-            tmp.bits_0_27       = 1;
-            arg2++;
-            arg2->info_0 = tmp;
+            tmp.bits_0_0         = 3;
+            tmp.bits_0_8         = 0;
+            tmp.currentDrain_0_9 = 20;
+            tmp.dataOffset_0_16  = 1;
+            tmp.dataSize_0_24    = 1;
+            tmp.bits_0_19        = 1;
+            tmp.bits_0_27        = 1;
+            cur++;
+            cur->info_0 = tmp;
 
             actCount = 2;
             i        = 2;
@@ -645,12 +665,12 @@ bool func_8009E9D0(s_KPadWork* work, s32 padState, s_KPad_Channel* arg2, s32 arg
         status.actCount_0_19        = actCount;
         work->status_0              = status;
         tmp                         = (s_KPad_ActuatorInfo){ 0 };
-        arg2++;
+        cur++;
 
-        while (i < unk_B_0)
+        while (i < channelsCapacity)
         {
-            arg2->info_0 = tmp;
-            arg2++;
+            cur->info_0 = tmp;
+            cur++;
             i++;
         };
 
@@ -660,7 +680,7 @@ bool func_8009E9D0(s_KPadWork* work, s32 padState, s_KPad_Channel* arg2, s32 arg
     return false;
 }
 
-bool func_8009EBB8(s_KPadWork* list, s_KPad_Effect* node, s32 count) // 0x8009EBB8
+bool KPad_EffectListInit(s_KPadWork* work, s_KPad_Effect* node, s32 count) // 0x8009EBB8
 {
     s_KPad_Effect* cur;
     s_KPad_Effect* head;
@@ -670,7 +690,7 @@ bool func_8009EBB8(s_KPadWork* list, s_KPad_Effect* node, s32 count) // 0x8009EB
         return false;
     }
 
-    if (count <= 0 || list == NULL)
+    if (count <= 0 || work == NULL)
     {
         return false;
     }
@@ -690,16 +710,16 @@ bool func_8009EBB8(s_KPadWork* list, s_KPad_Effect* node, s32 count) // 0x8009EB
         head                = cur++;
     }
 
-    list->freeEffects_10.next_0 = head;
-    list->freeEffects_10.prev_4 = NULL;
+    work->freeEffects_10.next_0 = head;
+    work->freeEffects_10.prev_4 = NULL;
 
-    list->effects_18.next_0 = KPAD_EFFECTS_HEAD(list);
-    list->effects_18.prev_4 = KPAD_EFFECTS_HEAD(list);
+    work->effects_18.next_0 = KPAD_EFFECTS_HEAD(work);
+    work->effects_18.prev_4 = KPAD_EFFECTS_HEAD(work);
 
     return true;
 }
 
-bool func_8009EC1C(s_KPadWork* list, s_KPad_Effect* node) // 0x8009EC1C
+bool KPad_EffectRemove(s_KPadWork* work, s_KPad_Effect* node) // 0x8009EC1C
 {
     s_KPad_Effect* next;
     s_KPad_Effect* prev;
@@ -713,7 +733,7 @@ bool func_8009EC1C(s_KPadWork* list, s_KPad_Effect* node) // 0x8009EC1C
         return false;
     }
 
-    if (node == KPAD_EFFECTS_HEAD(list))
+    if (node == KPAD_EFFECTS_HEAD(work))
     {
         return false;
     }
@@ -728,46 +748,47 @@ bool func_8009EC1C(s_KPadWork* list, s_KPad_Effect* node) // 0x8009EC1C
     next->links_0.prev_4 = prev;
 
     // Add node to front of the free list.
-    next                        = list->freeEffects_10.next_0;
-    list->freeEffects_10.next_0 = node;
+    next                        = work->freeEffects_10.next_0;
+    work->freeEffects_10.next_0 = node;
     node->links_0.next_0        = next;
 
     return true;
 }
 
-bool func_8009EC64(s_KPadWork* work, s16 val) // 0x8009EC64
+bool KPad_EffectEvictLowest(s_KPadWork* work, s16 priority) // 0x8009EC64
 {
-    s32            val32;
-    s_KPad_Effect* prev;
+    s32            priority32;
+    s_KPad_Effect* lowest;
     s_KPad_Effect* head;
     s_KPad_Effect* node;
     s_KPad_Effect* cur;
-    bool           unsorted;
+    bool           canEvict;
 
-    head  = KPAD_EFFECTS_HEAD(work);
-    node  = work->freeEffects_10.next_0;
-    val32 = val;
-    prev  = work->effects_18.prev_4;
+    head       = KPAD_EFFECTS_HEAD(work);
+    node       = work->freeEffects_10.next_0;
+    priority32 = priority;
+    lowest     = work->effects_18.prev_4;
 
-    unsorted = ((!node) & (prev == head) & (val32 >= prev->priority_8)) != 0;
-    if (!unsorted)
+    // @bug `lowest == head` is only true when the effect list is empty, `!=` was likely intended.
+    canEvict = ((!node) & (lowest == head) & (priority32 >= lowest->priority_8)) != 0;
+    if (!canEvict)
     {
-        return unsorted;
+        return canEvict;
     }
 
-    // Remove `prev`.
-    cur                  = prev->links_0.prev_4;
+    // Remove `lowest` from the effect list.
+    cur                  = lowest->links_0.prev_4;
     cur->links_0.next_0  = head;
     head->links_0.prev_4 = cur;
 
     // Insert in front of `node`.
-    work->freeEffects_10.next_0 = prev;
-    prev->links_0.next_0        = node;
+    work->freeEffects_10.next_0 = lowest;
+    lowest->links_0.next_0      = node;
 
     return true;
 }
 
-s_KPad_Effect* func_8009ECCC(s_KPadWork* arg0, s32 key) // 0x8009ECCC
+s_KPad_Effect* KPad_EffectAdd(s_KPadWork* work, s32 key) // 0x8009ECCC
 {
     s_KPad_Effect* head;
     s_KPad_Effect* node;
@@ -777,8 +798,8 @@ s_KPad_Effect* func_8009ECCC(s_KPadWork* arg0, s32 key) // 0x8009ECCC
     s_KPad_Effect* cur;
     s32            midpoint;
 
-    node = arg0->freeEffects_10.next_0;
-    head = KPAD_EFFECTS_HEAD(arg0);
+    node = work->freeEffects_10.next_0;
+    head = KPAD_EFFECTS_HEAD(work);
 
     if (node == NULL)
     {
@@ -787,9 +808,9 @@ s_KPad_Effect* func_8009ECCC(s_KPadWork* arg0, s32 key) // 0x8009ECCC
 
     cur                         = node->links_0.next_0;
     next                        = head->links_0.next_0;
-    arg0->freeEffects_10.next_0 = cur;
+    work->freeEffects_10.next_0 = cur;
 
-    tmp  = arg0->effects_18.prev_4;
+    tmp  = work->effects_18.prev_4;
     prev = tmp;
 
     midpoint = (next->priority_8 + prev->priority_8) >> 1;
@@ -821,12 +842,12 @@ s_KPad_Effect* func_8009ECCC(s_KPadWork* arg0, s32 key) // 0x8009ECCC
     return node;
 }
 
-s_KPad_Effect* func_8009ED74(s_KPadWork* list) // 0x8009ED74
+s_KPad_Effect* KPad_EffectListHeadGet(s_KPadWork* work) // 0x8009ED74
 {
-    return KPAD_EFFECTS_HEAD(list);
+    return KPAD_EFFECTS_HEAD(work);
 }
 
-s_KPad_Effect* func_8009ED7C(s_KPad_Effect* node) // 0x8009ED7C
+s_KPad_Effect* KPad_EffectNextGet(s_KPad_Effect* node) // 0x8009ED7C
 {
     if (node != NULL)
     {
@@ -836,7 +857,7 @@ s_KPad_Effect* func_8009ED7C(s_KPad_Effect* node) // 0x8009ED7C
     return NULL;
 }
 
-s_KPad_Effect* func_8009ED90(s_KPad_Effect* node) // 0x8009ED90
+s_KPad_Effect* KPad_EffectPrevGet(s_KPad_Effect* node) // 0x8009ED90
 {
     if (node != NULL)
     {
