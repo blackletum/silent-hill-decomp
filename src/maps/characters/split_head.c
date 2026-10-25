@@ -1816,7 +1816,6 @@ void sharedFunc_800D4408_1_s05(VECTOR3* pos, s32 idx, q23_8 posX, q23_8 posY, q2
     scratch = PSX_SCRATCH;
 
     Math_SetSVectorFastSum(&scratch->field_20, posX, posY, posZ);
-    scratch->field_20.vz = posZ; // @hack Needed for match.
 
     Vw_CoordHierarchyMatrixCompute(&sharedData_800D8610_1_s05[idx], &scratch->mat_0);
 

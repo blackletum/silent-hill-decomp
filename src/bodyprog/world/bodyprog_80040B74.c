@@ -248,12 +248,9 @@ void Math_RelativeRotationGet(q19_12* azimuthAngle, q19_12* altitudeAngle, const
     *azimuthAngle = Q12_ANGLE_NORM_U(ratan2(planeNormal.vy, planeNormal.vx) - Q12_ANGLE(90.0f));
 
     // Compute vector from ??? TODO.
-    cosTheta.vx = Q12_MULT(dir0.vx, dir1.vx) +
-                  Q12_MULT(dir0.vy, dir1.vy) +
-                  Q12_MULT(dir0.vz, dir1.vz);
     cosTheta.vx = FP_FROM((dir0.vx * dir1.vx) +
                           (dir0.vy * dir1.vy) +
-                          (dir0.vz * dir1.vz), Q12_SHIFT); // @hack Duplicate operation required for match.
+                          (dir0.vz * dir1.vz), Q12_SHIFT);
     OuterProduct12(&planeNormal, &dir0, &sideStep);
     sinTheta.vx = FP_FROM((dir1.vx * sideStep.vx) +
                           (dir1.vy * sideStep.vy) +

@@ -257,8 +257,7 @@ void func_800D2668(void) // 0x800D2668
         EventState_Skip = 25
     } e_EventState;
 
-    s32       i;
-    SVECTOR3* tmpSvec;
+    s32 i;
 
     // Skip.
     if (g_Controller0->buttonFlags.clicked & g_GameWorkPtr->config.controllerConfig.skip &&
@@ -298,11 +297,7 @@ void func_800D2668(void) // 0x800D2668
             g_SysWork.lightIntensity     = Q12(0.7f);
             Math_Vector3Set(&g_SysWork.lightPosition, Q12(58.34f), Q12(-1.93f), Q12(141.8f));
 
-            // @hack TODO: Make the macro match.
-            // Math_SetSVectorFast(&g_SysWork.lightRotation, Q12_ANGLE(-15.0f), Q12_ANGLE(-177.0f), Q12_ANGLE(0.0f));
-            *((s32*) (&(&g_SysWork.lightRotation)->vx)) = ((s32)(0xFF56 & 0xFFFF)) | ((s32)(0xF823 << 16));
-            tmpSvec = &g_SysWork.lightRotation;
-            *((s16*)(&tmpSvec->vz)) = 0;
+            Math_SetSVectorFastSum(&g_SysWork.lightRotation, Q12_ANGLE(-15.0f), Q12_ANGLE(-177.0f), Q12_ANGLE(0.0f));
 
             func_8008D438();
             func_8003D03C();

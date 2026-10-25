@@ -1901,7 +1901,6 @@ void SaveScreen_SlotStatusMsgStepDraw(s_LineBorder* borderLines, s_QuadBorder* b
 
 void SaveScreen_RectSaveInfoDraw(s_Line2d* line) // 0x801E5898
 {
-    s32      color;
     s32      i;
     GsOT*    ot;
     POLY_F3* poly_f3;
@@ -1938,10 +1937,8 @@ void SaveScreen_RectSaveInfoDraw(s_Line2d* line) // 0x801E5898
         poly_f3 = (POLY_F3*)GsOUT_PACKET_P;
         setPolyF3(poly_f3);
 
-        color = Q8_COLOR(0.1875f); // @hack
-
         setSemiTrans(poly_f3, true);
-        setRGB0(poly_f3, color, Q8_COLOR(0.1875f), Q8_COLOR(0.1875f));
+        setRGB0(poly_f3, Q8_COLOR(0.1875f), Q8_COLOR(0.1875f), Q8_COLOR(0.1875f));
 
         setXY3(poly_f3,
                tris[i].vertex0.vx, tris[i].vertex0.vy,

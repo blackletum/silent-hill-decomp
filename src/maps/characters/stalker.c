@@ -2179,9 +2179,7 @@ void sharedFunc_800D6970_0_s00(s_SubCharacter* stalker, s_AnmHeader* animHdr, Gs
     if (ANIM_TIME_RANGE_CHECK(stalker->model.anim.time, 60, 66))
 #endif
     {
-        // TODO: Use macro?
-        *(s32*)&ptr->field_30.vx = 0x21FFFB;
-        ptr->field_30.vz         = 0x25;
+        Math_SetSVectorFastSum(&ptr->field_30, -5, 33, 37);
         Vw_CoordHierarchyMatrixCompute(&coord[6], &ptr->field_0);
 
         gte_SetRotMatrix(&ptr->field_0);

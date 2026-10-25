@@ -324,9 +324,7 @@ void func_800D1910(void) // 0x800D1910
             g_SysWork.lightIntensity     = Q12(1.0f);
             Math_Vector3Set(&g_SysWork.lightPosition, Q12(57.0f), Q12(-3.0f), Q12(141.8f));
 
-            // TODO: `Math_SetSVectorFast(&g_SysWork.lightRotation, Q12_ANGLE(-90.0f), 0, 0);` doesn't match.
-            *(s32*)&g_SysWork.lightRotation.vx = 0xFC00; // `Q12_ANGLE(-90.0f)`
-            (&g_SysWork.lightRotation)->vz     = 0;
+            Math_SetSVectorFastSum(&g_SysWork.lightRotation, Q12_ANGLE(-90.0f), Q12_ANGLE(0.0f), Q12_ANGLE(0.0f));
 
             func_8008D438();
 

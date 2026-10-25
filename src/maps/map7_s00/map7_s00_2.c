@@ -293,10 +293,7 @@ void func_800D0B64(void) // 0x800D0B64
 
             Math_Vector3Set(&g_SysWork.lightPosition, Q12(16.3f), Q12(-1.55f), Q12(-138.6f));
 
-            // @hack This macro should work but must access `vz` by pointer for a match.
-            //Math_SetSVectorFast(g_SysWork.lightRotation, 0xFF34, 0x2E3, 0);
-            *(s32*)&g_SysWork.lightRotation.vx = 0x02E3FF34;
-            (&g_SysWork.lightRotation)->vz = 0;
+            Math_SetSVectorFast(&g_SysWork.lightRotation, Q12_ANGLE(-18.0f), Q12_ANGLE(65.0f), Q12_ANGLE(0.0f));
 
             Sfx_WithFlagsPlay(Sfx_DoorOpen0, &Q12_VECTOR3(14.6f, -1.2f, -138.5f), Q8(0.5f), SfxFlag_None);
             SysWork_StateStepIncrement(0);

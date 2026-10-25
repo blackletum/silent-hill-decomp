@@ -825,7 +825,6 @@ void func_800D2CDC(void) // 0x800D2CDC
 
         case 7:
             state = 4; // @hack Needed to match reg order.
-            i     = 2;
             for (i = 2; i >= 0; i--)
             {
                 g_SysWork.npcs[i].model.controlState = state;
