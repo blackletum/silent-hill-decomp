@@ -150,9 +150,8 @@ void sharedFunc_800D7EE8_1_s02(s_SubCharacter* creeper)
         creeper->damage.position.vx += (creeper->moveSpeed * Math_Sin(creeper->headingAngle)) >> 15;
         creeper->damage.position.vz += (creeper->moveSpeed * Math_Cos(creeper->headingAngle)) >> 15;
 
-        creeper->moveSpeed = (SquareRoot0(SQUARE(Q12_TO_Q6(creeper->damage.position.vx)) +
-                                          SQUARE(Q12_TO_Q6(creeper->damage.position.vz))) << 18) /
-                              Q12(0.8f);
+        creeper->moveSpeed = FP_TO(Math_Vector2MagCalcSafeQ6(creeper->damage.position.vx, creeper->damage.position.vz), Q12_SHIFT) /
+                             Q12(0.8f);
 
         creeper->fallSpeed    = Q12_DIV(creeper->damage.position.vy, Q12(0.8f));
         creeper->headingAngle = Rng_AddGeneratedUInt(ratan2(creeper->damage.position.vx, creeper->damage.position.vz), -128, 127);
@@ -501,8 +500,6 @@ void Creeper_ControlAttack(s_SubCharacter* creeper)
     s32     i;
     q19_12  moveSpeed0;
     q19_12  distToPlayer;
-    q19_12  moveSpeed;
-    q19_12  moveSpeedTmp0;
 
     #define playerChara g_SysWork.playerWork.player
 
@@ -528,29 +525,7 @@ void Creeper_ControlAttack(s_SubCharacter* creeper)
         {
             moveSpeed0 = creeperProps.moveSpeed / 2;
 
-            // TODO: Why don't either of these fit?
-            // creeper->moveSpeed = APPROACH(creeper->moveSpeed, moveSpeed0, Q12_MULT_PRECISE(g_DeltaTime, Q12(6.0f)));
-            // Chara_MoveSpeedUpdate3(creeper, Q12(6.0f), moveSpeed0);
-
-            if (moveSpeed0 < creeper->moveSpeed)
-            {
-                moveSpeed   = moveSpeed0;
-                moveSpeedTmp0 = creeper->moveSpeed - Q12_MULT_PRECISE(g_DeltaTime, Q12(6.0f));
-                if (moveSpeed < moveSpeedTmp0)
-                {
-                    moveSpeed = moveSpeedTmp0;
-                }
-            }
-            else
-            {
-                moveSpeed   = moveSpeed0;
-                moveSpeedTmp0 = creeper->moveSpeed + Q12_MULT_PRECISE(g_DeltaTime, Q12(6.0f));
-                if (moveSpeed >= moveSpeedTmp0)
-                {
-                    moveSpeed = moveSpeedTmp0;
-                }
-            }
-            creeper->moveSpeed = moveSpeed;
+            Chara_MoveSpeedUpdate2(creeper, Q12(6.0f), moveSpeed0);
         }
 
         if (TIMESTEP_ANGLE(1, 2) < ABS(Math_AngleNormalizeSigned((Math_AngleBetweenPositionsGet(creeper->position, playerChara.position) - creeper->rotation.vy))))

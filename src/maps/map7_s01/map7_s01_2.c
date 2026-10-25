@@ -2328,7 +2328,7 @@ void Map_WorldObjectsUpdate(void) // 0x800DDCD4
                     if (g_SysWork.npcs[0].position.vz < Q12(-24.0f))
                     {
                         npcTimer = (Q12(-24.0f) - g_SysWork.npcs[0].position.vz) / 5;
-                        v1 = (npcTimer < D_800E33A4) ? D_800E33A4 : npcTimer;
+                        v1 = CLAMP_LOW(npcTimer, D_800E33A4);
                         D_800E33A4 = v1;
                     }
                     else

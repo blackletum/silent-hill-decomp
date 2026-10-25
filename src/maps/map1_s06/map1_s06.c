@@ -612,8 +612,7 @@ void Map_WorldObjectsUpdate(void) // 0x800D6578
 
     if (D_800DB055 < D_800DB054)
     {
-        // TODO: `MAX` macro doesnt match.
-        D_800DB054 = ((D_800DB054 - (g_DeltaTime >> 6)) < -127) ? -127 : D_800DB054 - (g_DeltaTime >> 6);
+        D_800DB054 = CLAMP_LOW(D_800DB054 - (g_DeltaTime >> 6), -127);
     }
 
     vol = MAX(255 - (D_800DAF78 >> 4), 0);

@@ -118,9 +118,6 @@ extern s_MapOverlayHdr_94 sharedData_800E30C8_1_s02;
     extern s_BloodSplat g_Effect_BloodSplats[];
 #endif
 
-/** Air Screamer or Night Flutter control functions. Indexed using `e_AirScreamerControl`. */
-extern void (*g_AirScreamer_ControlFuncs[52])(s_SubCharacter* airScreamer); // TODO: Use `AirScreamerControl_Count`.
-
 extern s_MapPoint2d MAP_POINTS[];
 extern s_EventData  MAP_EVENTS[];
 extern void (*g_LoadScreenFuncs[])();

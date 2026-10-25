@@ -150,6 +150,9 @@ extern VECTOR3 sharedData_800DE1E0_0_s01; /** Q19.12 | Used for wall collision o
 extern VECTOR3 sharedData_800DE1F0_0_s01; // Q19.12 | Used for collision.
 extern s_CollisionResult g_AirScreamer_CollisionResult; // Cached result?
 
+/** Air Screamer or Night Flutter control functions. Indexed using `e_AirScreamerControl`. */
+extern void (*g_AirScreamer_ControlFuncs[AirScreamerControl_Count])(s_SubCharacter* airScreamer);
+
 /** @brief Updates an active Air Screamer or Night Flutter character.
  *
  * @param airScreamer Air Screamer or Night Flutter character to update.

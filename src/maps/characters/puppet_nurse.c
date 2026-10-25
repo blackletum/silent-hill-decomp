@@ -471,8 +471,6 @@ void PuppetNurse_Control3_4(s_SubCharacter* nurse, bool isDoctor)
 
 bool sharedFunc_800CE7C8_3_s03(s_SubCharacter* nurse)
 {
-    q19_12 deltaX;
-    q19_12 deltaZ;
     q19_12 dist;
     q19_12 distAbs;
     q19_12 distSubtract;
@@ -498,9 +496,8 @@ bool sharedFunc_800CE7C8_3_s03(s_SubCharacter* nurse)
         distSubtract = Q12(0.85f);
     }
 
-    deltaX  = Q12_TO_Q6(playerChara.position.vx - nurse->position.vx);
-    deltaZ  = Q12_TO_Q6(playerChara.position.vz - nurse->position.vz);
-    dist    = Q6_TO_Q12(SquareRoot0(SQUARE(deltaX) + SQUARE(deltaZ))) - distSubtract;
+    dist    = Math_Vector2MagCalcSafeQ6(playerChara.position.vx - nurse->position.vx,
+                                        playerChara.position.vz - nurse->position.vz) - distSubtract;
     distAbs = ABS(dist);
 
     if (dist > Q12(0.5f))
@@ -809,8 +806,6 @@ void PuppetNurse_Control9(s_SubCharacter* nurse)
 {
     bool            cond;
     q19_12          dist;
-    q19_12          deltaX;
-    q19_12          deltaZ;
     u16             rng;
     q3_12           angle;
     q3_12           angleAbs;
@@ -818,9 +813,8 @@ void PuppetNurse_Control9(s_SubCharacter* nurse)
 
     localNurse = nurse;
 
-    deltaX = Q12_TO_Q6(playerChara.position.vx - nurse->position.vx);
-    deltaZ = Q12_TO_Q6(playerChara.position.vz - nurse->position.vz);
-    dist   = Q6_TO_Q12(SquareRoot0(SQUARE(deltaX) + SQUARE(deltaZ)));
+    dist   = Math_Vector2MagCalcSafeQ6(playerChara.position.vx - nurse->position.vx,
+                                       playerChara.position.vz - nurse->position.vz);
 
     angle    = Math_AngleNormalizeSigned(Math_AngleBetweenPositionsGet(nurse->position, playerChara.position) -
                                          nurse->rotation.vy);
@@ -1074,8 +1068,6 @@ void PuppetNurse_Control12(s_SubCharacter* nurse)
 void PuppetNurse_Control10(s_SubCharacter* nurse)
 {
     u8     animStatus;
-    q19_12 deltaX;
-    q19_12 deltaZ;
     q19_12 dist;
 
     if (!nurse->model.stateStep)
@@ -1085,9 +1077,8 @@ void PuppetNurse_Control10(s_SubCharacter* nurse)
         nurse->model.stateStep++;
     }
 
-    deltaX = Q12_TO_Q6(playerChara.position.vx - nurse->position.vx);
-    deltaZ = Q12_TO_Q6(playerChara.position.vz - nurse->position.vz);
-    dist   = Q6_TO_Q12(SquareRoot0(SQUARE(deltaX) + SQUARE(deltaZ)));
+    dist   = Math_Vector2MagCalcSafeQ6(playerChara.position.vx - nurse->position.vx,
+                                       playerChara.position.vz - nurse->position.vz);
 
     if (sharedFunc_800CF294_3_s03(nurse, dist))
     {
@@ -1110,8 +1101,6 @@ void PuppetNurse_Control10(s_SubCharacter* nurse)
 void PuppetNurse_Control11(s_SubCharacter* nurse)
 {
     u8              controlState;
-    q19_12          deltaX;
-    q19_12          deltaZ;
     q19_12          dist;
     q3_12           angle;
     q19_12          tmp;
@@ -1148,9 +1137,8 @@ void PuppetNurse_Control11(s_SubCharacter* nurse)
         }
     }
 
-    deltaX = Q12_TO_Q6(playerChara.position.vx - nurse->position.vx);
-    deltaZ = Q12_TO_Q6(playerChara.position.vz - nurse->position.vz);
-    dist   = Q6_TO_Q12(SquareRoot0(SQUARE(deltaX) + SQUARE(deltaZ)));
+    dist   = Math_Vector2MagCalcSafeQ6(playerChara.position.vx - nurse->position.vx,
+                                       playerChara.position.vz - nurse->position.vz);
 
     if (sharedFunc_800CF294_3_s03(nurse, dist))
     {

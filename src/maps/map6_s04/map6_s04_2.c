@@ -1924,8 +1924,6 @@ void func_800E1D50(void) // 0x800E1D50
 
     VECTOR3  lintPos;
     SVECTOR3 lintRot;
-    q19_12   rotX;
-    q19_12   rotZ;
 
     // Skip.
     if ((g_Controller0->buttonFlags.clicked & g_GameWorkPtr->config.controllerConfig.skip) &&
@@ -2003,10 +2001,7 @@ void func_800E1D50(void) // 0x800E1D50
         Dms_CharacterTransformGet(&g_SysWork.lightPosition, &lintRot, "LIGHT", g_Cutscene_Timer, (s_DmsHeader*)FS_BUFFER_14);
         Dms_CharacterTransformGet(&lintPos, &lintRot, "L_INT", g_Cutscene_Timer, (s_DmsHeader*)FS_BUFFER_14);
 
-        rotX = Q12_TO_Q6(lintPos.vx - g_SysWork.lightPosition.vx);
-        rotZ = Q12_TO_Q6(lintPos.vz - g_SysWork.lightPosition.vz);
-
-        g_SysWork.lightRotation.vx = -ratan2(lintPos.vy - g_SysWork.lightPosition.vy, Q6_TO_Q12(SquareRoot0(SQUARE(rotX) + SQUARE(rotZ))));
+        g_SysWork.lightRotation.vx = -ratan2(lintPos.vy - g_SysWork.lightPosition.vy, Math_Vector2MagCalcSafeQ6(lintPos.vx - g_SysWork.lightPosition.vx, lintPos.vz - g_SysWork.lightPosition.vz));
         g_SysWork.lightRotation.vy = ratan2(lintPos.vx - g_SysWork.lightPosition.vx, lintPos.vz - g_SysWork.lightPosition.vz);
         g_SysWork.lightRotation.vz = Q12_ANGLE(0.0f);
     }
@@ -2449,8 +2444,6 @@ void func_800E3244(void) // 0x800E3244
     SVECTOR3 lintRot;
     q19_12   posX;
     q19_12   lookAtX;
-    q19_12   rotX;
-    q19_12   rotZ;
 
     #define playerChara g_SysWork.playerWork.player
 
@@ -2728,10 +2721,7 @@ void func_800E3244(void) // 0x800E3244
         Dms_CharacterTransformGet(&g_SysWork.lightPosition, &lintRot, "LIGHT", g_Cutscene_Timer, (s_DmsHeader*)FS_BUFFER_14);
         Dms_CharacterTransformGet(&lintPos, &lintRot, "L_INT", g_Cutscene_Timer, (s_DmsHeader*)FS_BUFFER_14);
 
-        rotX = Q12_TO_Q6(lintPos.vx - g_SysWork.lightPosition.vx);
-        rotZ = Q12_TO_Q6(lintPos.vz - g_SysWork.lightPosition.vz);
-
-        g_SysWork.lightRotation.vx = -ratan2(lintPos.vy - g_SysWork.lightPosition.vy, Q6_TO_Q12(SquareRoot0(SQUARE(rotX) + SQUARE(rotZ))));
+        g_SysWork.lightRotation.vx = -ratan2(lintPos.vy - g_SysWork.lightPosition.vy, Math_Vector2MagCalcSafeQ6(lintPos.vx - g_SysWork.lightPosition.vx, lintPos.vz - g_SysWork.lightPosition.vz));
         g_SysWork.lightRotation.vy = ratan2(lintPos.vx - g_SysWork.lightPosition.vx, lintPos.vz - g_SysWork.lightPosition.vz);
         g_SysWork.lightRotation.vz = Q12_ANGLE(0.0f);
     }

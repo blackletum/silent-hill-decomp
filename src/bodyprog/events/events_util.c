@@ -544,7 +544,7 @@ q19_12 Event_TweenLinear(q19_12 target, q19_12 duration, s32 timerIdx) // 0x8008
     #define tweenTimer g_Event_TweenTimers[timerIdx]
 
     tweenTimer += g_DeltaTime;
-    tweenTimer  = (duration < tweenTimer) ? duration : tweenTimer;
+    tweenTimer  = MIN(duration, tweenTimer);
     return (target * tweenTimer) / duration;
 
     #undef tweenTimer
@@ -555,7 +555,7 @@ q19_12 Event_TweenSine(q19_12 amp, q3_12 startAngle, q3_12 sweepAngle, q19_12 du
     #define tweenTimer g_Event_TweenTimers[timerIdx]
 
     tweenTimer += g_DeltaTime;
-    tweenTimer  = (duration < tweenTimer) ? duration : tweenTimer;
+    tweenTimer  = MIN(duration, tweenTimer);
     return Q12_MULT(amp, Math_Sin(startAngle + ((sweepAngle * tweenTimer) / duration)));
 
     #undef tweenTimer

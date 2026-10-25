@@ -652,9 +652,7 @@ void Romper_Control_3(s_SubCharacter* romper)
                 romperProps.rotationY_F2 = romper->rotation.vy + Q12_ANGLE(180.0f);
             }
 
-            // TODO: `ANIM_TIME_RANGE_CHECK` doesn't match?
-            if (FP_FROM(romper->model.anim.time, Q12_SHIFT) < 115 ||
-                FP_FROM(romper->model.anim.time, Q12_SHIFT) > 120)
+            if (!ANIM_TIME_RANGE_CHECK(romper->model.anim.time, 115, 120))
             {
                 romper->model.controlState = RomperControl_4;
                 romper->model.anim.status  = ANIM_STATUS(RomperAnim_CreepForward, false);

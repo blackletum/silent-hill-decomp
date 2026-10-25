@@ -79,11 +79,8 @@ void Stalker_Init(s_SubCharacter* stalker)
     stalker->fallSpeed   = Q12(0.0f);
     stalker->rotation.vz = Q12_ANGLE(0.0f);
     stalker->rotation.vx = Q12_ANGLE(0.0f);
-    //Chara_AnimSet(stalker, ANIM_STATUS(StalkerAnim_30, true), 447); // TODO: Doesn't match?
-    stalker->model.anim.status      = ANIM_STATUS(StalkerAnim_30, true);
-    stalker->model.anim.time        = Q12(477.0f);
-    stalker->model.anim.keyframeIdx = 477;
-    stalker->headingAngle              = stalker->rotation.vy;
+    Chara_AnimSet(stalker, ANIM_STATUS(StalkerAnim_30, true), 477);
+    stalker->headingAngle = stalker->rotation.vy;
 
     // Handle state step.
     switch (stalker->model.stateStep)
@@ -123,30 +120,21 @@ void Stalker_Init(s_SubCharacter* stalker)
 
         case 9:
             stalker->model.controlState = StalkerControl_12;
-            //Chara_AnimSet(stalker, ANIM_STATUS(StalkerAnim_27, true), 427); // TODO: Doesn't match?
-            stalker->model.anim.status      = ANIM_STATUS(StalkerAnim_27, true);
-            stalker->model.anim.time        = Q12(427.0f);
-            stalker->model.anim.keyframeIdx = 427;
-            stalkerProps.flags             |= StalkerFlag_0;
-            stalker->collision.state        = CharaCollisionState_Npc;
+            Chara_AnimSet(stalker, ANIM_STATUS(StalkerAnim_27, true), 427);
+            stalkerProps.flags         |= StalkerFlag_0;
+            stalker->collision.state    = CharaCollisionState_Npc;
             break;
 
         case 10:
             stalker->model.controlState = StalkerControl_11;
-            //Chara_AnimSet(stalker, ANIM_STATUS(StalkerAnim_28, true), 442); // TODO: Doesn't match?
-            stalker->model.anim.status      = ANIM_STATUS(StalkerAnim_28, true);
-            stalker->model.anim.time        = Q12(443.0f);
-            stalker->model.anim.keyframeIdx = 443;
-            stalker->collision.state        = 3;
+            Chara_AnimSet(stalker, ANIM_STATUS(StalkerAnim_28, true), 443);
+            stalker->collision.state    = 3;
             break;
 
         case 17:
             stalker->model.controlState = StalkerControl_13;
-            //Chara_AnimSet(stalker, ANIM_STATUS(StalkerAnim_14, true), 176); // TODO: Doesn't match?
-            stalker->model.anim.status      = ANIM_STATUS(StalkerAnim_14, true);
-            stalker->model.anim.time        = Q12(176.0f);
-            stalker->model.anim.keyframeIdx = 176;
-            stalker->collision.state        = CharaCollisionState_Ignore;
+            Chara_AnimSet(stalker, ANIM_STATUS(StalkerAnim_14, true), 176);
+            stalker->collision.state    = CharaCollisionState_Ignore;
             break;
     }
 
@@ -424,8 +412,7 @@ void sharedFunc_800D3308_0_s00(s_SubCharacter* stalker)
                                 {
                                     stalker->model.anim.status = 80;
                                 }
-                                else if (FP_FROM(stalker->model.anim.time, Q12_SHIFT) < 160 ||
-                                         FP_FROM(stalker->model.anim.time, Q12_SHIFT) > 168)
+                                else if (!ANIM_TIME_RANGE_CHECK(stalker->model.anim.time, 160, 168))
                                 {
                                     stalkerProps.relKeyframeIdx_FE = 0;
                                     stalker->model.anim.status = 10;
@@ -448,8 +435,7 @@ void sharedFunc_800D3308_0_s00(s_SubCharacter* stalker)
                             if (FP_FROM(stalker->model.anim.time, Q12_SHIFT) > 361 &&
                                 FP_FROM(stalker->model.anim.time, Q12_SHIFT) < 373)
                             {
-                                if (FP_FROM(stalker->model.anim.time, Q12_SHIFT) >= 364 &&
-                                    FP_FROM(stalker->model.anim.time, Q12_SHIFT) <= 367)
+                                if (ANIM_TIME_RANGE_CHECK(stalker->model.anim.time, 364, 367))
                                 {
                                     stalkerProps.relKeyframeIdx_FE = 2;
                                 }
@@ -509,8 +495,6 @@ void Stalker_ControlUpdate(s_SubCharacter* stalker)
 {
     q3_12 angle;
     s32   temp_s1;
-    s32   temp_v0;
-    s32   temp_v0_2;
     s32   i;
     s32   angle1;
     s32   unkAnimStatus;
@@ -552,10 +536,8 @@ void Stalker_ControlUpdate(s_SubCharacter* stalker)
             sharedData_800E3A0C_0_s00[i] = sharedData_800E3A0C_0_s00[i - 1];
         }
 
-        // TODO: Use `Math_Vector2MagCalcSafeQ6`.
-        temp_v0                      = ((g_SysWork.playerWork.player.position.vx - sharedData_800E39E4_0_s00) >> 6);
-        temp_v0_2                    = (g_SysWork.playerWork.player.position.vz - sharedData_800E39E8_0_s00) >> 6;
-        sharedData_800E39EC_0_s00[0] = (FP_TO(SquareRoot0(SQUARE(temp_v0) + SQUARE(temp_v0_2)), Q12_SHIFT) << 6) / g_DeltaTime;
+        sharedData_800E39EC_0_s00[0] = FP_TO(Math_Vector2MagCalcSafeQ6(g_SysWork.playerWork.player.position.vx - sharedData_800E39E4_0_s00,
+                                                                       g_SysWork.playerWork.player.position.vz - sharedData_800E39E8_0_s00), Q12_SHIFT) / g_DeltaTime;
         sharedData_800E3A0C_0_s00[0] = ratan2(g_SysWork.playerWork.player.position.vx - sharedData_800E39E4_0_s00, g_SysWork.playerWork.player.position.vz - sharedData_800E39E8_0_s00);
         sharedData_800E39E4_0_s00    = g_SysWork.playerWork.player.position.vx;
         sharedData_800E39E8_0_s00    = g_SysWork.playerWork.player.position.vz;
@@ -653,11 +635,10 @@ void Stalker_Control_2(s_SubCharacter* stalker)
     q19_12 distToPlayer;
     s32    i;
 
-    // TODO: Doesn't match?
-    //distToPlayer  = Math_Vector2MagCalcSafeQ6(g_Stalker_TargetPositionX - stalker->position.vx,
-    //                                 g_Stalker_TargetPositionZ - stalker->position.vz);
-    distToPlayer   = SquareRoot0(SQUARE((g_Stalker_TargetPositionX - stalker->position.vx) >> 6) + SQUARE((g_Stalker_TargetPositionZ - stalker->position.vz) >> 6));
-    distToPlayer <<= 6;
+    // @hack Separate `Q6_TO_Q12` needed for match, `Math_Vector2MagCalcSafeQ6` swaps two saved registers.
+    distToPlayer       = Math_Vector2MagCalc(Q12_TO_Q6(g_Stalker_TargetPositionX - stalker->position.vx),
+                                             Q12_TO_Q6(g_Stalker_TargetPositionZ - stalker->position.vz));
+    distToPlayer       = Q6_TO_Q12(distToPlayer);
     angleDeltaToPlayer = Math_AngleNormalizeSigned(ratan2(g_Stalker_TargetPositionX - stalker->position.vx,
                                               g_Stalker_TargetPositionZ - stalker->position.vz) -
                                        stalker->rotation.vy);
@@ -1107,8 +1088,8 @@ void Stalker_Control_3(s_SubCharacter* stalker)
 
     if (stalker->model.anim.status == ANIM_STATUS(StalkerAnim_30, true) && (radiusMax * 2) < distToPlayer)
     {
-        temp = SquareRoot0(SQUARE(Q12_TO_Q6(stalker->position.vx - stalkerProps.targetPositionX)) +
-                           SQUARE(Q12_TO_Q6(stalker->position.vz - stalkerProps.targetPositionZ)));
+        temp  = Math_Vector2MagCalc(Q12_TO_Q6(stalker->position.vx - stalkerProps.targetPositionX),
+                                    Q12_TO_Q6(stalker->position.vz - stalkerProps.targetPositionZ));
         temp2 = radiusMin >> 1;
         if (Q6_TO_Q12(temp) < temp2)
         {
@@ -1313,9 +1294,7 @@ void Stalker_Control_5(s_SubCharacter* stalker)
     q3_12  angleDeltaToPlayer;
     q19_12 distToPlayer;
     q19_12 angle1;
-    q19_12 newMoveSpeed0;
     s32    i;
-    q19_12 newMoveSpeed1;
 
     if (ANIM_STATUS_IDX_GET(stalker->model.anim.status) == StalkerAnim_30)
     {
@@ -1356,49 +1335,13 @@ void Stalker_Control_5(s_SubCharacter* stalker)
         {
             if (distToPlayer > DIST_TO_PLAYER_MAX)
             {
-                if (stalker->moveSpeed > MOVE_SPEED_MAX)
-                {
-                    newMoveSpeed0 = stalker->moveSpeed - Q12_MULT_FLOAT_PRECISE(g_DeltaTime, 1.0f);
-                    if (newMoveSpeed0 < MOVE_SPEED_MAX)
-                    {
-                        newMoveSpeed0 = MOVE_SPEED_MAX;
-                    }
-                }
-                else
-                {
-                    newMoveSpeed0 = MOVE_SPEED_MAX;
-                    newMoveSpeed1 = stalker->moveSpeed + Q12_MULT_FLOAT_PRECISE(g_DeltaTime, 1.0f);
-                    if (newMoveSpeed1 <= MOVE_SPEED_MAX)
-                    {
-                        newMoveSpeed0 = newMoveSpeed1;
-                    }
-                }
-
-                stalker->moveSpeed = newMoveSpeed0;
+                Chara_MoveSpeedUpdate3(stalker, Q12(1.0f), MOVE_SPEED_MAX);
                 return;
             }
 
             if (distToPlayer < MOVE_SPEED_MAX)
             {
-                if (stalker->moveSpeed > -MOVE_SPEED_MAX)
-                {
-                    newMoveSpeed0 = stalker->moveSpeed - Q12_MULT_FLOAT_PRECISE(g_DeltaTime, 1.0f);
-                    if (newMoveSpeed0 < -MOVE_SPEED_MAX)
-                    {
-                        newMoveSpeed0 = -MOVE_SPEED_MAX;
-                    }
-                }
-                else
-                {
-                    newMoveSpeed0 = -MOVE_SPEED_MAX;
-                    newMoveSpeed1 = stalker->moveSpeed + Q12_MULT_FLOAT_PRECISE(g_DeltaTime, 1.0f);
-                    if (newMoveSpeed1 <= -MOVE_SPEED_MAX)
-                    {
-                        newMoveSpeed0 = newMoveSpeed1;
-                    }
-                }
-
-                stalker->moveSpeed = newMoveSpeed0;
+                Chara_MoveSpeedUpdate3(stalker, Q12(1.0f), -MOVE_SPEED_MAX);
                 return;
             }
 
@@ -1838,31 +1781,11 @@ void Stalker_Control_9(s_SubCharacter* stalker)
 
 void Stalker_Control_10(s_SubCharacter* stalker)
 {
-    q19_12 curMoveSpeed;
-    q19_12 newMoveSpeed;
-    s32    newAnimStatus;
+    s32 newAnimStatus;
 
     if (!(stalkerProps.flags & (1 << 13)))
     {
-        // TODO: Use macro.
-        curMoveSpeed = stalker->moveSpeed;
-        if (curMoveSpeed > Q12(0.0f))
-        {
-            newMoveSpeed = curMoveSpeed - Q12_MULT_FLOAT_PRECISE(g_DeltaTime, 1.5f);
-            if (newMoveSpeed < Q12(0.0f))
-            {
-                newMoveSpeed = Q12(0.0f);
-            }
-        }
-        else
-        {
-            newMoveSpeed = curMoveSpeed + Q12_MULT_FLOAT_PRECISE(g_DeltaTime, 1.5f);
-            if (newMoveSpeed > Q12(0.0f))
-            {
-                newMoveSpeed = Q12(0.0f);
-            }
-        }
-        stalker->moveSpeed = newMoveSpeed;
+        Chara_MoveSpeedUpdate(stalker, Q12(1.5f));
     }
 
     if (stalker->health == Q12(0.0f))

@@ -620,8 +620,6 @@ void Groaner_ControlJumpAttack(s_SubCharacter* groaner)
     q3_12   angleDeltaToPlayer1;
     s32     temp_a2;
     q19_12  distToPlayer;
-    q19_12  deltaX;
-    q19_12  deltaZ;
     q19_12  deltaHeadingAngleToPlayer;
     q19_12  unkAngle;
     q19_12  rotMax;
@@ -629,10 +627,8 @@ void Groaner_ControlJumpAttack(s_SubCharacter* groaner)
     s32     temp1;
     s32     temp2;
 
-    // TODO: Use macro.
-    deltaX       = Q12_TO_Q6(g_SysWork.playerWork.player.position.vx - groaner->position.vx);
-    deltaZ       = Q12_TO_Q6(g_SysWork.playerWork.player.position.vz - groaner->position.vz);
-    distToPlayer = Q6_TO_Q12(SquareRoot0(SQUARE(deltaX) + SQUARE(deltaZ)));
+    distToPlayer = Math_Vector2MagCalcSafeQ6(g_SysWork.playerWork.player.position.vx - groaner->position.vx,
+                                             g_SysWork.playerWork.player.position.vz - groaner->position.vz);
 
     angleDeltaToPlayer0 = Math_AngleNormalizeSigned(Math_AngleBetweenPositionsGet(groaner->position, g_SysWork.playerWork.player.position) -
                                         groaner->rotation.vy);

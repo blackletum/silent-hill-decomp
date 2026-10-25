@@ -1252,8 +1252,6 @@ void sharedFunc_800D2D74_1_s05(s_SubCharacter* splitHead)
     s32     sp80[4];
     s16     sp90[4];
     s16     sp98[3];
-    q19_12  deltaX;
-    q19_12  deltaZ;
     q19_12  dist;
     s32     i;
     s32     unkIdx;
@@ -1266,9 +1264,8 @@ void sharedFunc_800D2D74_1_s05(s_SubCharacter* splitHead)
     sharedFunc_800D4408_1_s05(&sp20[1], 19, -36, 5, 113);
     sharedFunc_800D4408_1_s05(&sp20[2], 23, 36, 5, 113);
 
-    deltaX = Q12_TO_Q6(g_SysWork.playerWork.player.position.vx - splitHead->position.vx);
-    deltaZ = Q12_TO_Q6(g_SysWork.playerWork.player.position.vz - splitHead->position.vz);
-    dist   = Q6_TO_Q12(SquareRoot0(SQUARE(deltaX) + SQUARE(deltaZ)));
+    dist   = Math_Vector2MagCalcSafeQ6(g_SysWork.playerWork.player.position.vx - splitHead->position.vx,
+                                       g_SysWork.playerWork.player.position.vz - splitHead->position.vz);
 
     sp98[0] = ratan2(g_SysWork.playerWork.player.position.vx - sp20[0].vx,
                      g_SysWork.playerWork.player.position.vz - sp20[0].vz);
@@ -1587,8 +1584,6 @@ void sharedFunc_800D3B30_1_s05(s_SubCharacter* splitHead)
     s32                         offsetX;
     s32                         offsetZ;
     s32                         temp_v0;
-    q19_12                      deltaX;
-    q19_12                      deltaZ;
     s32                         var_v1;
     q3_12                       var_v1_3;
 
@@ -1656,10 +1651,8 @@ void sharedFunc_800D3B30_1_s05(s_SubCharacter* splitHead)
 
     if (splitHeadProps.flags & SplitHeadFlag_0)
     {
-        deltaX = Q12_TO_Q6(g_SysWork.playerWork.player.position.vx - splitHead->position.vx);
-        deltaZ = Q12_TO_Q6(g_SysWork.playerWork.player.position.vz - splitHead->position.vz);
-
-        if (Q6_TO_Q12((SquareRoot0(SQUARE(deltaX) + SQUARE(deltaZ)))) < Q12(3.3f))
+        if (Math_Vector2MagCalcSafeQ6(g_SysWork.playerWork.player.position.vx - splitHead->position.vx,
+                                      g_SysWork.playerWork.player.position.vz - splitHead->position.vz) < Q12(3.3f))
         {
             sharedFunc_800D4594_1_s05(&sp18, g_SysWork.playerWork.player.position.vx,
                                       g_SysWork.playerWork.player.position.vz, &sharedData_800D8618_1_s05[0], &sharedData_800D8618_1_s05[1]);
@@ -1718,7 +1711,7 @@ void sharedFunc_800D4070_1_s05(s_SubCharacter* splitHead)
 
         if ((ANIM_STATUS_IDX_GET(splitHead->model.anim.status) != SplitHeadAnim_12) && animIdx != SplitHeadAnim_13)
         {
-            if ((FP_FROM(splitHead->model.anim.time, Q12_SHIFT) < 20 || FP_FROM(splitHead->model.anim.time, Q12_SHIFT) > 35) &&
+            if (!ANIM_TIME_RANGE_CHECK(splitHead->model.anim.time, 20, 35) &&
                 (FP_FROM(splitHead->model.anim.time, Q12_SHIFT) > 14 && FP_FROM(splitHead->model.anim.time, Q12_SHIFT) < 20 ||
                  ((animIdx == SplitHeadAnim_1 || animIdx == SplitHeadAnim_9) && !Rng_GenerateUInt(0, 3)) || !Rng_GenerateUInt(0, 31)))
             {

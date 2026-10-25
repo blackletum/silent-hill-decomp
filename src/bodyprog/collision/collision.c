@@ -2332,7 +2332,7 @@ void func_8006D2B4(VECTOR3* offset, s_CollisionState_44* arg1) // 0x8006D2B4
             }
         }
 
-        dist = MIN(arg1->radiusOffset + 2, 16) * 16; // TODO: Use Q8 macros.
+        dist = Q8_TO_Q12(MIN(arg1->radiusOffset + 2, 16));
         func_8006D600(offset, angle, angleMin, angleMax, dist);
     }
 }

@@ -1926,8 +1926,8 @@ q19_12 vcRetMaxTgtMvXzLen(VC_WORK* w_p, VC_CAM_MV_PARAM* cam_mv_prm_p) // 0x8008
     q19_12 max_spd_xz;
 
     max_spd_xz = (w_p->chara_mv_spd + Q12(1.0f)) + abs(w_p->chara_ang_spd_y * 8);
-    max_spd_xz = (max_spd_xz < SPEED_XZ_MIN) ? SPEED_XZ_MIN : max_spd_xz;
-    max_spd_xz = (cam_mv_prm_p->max_spd_xz > max_spd_xz) ? max_spd_xz : cam_mv_prm_p->max_spd_xz;
+    max_spd_xz = CLAMP_LOW(max_spd_xz, SPEED_XZ_MIN);
+    max_spd_xz = CLAMP_HIGH(cam_mv_prm_p->max_spd_xz, max_spd_xz);
 
     return Math_MulFixed(max_spd_xz, g_DeltaTime, Q12_SHIFT);
 

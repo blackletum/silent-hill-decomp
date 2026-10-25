@@ -2445,8 +2445,6 @@ bool func_80064334(POLY_FT4** poly, s32 idx) // 0x80064334
 {
     s32              temp_s0;
     s32              temp_s4;
-    s32              windSpeedX;
-    s32              windSpeedZ;
     q19_12           temp_v1_5;
     s_func_80064334* ptr;
     POLY_FT4*        next;
@@ -2473,10 +2471,7 @@ bool func_80064334(POLY_FT4** poly, s32 idx) // 0x80064334
 
     ptr->field_15A = g_MapOverlayHdr.unkTable1_4C[idx].field_C.s_0.field_2;
 
-    // TODO: Use macro here.
-    windSpeedX = *g_MapOverlayHdr.particleWindSpeedX >> 6;
-    windSpeedZ = *g_MapOverlayHdr.particleWindSpeedZ >> 6;
-    g_MapOverlayHdr.unkTable1_4C[idx].field_C.s_0.field_2 += temp_s4 + (((SquareRoot0(SQUARE(windSpeedX) + SQUARE(windSpeedZ)) << 6) * temp_s4) >> 10);
+    g_MapOverlayHdr.unkTable1_4C[idx].field_C.s_0.field_2 += temp_s4 + ((Math_Vector2MagCalcSafeQ6(*g_MapOverlayHdr.particleWindSpeedX, *g_MapOverlayHdr.particleWindSpeedZ) * temp_s4) >> 10);
 
     if (ptr->field_168 < (u16)g_MapOverlayHdr.unkTable1_4C[idx].field_C.s_0.field_2)
     {
