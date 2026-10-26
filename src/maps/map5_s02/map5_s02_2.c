@@ -898,7 +898,7 @@ void Map_WorldObjectsUpdate(void) // 0x800D68FC
 {
     MAP_CHUNK_CHECK_VARIABLE_DECL();
 
-    Collision_FlagBitsClear(CollisionTriggerFlag_All);
+    Collision_TriggerFlagBitsClear(CollisionTriggerFlag_All);
 
     if (PLAYER_IN_MAP_CHUNK(vx, 1, 4, -1, 4) && PLAYER_IN_MAP_CHUNK(vz, 1, 2, -1, 2))
     {
@@ -917,7 +917,7 @@ void Map_WorldObjectsUpdate(void) // 0x800D68FC
                 WorldObjects_Add(&g_WorldObject_Key.object, &g_WorldObject_Key.position, &g_WorldObject_Key.rotation);
             }
 
-            Collision_FlagBitsSet(CollisionTriggerFlag_Objects);
+            Collision_TriggerFlagBitsSet(CollisionTriggerFlag_Objects);
         }
 
         if (Savegame_EventFlagGet(EventFlag_M5S02_UsedSafeKey))

@@ -80,20 +80,20 @@ void Map_WorldObjectsUpdate(void) // 0x800EA3F0
     s32      tmp1;
     MAP_CHUNK_CHECK_VARIABLE_DECL();
 
-    Collision_FlagBitsClear(CollisionTriggerFlag_All);
+    Collision_TriggerFlagBitsClear(CollisionTriggerFlag_All);
 
     if ((PLAYER_IN_MAP_CHUNK(vx, 1, -3, -1, -3) && PLAYER_IN_MAP_CHUNK(vz, 1, 3, -1, 3)) ||
         (PLAYER_IN_MAP_CHUNK(vx, 1, -4, -1, -4) && PLAYER_IN_MAP_CHUNK(vz, 1, 3, -1, 3)))
     {
         WorldObjects_Add(&g_WorldObject_Kidn04.object, &g_WorldObject_Kidn04.position, &SVECTOR3_Zero);
-        Collision_FlagBitsSet(2);
+        Collision_TriggerFlagBitsSet(2);
     }
 
     if (PLAYER_IN_MAP_CHUNK(vx, 1, -3, -1, -3) && PLAYER_IN_MAP_CHUNK(vz, 1, -2, -1, -2))
     {
         if (Savegame_EventFlagGet(EventFlag_346))
         {
-            Collision_FlagBitsSet(4);
+            Collision_TriggerFlagBitsSet(4);
 
             if (g_SysWork.playerWork.player.position.vz < Q12(-68.0f))
             {
@@ -102,7 +102,7 @@ void Map_WorldObjectsUpdate(void) // 0x800EA3F0
         }
         else
         {
-            Collision_FlagBitsSet(2);
+            Collision_TriggerFlagBitsSet(2);
         }
     }
 

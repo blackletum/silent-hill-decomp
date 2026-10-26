@@ -2491,8 +2491,8 @@ void Map_WorldObjectsUpdate(void) // 0x800EC080
     }
 
     func_800EE660();
-    Collision_FlagBitsClear(CollisionTriggerFlag_All);
-    Collision_FlagBitsSet(flags);
+    Collision_TriggerFlagBitsClear(CollisionTriggerFlag_All);
+    Collision_TriggerFlagBitsSet(flags);
 
     if (PLAYER_IN_MAP_CHUNK(vx, 1, -2, -1, -2) && PLAYER_IN_MAP_CHUNK(vz, 1, -1, 0, 0))
     {

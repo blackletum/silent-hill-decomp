@@ -8342,16 +8342,16 @@ void func_800E98EC(void) // 0x800E98EC
         }
     }
 
-    Collision_FlagBitsClear(CollisionTriggerFlag_All);
+    Collision_TriggerFlagBitsClear(CollisionTriggerFlag_All);
 
     if (D_800F4818)
     {
-        Collision_FlagBitsSet(2);
+        Collision_TriggerFlagBitsSet(2);
     }
 
     if (D_800F4819)
     {
-        Collision_FlagBitsSet(4);
+        Collision_TriggerFlagBitsSet(4);
     }
 }
 

@@ -40,7 +40,7 @@ typedef struct
 typedef struct _RayState
 {
     /* 0x0  */ bool             field_0; // "Use cylinder"?
-    /* 0x4  */ s16              field_4; // Collision flags.
+    /* 0x4  */ s16              triggerFlags; /** `e_CollisionTriggerFlags` */
     /* 0x6  */ q7_8             radiusOffset;
     /* 0x8  */ q7_8             hitDistance;
     /* 0xA  */ s8               __pad_A[2];

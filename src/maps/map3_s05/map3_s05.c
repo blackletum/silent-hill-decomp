@@ -969,7 +969,7 @@ void Map_WorldObjectsUpdate(void) // 0x800D87AC
     s32     cellZ;
     s32     projCellX;
     s32     projCellZ;
-    s32     collFlags;
+    s32     triggerFlags;
     s32     i;
     s32     newZ;
     MAP_CHUNK_CHECK_VARIABLE_DECL();
@@ -980,8 +980,8 @@ void Map_WorldObjectsUpdate(void) // 0x800D87AC
     cellZ = g_SysWork.playerWork.player.position.vz / Q12(CHUNK_SIZE);
     projCellZ = (g_SysWork.playerWork.player.position.vz > Q12(0.0f)) ? (cellZ + 1) : (cellZ - 1);
 
-    collFlags = CollisionTriggerFlag_None;
-    Collision_FlagBitsClear(CollisionTriggerFlag_All);
+    triggerFlags = CollisionTriggerFlag_None;
+    Collision_TriggerFlagBitsClear(CollisionTriggerFlag_All);
 
     if (projCellX == 2 && projCellZ == -3 && !Savegame_EventFlagGet(EventFlag_M3S05_PickupVideoTape))
     {
@@ -1002,12 +1002,12 @@ void Map_WorldObjectsUpdate(void) // 0x800D87AC
     {
         if (!Savegame_EventFlagGet(EventFlag_M3S05_CabinetPushed))
         {
-            collFlags |= CollisionTriggerFlag_Objects;
+            triggerFlags |= CollisionTriggerFlag_Objects;
             Savegame_EventFlagSet(EventFlag_288);
         }
         else
         {
-            collFlags |= CollisionTriggerFlag_2;
+            triggerFlags |= CollisionTriggerFlag_Block;
             Savegame_EventFlagClear(EventFlag_288);
         }
 
@@ -1048,7 +1048,7 @@ void Map_WorldObjectsUpdate(void) // 0x800D87AC
         D_800DD528 = 0;
     }
 
-    Collision_FlagBitsSet(collFlags);
+    Collision_TriggerFlagBitsSet(triggerFlags);
 
     if (projCellX == 4 && projCellZ == -2)
     {

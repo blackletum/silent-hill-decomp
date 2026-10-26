@@ -1330,11 +1330,11 @@ void Map_WorldObjectsUpdate(void) // 0x800D4BA4
     {
         if (Savegame_EventFlagGet(EventFlag_302))
         {
-            Collision_FlagBitsClear(CollisionTriggerFlag_All);
+            Collision_TriggerFlagBitsClear(CollisionTriggerFlag_All);
         }
         else
         {
-            Collision_FlagBitsSet(CollisionTriggerFlag_Objects);
+            Collision_TriggerFlagBitsSet(CollisionTriggerFlag_Objects);
         }
 
         WorldObjects_Add(&WorldObject_D_800D7FF0.object, &WorldObject_D_800D7FF0.position, &SVECTOR3_Zero);
@@ -1349,7 +1349,7 @@ void Map_WorldObjectsUpdate(void) // 0x800D4BA4
     }
     else
     {
-        Collision_FlagBitsClear(CollisionTriggerFlag_All);
+        Collision_TriggerFlagBitsClear(CollisionTriggerFlag_All);
     }
 
     if (PLAYER_IN_MAP_CHUNK(vx, 1, 5, -1, 5) && PLAYER_IN_MAP_CHUNK(vz, 0, 0, -1, 1))

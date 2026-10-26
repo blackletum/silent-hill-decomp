@@ -1538,10 +1538,10 @@ void Map_WorldObjectsUpdate(void) // 0x800DDA84
 {
     s32 rng0;
     s32 rng1;
-    s32 collFlags;
+    s32 triggerFlags;
     MAP_CHUNK_CHECK_VARIABLE_DECL();
 
-    collFlags = CollisionTriggerFlag_None;
+    triggerFlags = CollisionTriggerFlag_None;
 
     if (PLAYER_IN_MAP_CHUNK(vx, 1, -1, 0, 0) && PLAYER_IN_MAP_CHUNK(vz, 1, -2, -1, -2))
     {
@@ -1616,7 +1616,7 @@ void Map_WorldObjectsUpdate(void) // 0x800DDA84
         // Activate collisions for door blocking corpse in bathroom with shotgun.
         else
         {
-            collFlags = CollisionTriggerFlag_Objects;
+            triggerFlags = CollisionTriggerFlag_Objects;
         }
 
         WorldObjects_Add(&g_WorldObject_DoorHid.object, &g_WorldObject_DoorHid.position, &g_WorldObject_DoorHid.rotation);
@@ -1634,7 +1634,7 @@ void Map_WorldObjectsUpdate(void) // 0x800DDA84
         if (g_WorldObject_Door2Hi.rotation.vy != Q12_ANGLE(180.0f) ||
             g_WorldObject_Door1Hi.rotation.vy != g_WorldObject_Door2Hi.rotation.vy)
         {
-            collFlags |= CollisionTriggerFlag_2;
+            triggerFlags |= CollisionTriggerFlag_Block;
             Savegame_EventFlagClear(EventFlag_362);
         }
         else
@@ -1642,7 +1642,7 @@ void Map_WorldObjectsUpdate(void) // 0x800DDA84
             Savegame_EventFlagSet(EventFlag_362);
         }
 
-        collFlags |= CollisionTriggerFlag_Objects;
+        triggerFlags |= CollisionTriggerFlag_Objects;
     }
     else
     {
@@ -1680,11 +1680,11 @@ void Map_WorldObjectsUpdate(void) // 0x800DDA84
         WorldObjects_Add(&g_WorldObjectB.object, &g_WorldObjectB.position, &g_WorldObjectB.rotation);
     }
 
-    Collision_FlagBitsClear(CollisionTriggerFlag_All);
+    Collision_TriggerFlagBitsClear(CollisionTriggerFlag_All);
 
-    if (collFlags != CollisionTriggerFlag_None)
+    if (triggerFlags != CollisionTriggerFlag_None)
     {
-        Collision_FlagBitsSet(collFlags);
+        Collision_TriggerFlagBitsSet(triggerFlags);
     }
 
     if (PLAYER_IN_MAP_CHUNK(vx, 0, 0, -1, 1) && PLAYER_IN_MAP_CHUNK(vz, 1, -2, -1, -2))

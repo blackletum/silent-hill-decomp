@@ -862,10 +862,10 @@ PaperMap_DrawScaled                          = 0x800692A4; // type:func
 //--- PA: 0x044C8C   VA: 0x800697EC   subsegment: c, collision/collision
 //----------------------------------------------------------------------
 Collision_Init                               = 0x800697EC; // type:func
-Collision_FlagsGet                           = 0x80069810; // type:func
-Collision_FlagsSet                           = 0x80069820; // type:func
-Collision_FlagBitsSet                        = 0x8006982C; // type:func
-Collision_FlagBitsClear                      = 0x80069844;
+Collision_TriggerFlagsGet                           = 0x80069810; // type:func
+Collision_TriggerFlagsSet                           = 0x80069820; // type:func
+Collision_TriggerFlagBitsSet                        = 0x8006982C; // type:func
+Collision_TriggerFlagBitsClear                      = 0x80069844;
 Collision_NearbyTriggersGet                  = 0x80069860; // type:func
 Collision_ChunkHeaderPtrsInit                = 0x8006993C; // type:func
 Collision_CellChecksReset                    = 0x80069994;

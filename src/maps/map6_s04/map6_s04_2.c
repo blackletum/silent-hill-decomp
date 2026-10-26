@@ -3476,11 +3476,11 @@ void Map_WorldObjectsUpdate(void) // 0x800E5F54
     s32 cellX0;
     s32 projCellZ0;
     s32 projCellX0;
-    u16 collFlags;
+    u16 triggerFlags;
 
     #define playerChara g_SysWork.playerWork.player
 
-    collFlags = CollisionTriggerFlag_None;
+    triggerFlags = CollisionTriggerFlag_None;
 
     if (!Savegame_EventFlagGet(EventFlag_466))
     {
@@ -3516,7 +3516,7 @@ void Map_WorldObjectsUpdate(void) // 0x800E5F54
 
             if (Savegame_EventFlagGet(EventFlag_443))
             {
-                collFlags = CollisionTriggerFlag_Objects;
+                triggerFlags = CollisionTriggerFlag_Objects;
 
                 if (g_SysWork.sysState != SysState_EventCallback)
                 {
@@ -3569,8 +3569,8 @@ void Map_WorldObjectsUpdate(void) // 0x800E5F54
             Sfx_WithFalloffAndPitchPlay(Sfx_Unk1615, &D_800CC7CC, Q8(0.5f), Q12(32.0f), 0);
     }
 
-    Collision_FlagBitsClear(CollisionTriggerFlag_All);
-    Collision_FlagBitsSet(collFlags);
+    Collision_TriggerFlagBitsClear(CollisionTriggerFlag_All);
+    Collision_TriggerFlagBitsSet(triggerFlags);
     func_800E0204();
 }
 

@@ -1706,7 +1706,7 @@ void Map_WorldObjectsUpdate(void) // 0x800D9BB0
                 D_800E05AE += Q12(1.0f);
             }
 
-            Collision_FlagBitsClear(CollisionTriggerFlag_Objects);
+            Collision_TriggerFlagBitsClear(CollisionTriggerFlag_Objects);
             D_800E05A8 += g_DeltaTime;
 
             if (D_800E05AC) {} // @hack
@@ -1737,7 +1737,7 @@ void Map_WorldObjectsUpdate(void) // 0x800D9BB0
         }
         else
         {
-            Collision_FlagBitsSet(2);
+            Collision_TriggerFlagBitsSet(2);
         }
 
         WorldObjects_Add(&g_WorldObject_Fence.object, &g_WorldObject_Fence.position, &g_WorldObject_Fence.rotation);
@@ -1752,12 +1752,12 @@ void Map_WorldObjectsUpdate(void) // 0x800D9BB0
 
         if (!Savegame_EventFlagGet(EventFlag_327))
         {
-            Collision_FlagBitsSet(2);
+            Collision_TriggerFlagBitsSet(2);
             WorldObjects_Add(&g_WorldObject_Mal6[0], &g_WorldObject_UnkPos, &g_WorldObject_UnkRot);
         }
         else
         {
-            Collision_FlagBitsClear(CollisionTriggerFlag_Objects);
+            Collision_TriggerFlagBitsClear(CollisionTriggerFlag_Objects);
             WorldObjects_Add(&g_WorldObject_Mal6[1], &g_WorldObject_UnkPos, &g_WorldObject_UnkRot);
         }
     }

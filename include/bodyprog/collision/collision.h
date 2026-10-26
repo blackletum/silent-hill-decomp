@@ -12,19 +12,6 @@
 #define INTERSECTION_BUFFER    Q12(0.1f)
 #define DEFAULT_CEILING_HEIGHT -16.0f
 
-/** @brief Global collision flags.
- * Applies for both NPCs and the player.
- */
-typedef enum _CollisionTriggerFlags
-{
-    CollisionTriggerFlag_None    = 0,
-    CollisionTriggerFlag_Map     = 1 << 0,
-    CollisionTriggerFlag_Objects = 1 << 1,
-    CollisionTriggerFlag_2       = 1 << 2, // Enables alternative objects collisions?
-    CollisionTriggerFlag_3       = 1 << 3, /** @unused Only ever called in `MAP6_S05`. */
-    CollisionTriggerFlag_All     = 0xFFFF
-} e_CollisionTriggerFlags;
-
 /** @brief Collision types. */
 typedef enum _CollisionType
 {
@@ -121,15 +108,15 @@ typedef struct _CollisionCellPoint
 {
     /* 0x0  */ s_IpdCollisionData*    ipdCollisionData;
     /* 0x4  */ u8                     cellIdx;               // `s_IpdCollisionData::cells` index.
-    /* 0x5  */ u8                     heightDisabled;
+    /* 0x5  */ u8                     disableHeight;
     /* 0x6  */ SVECTOR3               offset;                // Q7.8 | Probe position inside cell/cell? Wrong struct? Y is maybe Z.
     /* 0xC  */ s_CollisionState_CC_C  field_C;               // Cell surface??
-    /* 0xE  */ u8                     field_E;               // } Index from `s_IpdCollisionData::field_6_8`.
-    /* 0xF  */ u8                     field_F;               // }
+    /* 0xE  */ u8                     field_E;               // For surface 0. } Set to `s_IpdCollisionData::field_6_8`.
+    /* 0xF  */ u8                     field_F;               // For surface 1. }
     /* 0x10 */ u8                     disableSurface0Height; /** `bool` */
     /* 0x11 */ u8                     disableSurface1Height; /** `bool` */
-    /* 0x12 */ SVECTOR3               cellSplitVertex0;      /** Q23.8 | Vertex from `s_IpdCollisionData::cellSplitVertices`. */
-    /* 0x18 */ SVECTOR3               cellSplitVertex1;      /** Q23.8 | Vertex from `s_IpdCollisionData::cellSplitVertices`. */
+    /* 0x12 */ SVECTOR3               cellSplitVertex0;      /** Q7.8 | Vertex from `s_IpdCollisionData::cellSplitVertices`. */
+    /* 0x18 */ SVECTOR3               cellSplitVertex1;      /** Q7.8 | Vertex from `s_IpdCollisionData::cellSplitVertices`. */
     /* 0x20 */ s_CollisionState_CC_20 field_20;
 } s_CollisionCellPoint;
 STATIC_ASSERT_SIZEOF(s_CollisionCellPoint, 56);
@@ -154,11 +141,11 @@ typedef struct _CollisionCharaState
 
 typedef struct _CollisionState
 {
-    /* 0x0+0  */ u8                    field_0_0     : 8;  /** `bool` | Related to `Collision_CellChecksReset`. Maybe name `hasCellChecks`? */
+    /* 0x0+0  */ u8                    offsetX       : 8;  /** `bool` | Related to `Collision_CellChecksReset`. Maybe name `hasCellChecks`? */
     /* 0x0+8  */ s8                    isCharaMoving : 1;  /** `bool` */
     /* 0x0+9  */ s8                    field_0_9     : 1;  /** `bool` */
     /* 0x0+10 */ s8                    field_0_10    : 1;  /** `bool` */
-    /* 0x2    */ u16                   flags         : 16; /** `e_CollisionTriggerFlags` */
+    /* 0x2    */ u16                   triggerFlags  : 16; /** `e_CollisionTriggerFlags` */
     /* 0x4    */ s_CollisionCharaState charaState;
     /* 0x34   */ s32                   field_34;
     /* 0x38   */ s16                   field_38; // `distanceAlpha` for something.
@@ -172,7 +159,7 @@ typedef struct _CollisionState
     /* 0x84   */ q23_8                 charaCellOffsetZ; // } 
     /* 0x88   */ q19_12                tiltAngleX;
     /* 0x8C   */ q19_12                tiltAngleZ;
-    /* 0x90   */ bool                  heightDisabled; /** `bool` | TODO: Does disabled height indicate a wall or pit? */
+    /* 0x90   */ bool                  disableHeight; /** `bool` | TODO: Does disabled height indicate a wall or pit? */
     /* 0x94   */ s32                   floorType;      /** `e_FloorType` */
 
                  union
@@ -223,29 +210,29 @@ extern s_ActiveCollisionTriggers g_ActiveCollisionTriggers;
 /** @brief Initializes the collision subsystem, resetting flags and clearing the trigger zone count. */
 void Collision_Init(void);
 
-/** @brief Gets the active collision flags.
+/** @brief Gets the active collision trigger flags.
  *
- * @return Active collision flags.
+ * @return Active collision trigger flags.
  */
-u16 Collision_FlagsGet(void);
+u16 Collision_TriggerFlagsGet(void);
 
-/** @brief Sets the active collision flags.
+/** @brief Sets the active collision trigger flags.
  *
- * @param collFlags New collision flags.
+ * @param triggerFlags New collision trigger flags.
  */
-void Collision_FlagsSet(u16 collFlags);
+void Collision_TriggerFlagsSet(u16 triggerFlags);
 
-/** @brief Sets additional active collision flags.
+/** @brief Sets additional active collision trigger flags.
  *
- * @param collFlags Additional collision flags to set.
+ * @param triggerFlags Additional collision trigger flags to set.
  */
-void Collision_FlagBitsSet(u16 collFlags);
+void Collision_TriggerFlagBitsSet(u16 triggerFlags);
 
-/** @brief Clears active collision flags. `CollisionTriggerFlag_Map` is excepted.
+/** @brief Clears active collision trigger flags. `CollisionTriggerFlag_Map` is excepted.
  *
- * @param collFlags Collision flags to clear.
+ * @param triggerFlags Collision trigger flags to clear.
  */
-void Collision_FlagBitsClear(s32 collFlags);
+void Collision_TriggerFlagBitsClear(s32 triggerFlags);
 
 /** @brief Runs through collision triggers and collects those containing the given XZ position.
  *

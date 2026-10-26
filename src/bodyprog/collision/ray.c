@@ -147,7 +147,7 @@ bool Ray_TraceSetup(s_RayState* state, bool useCylinder, q7_8 radiusOffset, cons
     }
 
     state->field_0      = useCylinder;
-    state->field_4      = g_ActiveCollisionTriggers.flags;  // Struct could begin some point earlier.
+    state->triggerFlags = g_ActiveCollisionTriggers.flags; // TODO: Struct could begin some point earlier.
     state->radiusOffset = radiusOffset;
     state->hitDistance  = SHRT_MAX;
     state->character    = NULL;
@@ -425,8 +425,6 @@ void func_8006E490(s_func_8006E490* arg0, u32 flags, q19_12 posX, q19_12 posZ) /
 void func_8006E53C(s_RayState* state, s_CellRange* cellRangePair, s_IpdCollisionData* collData) // 0x8006E53C
 {
     s32               i;
-    s32               flag;
-    s32               temp_v0_2;
     bool              hasSurface;
     bool              cond1;
     bool              cond2;
@@ -449,8 +447,7 @@ void func_8006E53C(s_RayState* state, s_CellRange* cellRangePair, s_IpdCollision
                 curCell = &collData->cells[cellIdx];
 
                 // TODO: `CHECK_FLAG_IDX` macro doesn't match.
-                flag = (u16)state->field_4 >> ((curCell->field_0_14 * 4) | curCell->field_2_14);
-                if (flag & (1 << 0))
+                if (((u16)state->triggerFlags >> ((curCell->triggerFlagsLow << 2) | curCell->triggerFlagsHigh)) & (1 << 0))
                 {
                     surfaceIdx0 = curCell->surfaceIdx0;
                     surfaceIdx1 = curCell->surfaceIdx1;
@@ -494,9 +491,9 @@ void func_8006E53C(s_RayState* state, s_CellRange* cellRangePair, s_IpdCollision
             else
             {
                 curCellAttribs = &collData->cellAttribs[cellIdx - collData->cellCount];
-                temp_v0_2 = (u16)state->field_4 >> curCellAttribs->field_0_8; // Flag check.
 
-                if ((temp_v0_2 & (1 << 0)) &&
+                // TODO: `CHECK_FLAG_IDX` doesn't match.`
+                if ((((u16)state->triggerFlags >> curCellAttribs->triggerFlagIdx) & (1 << 0)) &&
                     (state->field_0 == true ||
                      (curCellAttribs->floorType != FloorType_Default &&
                       curCellAttribs->floorType != FloorType_None)) &&
@@ -598,12 +595,12 @@ void func_8006E78C(s_RayState* state, s_IpdCell* cell, SVECTOR3* splitVerts, s_I
 
                     if (maybeRayStep >= maybeSplitDiff.vy && hitDist < state->hitDistance)
                     {
-                        offsetX = cell->field_2_0;
-                        offsetZ = -cell->field_0_0;
+                        offsetX = cell->offsetY;
+                        offsetZ = -cell->offsetX;
                         if (state->field_0 != true && hasSurface && (sp8.vy - sp0.vy) > 0)
                         {
                             offsetX = -offsetX;
-                            offsetZ = cell->field_0_0;
+                            offsetZ = cell->offsetX;
                         }
 
                         state->hitDistance  = hitDist;

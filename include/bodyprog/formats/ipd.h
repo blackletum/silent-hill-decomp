@@ -14,8 +14,19 @@
 
 #define IPD_HEADER_MAGIC 20
 
-#define CHUNK_SIZE    40.0f /** 40x40 cells per chunk. */
-#define SUBCHUNK_SIZE 8.0f  /** 8x8 cells per subchunk. */
+#define CHUNK_SIZE    40.0f /** 40x40 meters. */
+#define SUBCHUNK_SIZE 8.0f  /** 8x8 meters. */
+
+/** @brief Collision trigger flags. Pplied per cell. */
+typedef enum _CollisionTriggerFlags
+{
+    CollisionTriggerFlag_None    = 0,
+    CollisionTriggerFlag_Map     = 1 << 0,
+    CollisionTriggerFlag_Objects = 1 << 1,
+    CollisionTriggerFlag_Block   = 1 << 2, /** Blocks select passages, e.g. the gate to the Split Head boss elevator. */
+    CollisionTriggerFlag_3       = 1 << 3, /** @unused Secondary block? Only ever called in `MAP6_S05`. */
+    CollisionTriggerFlag_All     = 0xFFFF
+} e_CollisionTriggerFlags;
 
 /** @brief Floor material types. TODO: SH2 suggests "material"? */
 typedef enum _FloorType
@@ -38,12 +49,12 @@ typedef enum _FloorType
 /** @brief IPD collision cell surface split. */
 typedef struct _IpdCellSurface
 {
-    /* 0x0    */ q7_8 field_0;            // Relative X.
+    /* 0x0    */ q7_8 positionX;          // Relative X.
     /* 0x2    */ q7_8 baseFloorHeight;    // Base floor height with slope unaccounted for?
-    /* 0x4    */ q7_8 field_4;            // Relative Z.
+    /* 0x4    */ q7_8 positionZ;          // Relative Z.
     /* 0x6+0  */ u16  floorType      : 5; /** `e_FloorType` */
     /* 0x6+5  */ u16  disableHeight  : 3; /** `bool` */
-    /* 0x6+8  */ u16  field_6_8      : 3; // Causes special collision triggers to behave differently.
+    /* 0x6+8  */ u16  field_6_8      : 3; // Some slot index. Causes special collision triggers to behave differently.
                                           // The properties should be based upon a value set at
                                           // `s_CollisionState::field_A0::s_0::field_8` and it shouldn't
                                           // be bigger than 3.
@@ -61,11 +72,11 @@ STATIC_ASSERT_SIZEOF(s_IpdCellSurface, 12);
 /** @brief IPD collision cell with two cell surfaces. */
 typedef struct _IpdCell
 {
-    /* 0x0+0  */ q7_8 field_0_0  : 14; // Z. Unsure, used as X in one place. Maybe Z?
-    /* 0x0+14 */ u16  field_0_14 : 2;  // ID Values?
-    /* 0x2+0  */ q7_8 field_2_0  : 14; // X. Unsure, used as Y in one place. Maybe Z?
-    /* 0x2+14 */ u16  field_2_14 : 2;  // ID Values? See `func_8006B318` definition for further explanation.
-    /* 0x4    */ q7_8 field_4;         // Y?
+    /* 0x0+0  */ q7_8 offsetX          : 14;
+    /* 0x0+14 */ u16  triggerFlagsLow  : 2; /** Combined with `triggerFlagsHigh` for complete field. */
+    /* 0x2+0  */ q7_8 offsetY          : 14;
+    /* 0x2+14 */ u16  triggerFlagsHigh : 2; /** Combined with `triggerFlagsLow` for complete field. */
+    /* 0x4    */ q7_8 offsetZ;
     /* 0x6    */ u8   splitVertexIdx0; // `s_IpdCollisionData::cellSplitVertices` index.
     /* 0x7    */ u8   splitVertexIdx1; // `s_IpdCollisionData::cellSplitVertices` index.
     /* 0x8    */ u8   surfaceIdx0;     // `s_IpdCollisionData::cellSurfaces` index.
@@ -76,12 +87,12 @@ STATIC_ASSERT_SIZEOF(s_IpdCell, 10);
 /** @brief IPD collision cell attributes. TODO: Name uncertain. */
 typedef struct _IpdCellAttribs
 {
-    /* 0x0+0  */ u16      floorType     : 5; /** `e_FloorType` */
-    /* 0x0+5  */ u16      disableHeight : 3; /** `bool` */
-    /* 0x0+8  */ u16      field_0_8     : 4; // Some flag index.
-    /* 0x0+12 */ u16      field_0_12    : 3; // Unused?
-    /* 0x0+15 */ u16      field_0_15    : 1; // `bool` | Unused?
-    /* 0x2    */ SVECTOR3 offset;            /** Q7.8 */
+    /* 0x0+0  */ u16      floorType      : 5; /** `e_FloorType` */
+    /* 0x0+5  */ u16      disableHeight  : 3; /** `bool` */
+    /* 0x0+8  */ u16      triggerFlagIdx : 4; /** `e_CollisionTriggerFlags` index. */
+    /* 0x0+12 */ u16      field_0_12     : 3; // Unused?
+    /* 0x0+15 */ u16      field_0_15     : 1; // `bool` | Unused?
+    /* 0x2    */ SVECTOR3 offset;             /** Q7.8 */
     /* 0x8    */ q7_8     radiusOffset;
 } s_IpdCellAttribs;
 STATIC_ASSERT_SIZEOF(s_IpdCellAttribs, 10);
@@ -102,7 +113,7 @@ typedef struct _IpdCollisionData
     /* 0x8+8  */ u32               cellSurfaceCount     : 8; /** `cellSurfaces` size. */
     /* 0x8+16 */ u32               cellCount            : 8; /** `cells` size. */
     /* 0x8+24 */ u32               cellAttribsCount     : 8; /** `cellAttribs` size. */
-    /* 0xC    */ SVECTOR3*         cellSplitVertices;        /** Pairs define a cell line split. */
+    /* 0xC    */ SVECTOR3*         cellSplitVertices;        /** Q7.8 | Pairs define a cell line split. */
     /* 0x10   */ s_IpdCellSurface* cellSurfaces;             /** Unique tangible collision cell surfaces. */
     /* 0x14   */ s_IpdCell*        cells;                    /** Unique tangible collision cells. NOT 1 per grid cell??? */
     /* 0x18   */ s_IpdCellAttribs* cellAttribs;              /** Collision cell attributes. */
