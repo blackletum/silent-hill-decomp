@@ -126,7 +126,7 @@ void func_8006E53C(s_RayState* state, s_IpdShapeRange* shapeRangePair, s_IpdColl
 
 void func_8006E78C(s_RayState* state, s_IpdPolygon* polygon, SVECTOR3* splitVerts, s_IpdPolygonSurface* surfaces, bool hasSurface);
 
-void func_8006EB8C(s_RayState* state, s_IpdCylinder* radius);
+void func_8006EB8C(s_RayState* state, s_IpdCylinder* cylinder);
 
 // Fills ray hit data?
 void func_8006EE0C(s_RayState_6C* arg0, bool useCylinder, const s_SubCharacter* chara);

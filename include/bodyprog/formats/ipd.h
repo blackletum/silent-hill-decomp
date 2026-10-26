@@ -127,14 +127,14 @@ typedef struct _IpdCollisionData
     /* 0x1C   */ q7_8                 cellSize;                    /** `Q8(2.0f)` in most IPD files, sometimes `Q8(0.0f)`. */
     /* 0x1E   */ u8                   cellCountX;                  /** 20 in most IPD files, sometimes 0. */
     /* 0x1F   */ u8                   cellCountZ;                  /** 20 in most IPD files, sometimes 0. */
-    /* 0x20   */ s_IpdShapeRange*     shapeRanges;                 /** Pairs define ranges. */
+    /* 0x20   */ s_IpdShapeRange*     shapeRanges;                 /** Pairs of elements define each range. */
     /* 0x24   */ u16                  shapeLutSize;                /** `shapeLut` array size. */
     /* 0x26   */ u16                  surfaceLutSize;              /** `surfaceLut` array size. */
-    /* 0x28   */ u8*                  shapeLut;                    /** Indices into `shapeCheckIdxBuffer`. */
+    /* 0x28   */ u8*                  shapeLut;                    /** Indices into `shapePassStampBuffer`. */
     /* 0x2C   */ u8*                  surfaceLut;                  /** Indices into `polygonSurfaces`. */
-    /* 0x30   */ u8                   shapeCheckCount;
+    /* 0x30   */ u8                   shapePassCounter;            /** Active shape pass. Stamps below this value, i.e. from an older pass, are "unvisited". */
     /* 0x31   */ s8                   __pad_31[3];
-    /* 0x34   */ u8                   shapeCheckIdxBuffer[256];    // Shape indices, used when conducting queries? Contains `s_IpdCollisionData::polygonCount` valid entries?
+    /* 0x34   */ u8                   shapePassStampBuffer[256];   /** Tracks visited shapes per query pass. */
 } s_IpdCollisionData;
 STATIC_ASSERT_SIZEOF(s_IpdCollisionData, 308);
 

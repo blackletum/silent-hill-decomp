@@ -215,7 +215,7 @@ bool Ray_TraceRun(s_RayTrace* trace, s_RayState* state) // 0x8006DEB0
             collData->cylinderCount       != 0)
         {
             func_8006E0AC(state, collData);
-            Collision_CellChecksReset(collData);
+            Collision_ShapePassReset(collData);
 
             for (curUnk = &state->field_8C; curUnk < &state->field_8C[state->field_88]; curUnk++)
             {
@@ -438,9 +438,9 @@ void func_8006E53C(s_RayState* state, s_IpdShapeRange* shapeRangePair, s_IpdColl
     {
         shapeIdx = collData->shapeLut[i];
 
-        if (collData->shapeCheckCount >= collData->shapeCheckIdxBuffer[shapeIdx])
+        if (collData->shapePassStampBuffer[shapeIdx] <= collData->shapePassCounter)
         {
-            collData->shapeCheckIdxBuffer[shapeIdx] = collData->shapeCheckCount + 1;
+            collData->shapePassStampBuffer[shapeIdx] = collData->shapePassCounter + 1;
 
             // Handle polygon shape.
             if (shapeIdx < collData->polygonCount)

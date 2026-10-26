@@ -324,14 +324,15 @@ types:
       - id: surface_lut_offset
         type: u4
 
-      - id: cell_check_count
+      - id: shape_pass_counter
         type: u1
+        doc: Used by engine.
 
       - size: 3
 
-      - id: shape_check_idx_buffer
+      - id: shape_pass_stamp_buffer
         size: 256
-        doc: Static pool used by engine.
+        doc: Used by engine.
 
     instances:
       polygon_split_vertices:

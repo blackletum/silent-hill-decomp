@@ -99,27 +99,26 @@ typedef union
               {
                   /* 0x0 */ u8 surfaceIdx0;
                   /* 0x1 */ u8 surfaceIdx1;
-    /* 0x0 */ } polygonSurfaces;
-} s_CollisionState_CC_C;
+    /* 0x0 */ } surfaces;
+} s_CollisionShapeAttribs;
 
-// TODO: Maybe "split vertices" is the wrong idea.
-/** @brief Collision cell point data. */
-typedef struct _CollisionCellPoint
+/** @brief Collision shape point data. */
+typedef struct _CollisionShapePoint
 {
-    /* 0x0  */ s_IpdCollisionData*    ipdCollisionData;
-    /* 0x4  */ u8                     shapeIdx;              // `s_IpdCollisionData::polygons` index.
-    /* 0x5  */ u8                     disableHeight;
-    /* 0x6  */ SVECTOR3               offset;                // Q7.8 | Probe position inside cell/cell? Wrong struct? Y is maybe Z.
-    /* 0xC  */ s_CollisionState_CC_C  field_C;               // Cell surface??
-    /* 0xE  */ u8                     field_E;               // For surface 0. } Set to `s_IpdCollisionData::field_6_8`.
-    /* 0xF  */ u8                     field_F;               // For surface 1. }
-    /* 0x10 */ u8                     disableSurface0Height; /** `bool` */
-    /* 0x11 */ u8                     disableSurface1Height; /** `bool` */
-    /* 0x12 */ SVECTOR3               polygonSplitVertex0;      /** Q7.8 | Vertex from `s_IpdCollisionData::polygonSplitVertices`. */
-    /* 0x18 */ SVECTOR3               polygonSplitVertex1;      /** Q7.8 | Vertex from `s_IpdCollisionData::polygonSplitVertices`. */
-    /* 0x20 */ s_CollisionState_CC_20 field_20;
-} s_CollisionCellPoint;
-STATIC_ASSERT_SIZEOF(s_CollisionCellPoint, 56);
+    /* 0x0  */ s_IpdCollisionData*     ipdCollisionData;
+    /* 0x4  */ u8                      shapeIdx;              // `s_IpdCollisionData::polygons` index.
+    /* 0x5  */ u8                      disableHeight;
+    /* 0x6  */ SVECTOR3                offset;                // Q7.8 | Probe position inside cell/cell? Wrong struct? Y is maybe Z.
+    /* 0xC  */ s_CollisionShapeAttribs attribs;
+    /* 0xE  */ u8                      field_E;               // For surface 0. } Set to `s_IpdCollisionData::field_6_8`.
+    /* 0xF  */ u8                      field_F;               // For surface 1. }
+    /* 0x10 */ u8                      disableSurface0Height; /** `bool` */
+    /* 0x11 */ u8                      disableSurface1Height; /** `bool` */
+    /* 0x12 */ SVECTOR3                polygonSplitVertex0;      /** Q7.8 | Vertex from `s_IpdCollisionData::polygonSplitVertices`. */
+    /* 0x18 */ SVECTOR3                polygonSplitVertex1;      /** Q7.8 | Vertex from `s_IpdCollisionData::polygonSplitVertices`. */
+    /* 0x20 */ s_CollisionState_CC_20  field_20;
+} s_CollisionShapePoint;
+STATIC_ASSERT_SIZEOF(s_CollisionShapePoint, 56);
 
 /** @brief Character collision state. */
 typedef struct _CollisionCharaState
@@ -141,7 +140,7 @@ typedef struct _CollisionCharaState
 
 typedef struct _CollisionState
 {
-    /* 0x0+0  */ u8                    offsetX       : 8;  /** `bool` | Related to `Collision_CellChecksReset`. Maybe name `hasCellChecks`? */
+    /* 0x0+0  */ u8                    offsetX       : 8;  /** `bool` | Related to `Collision_ShapePassReset`. Maybe name `hasCellChecks`? */
     /* 0x0+8  */ s8                    isCharaMoving : 1;  /** `bool` */
     /* 0x0+9  */ s8                    field_0_9     : 1;  /** `bool` */
     /* 0x0+10 */ s8                    field_0_10    : 1;  /** `bool` */
@@ -180,7 +179,7 @@ typedef struct _CollisionState
                          /* 0x1 */ u8                  closestZCellIdx;
                          /* 0x2 */ u8                  cellSpanX;
                          /* 0x3 */ u8                  cellSpanZ;
-                         /* 0x4 */ s_IpdShapeRange*       shapeRangePair;
+                         /* 0x4 */ s_IpdShapeRange*    shapeRangePair;
                          /* 0x8 */ s_CollisionState_A8 field_8[4];
                      } s_0;
                      struct
@@ -195,7 +194,7 @@ typedef struct _CollisionState
 
     /* 0xC8   */ u8                   shapeIdx; /** Secondary. Used only if detecting a cell after not finding one. */
     /* 0xCA   */ q7_8                 floorHeight; // TODO: Base floor height with slope unaccounted for?
-    /* 0xCC   */ s_CollisionCellPoint point;
+    /* 0xCC   */ s_CollisionShapePoint point;
     // TODO: Maybe incomplete. Maybe not, added the final padding based on `Collision_SurfaceGet`.
 } s_CollisionState;
 
@@ -248,9 +247,17 @@ void Collision_NearbyTriggersGet(q19_12 posX, q19_12 posZ, const s_CollisionTrig
 
 void Ipd_CollisionPtrsInit(s_IpdCollisionData* collData);
 
-void Collision_CellChecksReset(s_IpdCollisionData* collData);
+/** @brief Resets the shape query pass system, clearing the counter and stamps to 0 in collision data..
+ *
+ * @param collData Collision data to update.
+ */
+void Collision_ShapePassReset(s_IpdCollisionData* collData);
 
-void Collision_CellChecksCountUpdate(s_IpdCollisionData* collData);
+/** @brief Increments the shape query pass counter in collision data.
+ *
+ * @param collData Collision data to update.
+ */
+void Collision_ShapePassUpdate(s_IpdCollisionData* collData);
 
 // ========================================
 // @split? IPD/floor collision detection.
@@ -388,7 +395,7 @@ void func_8006B6E8(s_CollisionState* state, s_IpdShapeRange* shapeRangePair);
 
 bool func_8006B7E0(s_CollisionState_A8* cur, s_CollisionState_CC_20* prev);
 
-void func_8006B8F8(s_CollisionCellPoint* cellPoint);
+void func_8006B8F8(s_CollisionShapePoint* cellPoint);
 
 void func_8006B9C8(s_CollisionState* state);
 
