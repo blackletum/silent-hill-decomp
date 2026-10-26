@@ -210,7 +210,7 @@ bool Ray_TraceRun(s_RayTrace* trace, s_RayState* state) // 0x8006DEB0
     {
         collData = *curCollData;
 
-        if (collData->cellSurfaceCount     != 0 ||
+        if (collData->cellSurfaceCount != 0 ||
             collData->cellCount        != 0 ||
             collData->cellAttribsCount != 0)
         {
@@ -219,7 +219,7 @@ bool Ray_TraceRun(s_RayTrace* trace, s_RayState* state) // 0x8006DEB0
 
             for (curUnk = &state->field_8C; curUnk < &state->field_8C[state->field_88]; curUnk++)
             {
-                temp_lo = curUnk->field_2 * state->field_7C;
+                temp_lo = curUnk->field_2 * state->cellCountX;
                 func_8006E53C(state, &collData->cellRanges[temp_lo + curUnk->field_0], collData);
             }
         }
@@ -250,18 +250,18 @@ bool Ray_TraceRun(s_RayTrace* trace, s_RayState* state) // 0x8006DEB0
     return false;
 }
 
-void func_8006E0AC(s_RayState* state, const s_IpdCollisionData* arg1) // 0x8006E0AC
+void func_8006E0AC(s_RayState* state, const s_IpdCollisionData* collData) // 0x8006E0AC
 {
-    // TODO: `state` type might be wrong.
-    state->field_6C.positionX    = arg1->positionX;
-    state->field_6C.positionZ    = arg1->positionZ;
+    // TODO: Some `s_RayState_6C` fields might be wrong.
+    state->field_6C.positionX   = collData->positionX;
+    state->field_6C.positionZ   = collData->positionZ;
     state->field_6C.floorHeight = state->from.vx - state->field_6C.positionX;
-    state->field_6C.topHeight    = state->from.vz - state->field_6C.positionZ;
-    state->field_6C.field_C      = state->field_6C.floorHeight + state->offset.vx;
-    state->field_6C.field_E      = state->field_6C.topHeight + state->offset.vz;
-    state->field_7C              = arg1->cellCountX;
-    state->field_80              = arg1->cellCountZ;
-    state->field_84              = arg1->cellSize;
+    state->field_6C.topHeight   = state->from.vz - state->field_6C.positionZ;
+    state->field_6C.field_C     = state->field_6C.floorHeight + state->offset.vx;
+    state->field_6C.field_E     = state->field_6C.topHeight + state->offset.vz;
+    state->cellCountX           = collData->cellCountX;
+    state->cellCountZ           = collData->cellCountZ;
+    state->cellSize             = collData->cellSize;
 
     func_8006E150(&state->field_6C, ((DVECTOR*)&state->offset)[0], ((DVECTOR*)&state->offset)[1]);
 }
@@ -422,7 +422,7 @@ void func_8006E490(s_func_8006E490* arg0, u32 flags, q19_12 posX, q19_12 posZ) /
     }
 }
 
-void func_8006E53C(s_RayState* state, s_IpdCellRange* cellRanges, s_IpdCollisionData* collData) // 0x8006E53C
+void func_8006E53C(s_RayState* state, s_CellRange* cellRangePair, s_IpdCollisionData* collData) // 0x8006E53C
 {
     s32               i;
     s32               flag;
@@ -436,9 +436,9 @@ void func_8006E53C(s_RayState* state, s_IpdCellRange* cellRanges, s_IpdCollision
     s_IpdCellAttribs* curCellAttribs;
     s_IpdCell*        curCell;
 
-    for (i = cellRanges[0].unkCellIdx; i < cellRanges[1].unkCellIdx; i++)
+    for (i = cellRangePair[0].cellLutIdx; i < cellRangePair[1].cellLutIdx; i++)
     {
-        cellIdx = collData->unkCellIdxs[i];
+        cellIdx = collData->cellLut[i];
 
         if (collData->cellCheckCount >= collData->cellCheckIdxBuffer[cellIdx])
         {

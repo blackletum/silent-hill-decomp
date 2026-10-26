@@ -57,10 +57,10 @@ types:
       - id: is_initialized
         type: u1
 
-      - id: level_grid_x
+      - id: chunk_x
         type: s1
 
-      - id: level_grid_y
+      - id: chunk_z
         type: s1
 
       - id: lm_header_offset
@@ -312,16 +312,16 @@ types:
       - id: cell_ranges_offset
         type: u4
 
-      - id: unk_cell_idx_count
+      - id: cell_lut_size
         type: u2
 
-      - id: unk_sufrace_idx_count
+      - id: surface_lut_size
         type: u2
 
-      - id: unk_cell_idxs_offset
+      - id: cell_lut_offset
         type: u4
 
-      - id: unk_surface_idxs_offset
+      - id: surface_lut_offset
         type: u4
 
       - id: cell_check_count
@@ -360,22 +360,23 @@ types:
         repeat-expr: cell_attribs_count
 
       cell_ranges:
+        doc: TODO Unsure if `+ 1` is necessary, looks like one extra entry?
         pos: _root.header.collision_offset + cell_ranges_offset
         type: cell_range
         repeat: expr
         repeat-expr: (cell_count_x * cell_count_z) + 1
 
-      unk_idxs_28:
-        pos: _root.header.collision_offset + unk_cell_idxs_offset
+      cell_lut:
+        pos: _root.header.collision_offset + cell_lut_offset
         type: u1
         repeat: expr
-        repeat-expr: unk_cell_idx_count
+        repeat-expr: cell_lut_size
 
-      unk_idxs_2c:
-        pos: _root.header.collision_offset + unk_surface_idxs_offset
+      surface_lut:
+        pos: _root.header.collision_offset + surface_lut_offset
         type: u1
         repeat: expr
-        repeat-expr: unk_sufrace_idx_count
+        repeat-expr: surface_lut_size
 
   cell_surface:
     seq:
@@ -484,12 +485,11 @@ types:
         doc: Q7.8.
 
   cell_range:
-    doc: TODO Wrong name.
     seq:
-      - id: unk_cell_idx
+      - id: cell_lut_idx
         type: s2
 
-      - id: unk_surface_idx
+      - id: surface_lut_idx
         type: s2
 
   material:

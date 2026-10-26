@@ -57,6 +57,7 @@ typedef struct _IpdCellSurface
 } s_IpdCellSurface;
 STATIC_ASSERT_SIZEOF(s_IpdCellSurface, 12);
 
+// TODO: Confusing "grid cells" with "collision geometry data items", so this name might be wrong.
 /** @brief IPD collision cell with two cell surfaces. */
 typedef struct _IpdCell
 {
@@ -85,13 +86,12 @@ typedef struct _IpdCellAttribs
 } s_IpdCellAttribs;
 STATIC_ASSERT_SIZEOF(s_IpdCellAttribs, 10);
 
-// TODO: Wrong name.
-typedef struct _IpdCellRange
+typedef struct _CellRange
 {
-    /* 0x0 */ s16 unkCellIdx;    /** Index into `s_IpdCollisionData::unkCellIdxs`.  */
-    /* 0x2 */ s16 unkSurfaceIdx; /** Index into `s_IpdCollisionData::unkSurfaceIdxs`.  */
-} s_IpdCellRange;
-STATIC_ASSERT_SIZEOF(s_IpdCellRange, 4);
+    /* 0x0 */ s16 cellLutIdx;    /** Index into `s_IpdCollisionData::cellLut`.  */
+    /* 0x2 */ s16 surfaceLutIdx; /** Index into `s_IpdCollisionData::surfaceLut`.  */
+} s_CellRange;
+STATIC_ASSERT_SIZEOF(s_CellRange, 4);
 
 /** @brief IPD collision data. */
 typedef struct _IpdCollisionData
@@ -103,17 +103,19 @@ typedef struct _IpdCollisionData
     /* 0x8+16 */ u32               cellCount            : 8; /** `cells` size. */
     /* 0x8+24 */ u32               cellAttribsCount     : 8; /** `cellAttribs` size. */
     /* 0xC    */ SVECTOR3*         cellSplitVertices;        /** Pairs define a cell line split. */
-    /* 0x10   */ s_IpdCellSurface* cellSurfaces;             /** Tangible collision cell surfaces. */
-    /* 0x14   */ s_IpdCell*        cells;                    /** Tangible collision cells. */
+    /* 0x10   */ s_IpdCellSurface* cellSurfaces;             /** Unique tangible collision cell surfaces. */
+    /* 0x14   */ s_IpdCell*        cells;                    /** Unique tangible collision cells. NOT 1 per grid cell??? */
     /* 0x18   */ s_IpdCellAttribs* cellAttribs;              /** Collision cell attributes. */
-    /* 0x1C   */ q7_8              cellSize;
-    /* 0x1E   */ u8                cellCountX; // } Not cell count, but subchunk? Some kind of wide area of cells.
-    /* 0x1F   */ u8                cellCountZ; // }
-    /* 0x20   */ s_IpdCellRange*   cellRanges;
-    /* 0x24   */ u16               unkCellIdxCount;
-    /* 0x26   */ u16               unkSurfaceIdxCount;
-    /* 0x28   */ u8*               unkCellIdxs; // Data aligned 1:1 with `cells`. Array of indices into `cellCheckIdxBuffer` by `func_8006E53C`.
-    /* 0x2C   */ u8*               unkSurfaceIdxs;
+    /* 0x1C   */ q7_8              cellSize;                 /** `Q8(2.0f)` in most IPD files, sometimes `Q8(0.0f)`. */
+    /* 0x1E   */ u8                cellCountX;               /** 20 in most IPD files, sometimes 0. */
+    /* 0x1F   */ u8                cellCountZ;               /** 20 in most IPD files, sometimes 0. */
+    /* 0x20   */ s_CellRange*      cellRanges;               /** TODO: There's a difference between "grid cells" and "collision cells"? Very confusing.
+                                                              * Level grid cells contain multiple collision cells/geom items. Terms used seem very wrong.
+                                                              */
+    /* 0x24   */ u16               cellLutSize;
+    /* 0x26   */ u16               surfaceLutSize;
+    /* 0x28   */ u8*               cellLut;                  /** Indices into `cells` and `cellCheckIdxBuffer`. */
+    /* 0x2C   */ u8*               surfaceLut;               /** Indices into `cellSurfaces`. */
     /* 0x30   */ u8                cellCheckCount;
     /* 0x31   */ s8                __pad_31[3];
     /* 0x34   */ u8                cellCheckIdxBuffer[256]; // Cell indices, unkown purpose. Contains `s_IpdCollisionData::cellCount` valid entries.

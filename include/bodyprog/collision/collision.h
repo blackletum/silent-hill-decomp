@@ -115,14 +115,15 @@ typedef union
     /* 0x0 */ } cellSurfaces;
 } s_CollisionState_CC_C;
 
+// TODO: Maybe "split vertices" is the wrong idea.
 /** @brief Collision cell point data. */
 typedef struct _CollisionCellPoint
 {
     /* 0x0  */ s_IpdCollisionData*    ipdCollisionData;
-    /* 0x4  */ u8                     cellIdx; // `s_IpdCollisionData::cells` index.
+    /* 0x4  */ u8                     cellIdx;               // `s_IpdCollisionData::cells` index.
     /* 0x5  */ u8                     heightDisabled;
-    /* 0x6  */ SVECTOR3               field_6; // Q7.8 | Probe position inside cell/cell? Wrong struct? Y is maybe Z.
-    /* 0xC  */ s_CollisionState_CC_C  field_C; // Cell surface??
+    /* 0x6  */ SVECTOR3               offset;                // Q7.8 | Probe position inside cell/cell? Wrong struct? Y is maybe Z.
+    /* 0xC  */ s_CollisionState_CC_C  field_C;               // Cell surface??
     /* 0xE  */ u8                     field_E;               // } Index from `s_IpdCollisionData::field_6_8`.
     /* 0xF  */ u8                     field_F;               // }
     /* 0x10 */ u8                     disableSurface0Height; /** `bool` */
@@ -153,7 +154,7 @@ typedef struct _CollisionCharaState
 
 typedef struct _CollisionState
 {
-    /* 0x0+0  */ u8                    field_0_0     : 8;  /** `bool` TODO: Check, code only assigns 0 or 1. */
+    /* 0x0+0  */ u8                    field_0_0     : 8;  /** `bool` | Related to `Collision_CellChecksReset`. Maybe name `hasCellChecks`? */
     /* 0x0+8  */ s8                    isCharaMoving : 1;  /** `bool` */
     /* 0x0+9  */ s8                    field_0_9     : 1;  /** `bool` */
     /* 0x0+10 */ s8                    field_0_10    : 1;  /** `bool` */
@@ -172,7 +173,7 @@ typedef struct _CollisionState
     /* 0x88   */ q19_12                tiltAngleX;
     /* 0x8C   */ q19_12                tiltAngleZ;
     /* 0x90   */ bool                  heightDisabled; /** `bool` | TODO: Does disabled height indicate a wall or pit? */
-    /* 0x94   */ s32                   floorType;     /** `e_FloorType` */
+    /* 0x94   */ s32                   floorType;      /** `e_FloorType` */
 
                  union
                  {
@@ -192,7 +193,7 @@ typedef struct _CollisionState
                          /* 0x1 */ u8                  closestZCellIdx;
                          /* 0x2 */ u8                  cellSpanX;
                          /* 0x3 */ u8                  cellSpanZ;
-                         /* 0x4 */ s_IpdCellRange*     cellRange;
+                         /* 0x4 */ s_CellRange*        cellRangePair;
                          /* 0x8 */ s_CollisionState_A8 field_8[4];
                      } s_0;
                      struct
@@ -391,12 +392,12 @@ bool Collision_CellInit(s_CollisionState* state, const s_IpdCollisionData* collD
 
 bool Collision_CellIdxGet(s_CollisionState* state, const s_IpdCollisionData* collData);
 
-void func_8006B1C8(s_CollisionState* state, s_IpdCollisionData* collData, s_IpdCellRange* cellRanges);
+void func_8006B1C8(s_CollisionState* state, s_IpdCollisionData* collData, s_CellRange* cellRangePair);
 
 bool func_8006B318(s_CollisionState* state, const s_IpdCollisionData* collData, s32 cellIdx);
 
 /** `arg1` is unused, but `func_8006B1C8` passes second arg to this. */
-void func_8006B6E8(s_CollisionState* state, s_IpdCellRange* cellRanges);
+void func_8006B6E8(s_CollisionState* state, s_CellRange* cellRangePair);
 
 bool func_8006B7E0(s_CollisionState_A8* cur, s_CollisionState_CC_20* prev);
 
@@ -433,7 +434,7 @@ void func_8006C794(s_CollisionState* state, s32 unkState, q23_8 dist);
 void func_8006C838(s_CollisionState* state, s_IpdCollisionData* collData);
 
 // Accounts for slopes in floor height?
-void func_8006CA18(s_CollisionState* state, s_IpdCollisionData* collData, s_IpdCellRange* cellRanges);
+void func_8006CA18(s_CollisionState* state, s_IpdCollisionData* collData, s_CellRange* cellRangePair);
 
 // TODO: Computes alpha related to the floor slope?
 q3_12 Collision_OffsetAlphaGet(s_CollisionState* state);

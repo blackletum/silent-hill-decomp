@@ -70,9 +70,9 @@ typedef struct _RayState
     /* 0x64 */ s_SubCharacter** collCharas;
     /* 0x68 */ s32              collCharaCount;
     /* 0x6C */ s_RayState_6C    field_6C;
-    /* 0x7C */ s32              field_7C;
-    /* 0x80 */ s32              field_80;
-    /* 0x84 */ u16              field_84;
+    /* 0x7C */ s32              cellCountX;
+    /* 0x80 */ s32              cellCountZ;
+    /* 0x84 */ q8_8             cellSize;
     /* 0x86 */ u8               __pad_86[2];
     /* 0x88 */ s32              field_88;    // `field_8C` size.
     /* 0x8C */ s_RayState_8C    field_8C[1]; // Unknown buffer size.
@@ -122,7 +122,7 @@ void func_8006E150(s_func_8006E490* arg0, DVECTOR arg1, DVECTOR arg2);
 
 void func_8006E490(s_func_8006E490* arg0, u32 flags, q19_12 posX, q19_12 posZ);
 
-void func_8006E53C(s_RayState* state, s_IpdCellRange* cellRanges, s_IpdCollisionData* collData);
+void func_8006E53C(s_RayState* state, s_CellRange* cellRangePair, s_IpdCollisionData* collData);
 
 void func_8006E78C(s_RayState* state, s_IpdCell* cell, SVECTOR3* splitVerts, s_IpdCellSurface* cellSurfaces, bool hasSurface);
 

@@ -89,8 +89,8 @@ void Collision_ChunkHeaderPtrsInit(s_IpdCollisionData* collData) // 0x8006993C
     collData->cells             = (u8*)collData->cells             + (u32)collData;
     collData->cellAttribs       = (u8*)collData->cellAttribs       + (u32)collData;
     collData->cellRanges        = (u8*)collData->cellRanges        + (u32)collData;
-    collData->unkCellIdxs       = (u8*)collData->unkCellIdxs       + (u32)collData;
-    collData->unkSurfaceIdxs    = (u8*)collData->unkSurfaceIdxs    + (u32)collData;
+    collData->cellLut           = (u8*)collData->cellLut           + (u32)collData;
+    collData->surfaceLut        = (u8*)collData->surfaceLut        + (u32)collData;
 }
 
 void Collision_CellChecksReset(s_IpdCollisionData* collData) // 0x80069994
@@ -615,7 +615,7 @@ s32 func_8006A4A8(s_CollisionResult* collResult, VECTOR3* moveOffset, const s_Co
             state.field_A0.s_1.collisionState = chara->collision.state;
             state.field_A0.s_1.field_8        = &chara->collision.field_E0;
 
-            if (state.field_0_0 == false)
+            if (!state.field_0_0)
             {
                 chara->collision.field_E0 = 0;
             }
@@ -828,16 +828,16 @@ void Collision_MoveDirectionCalc(s_CollisionCharaState* charaState,
 
 void Collision_CharaCollisionHandle(s_CollisionState* state, s_IpdCollisionData* collData) // 0x8006AD44
 {
-    s32             endCellIdx;
-    s32             startCellIdx;
-    s32             cellXIdx;
-    s32             cellZIdx;
-    s_IpdCellRange* curCellRanges;
+    s32          endCellIdx;
+    s32          startCellIdx;
+    s32          cellXIdx;
+    s32          cellZIdx;
+    s_CellRange* cellRangePair;
 
-    // Check if IPD collision contains necessary information and the current cell is accessible.
+    // Check if IPD collision contains necessary information and current cell is accessible.
     if ((collData->cellSurfaceCount == 0 &&
-        collData->cellCount         == 0 &&
-        collData->cellAttribsCount  == 0) ||
+         collData->cellCount        == 0 &&
+         collData->cellAttribsCount == 0) ||
         !Collision_CellInit(state, collData))
     {
         return;
@@ -855,15 +855,17 @@ void Collision_CharaCollisionHandle(s_CollisionState* state, s_IpdCollisionData*
          cellXIdx < (state->field_A0.s_0.closestZCellIdx + state->field_A0.s_0.cellSpanZ);
          cellXIdx++)
     {
-        curCellRanges = &collData->cellRanges[(cellXIdx * collData->cellCountX) + startCellIdx];
+        cellRangePair = &collData->cellRanges[(cellXIdx * collData->cellCountX) + startCellIdx];
 
-        for (cellZIdx = startCellIdx; cellZIdx <= endCellIdx; cellZIdx++, curCellRanges++)
+        for (cellZIdx = startCellIdx;
+             cellZIdx <= endCellIdx;
+             cellZIdx++, cellRangePair++)
         {
-            func_8006B1C8(state, collData, curCellRanges);
+            func_8006B1C8(state, collData, cellRangePair);
         }
     }
 
-    if (state->field_0_0 == false)
+    if (!state->field_0_0)
     {
         Collision_CellChecksCountUpdate(collData);
     }
@@ -872,9 +874,9 @@ void Collision_CharaCollisionHandle(s_CollisionState* state, s_IpdCollisionData*
     if (state->field_0_10)
     {
         func_8006C838(state, collData);
-        if (state->field_A0.s_0.cellRange != NULL)
+        if (state->field_A0.s_0.cellRangePair != NULL)
         {
-            func_8006CA18(state, collData, state->field_A0.s_0.cellRange);
+            func_8006CA18(state, collData, state->field_A0.s_0.cellRangePair);
         }
     }
 }
@@ -893,16 +895,18 @@ bool Collision_CellInit(s_CollisionState* state, const s_IpdCollisionData* collD
     state->charaPositionTo.offset.vx   = state->charaState.positionToX   - collData->positionX;
     state->charaPositionTo.offset.vz   = state->charaState.positionToZ   - collData->positionZ;
     
-    if ((state->charaPositionFrom.offset.vx / collData->cellSize) < 0 || (state->charaPositionFrom.offset.vx / collData->cellSize) >= collData->cellCountX ||
-        ((state->charaPositionFrom.offset.vz / collData->cellSize) < 0) || (state->charaPositionFrom.offset.vz / collData->cellSize) >= collData->cellCountZ)
+    if ((state->charaPositionFrom.offset.vx / collData->cellSize) <  0                    ||
+        (state->charaPositionFrom.offset.vx / collData->cellSize) >= collData->cellCountX ||
+        (state->charaPositionFrom.offset.vz / collData->cellSize) <  0                    ||
+        (state->charaPositionFrom.offset.vz / collData->cellSize) >= collData->cellCountZ)
     {
-        state->field_A0.s_0.cellRange = NULL;
+        state->field_A0.s_0.cellRangePair = NULL;
     }
     else
     {
-        state->field_A0.s_0.cellRange = &collData->cellRanges[((state->charaPositionFrom.offset.vz / collData->cellSize) * collData->cellCountX) +
-                                                                    (state->charaPositionFrom.offset.vx / collData->cellSize)];
-        state->cellIdx                = NO_VALUE;
+        state->field_A0.s_0.cellRangePair = &collData->cellRanges[((state->charaPositionFrom.offset.vz / collData->cellSize) * collData->cellCountX) +
+                                                                  (state->charaPositionFrom.offset.vx / collData->cellSize)];
+        state->cellIdx                    = NO_VALUE;
 
         for (curUnk = &state->field_A0.s_0.field_8[0]; curUnk < &state->field_A0.s_0.field_8[4]; curUnk++)
         {
@@ -978,22 +982,23 @@ bool Collision_CellIdxGet(s_CollisionState* state, const s_IpdCollisionData* col
     return true;
 }
 
-void func_8006B1C8(s_CollisionState* state, s_IpdCollisionData* collData, s_IpdCellRange* cellRanges) // 0x8006B1C8
+void func_8006B1C8(s_CollisionState* state, s_IpdCollisionData* collData, s_CellRange* cellRangePair) // 0x8006B1C8
 {
     s32 cellCount;
     s32 i;
     u8  cellIdx;
 
-    for (i = cellRanges[0].unkCellIdx; i < cellRanges[1].unkCellIdx; i++)
+    // Run through collision cells.
+    for (i = cellRangePair[0].cellLutIdx; i < cellRangePair[1].cellLutIdx; i++)
     {
-        cellIdx = collData->unkCellIdxs[i];
-        
+        cellIdx = collData->cellLut[i];
+
         // Check if cell element hasn't been analyzed.
         if (collData->cellCheckCount >= collData->cellCheckIdxBuffer[cellIdx])
         {
             collData->cellCheckIdxBuffer[cellIdx] = collData->cellCheckCount + 1;
             cellCount                             = collData->cellCount;
-            
+
             // Check if cell index is inside defined cell.
             if (cellIdx < cellCount)
             {
@@ -1001,7 +1006,7 @@ void func_8006B1C8(s_CollisionState* state, s_IpdCollisionData* collData, s_IpdC
                 {
                     if (state->field_0_10)
                     {
-                        func_8006B6E8(state, cellRanges);
+                        func_8006B6E8(state, cellRangePair);
                     }
 
                     if (state->isCharaMoving || state->field_0_9)
@@ -1033,30 +1038,26 @@ bool func_8006B318(s_CollisionState* state, const s_IpdCollisionData* collData, 
     q23_8             charaVertDiffX;
     s32               temp_v0;
     s_IpdCellSurface* curSurface;
-    s_IpdCell*    cell;
+    s_IpdCell*        cell;
 
     cell = &collData->cells[cellIdx];
     
-    /** @note Alternative collision enabling?
-     * As noted briefly in `e_CollisionTriggerFlags` the game contains two flags (three, but one is unused)
-     * which specifically enable certain collisions under specific game events, see for example the school
-     * boss valve puzzle which relays in this flag system in order to enable and disable the collision that
-     * blocks the player from progressing until the puzzle is solved.
-     *
-     * Claude (on Kush/AI port repo) indicates this is used to enable certain collision cells so likely this is
-     * where that system relays on.
-     */
-    if (!((state->flags >> ((cell->field_0_14 * 4) | cell->field_2_14)) & (1 << 0)))
+    // Alternative collision enabling?
+    // As noted briefly in `e_CollisionTriggerFlags` the game contains two flags (three, but one is unused)
+    // which specifically enable certain collisions under specific game events, see for example the school
+    // boss valve puzzle which relays in this flag system in order to enable and disable the collision that
+    // blocks the player from progressing until the puzzle is solved.
+    if (CHECK_FLAG_IDX(state->flags, (cell->field_0_14 * 4) | cell->field_2_14, false))
     {
         return false;
     }
 
     state->point.ipdCollisionData = collData;
-    state->point.cellIdx       = cellIdx;
+    state->point.cellIdx          = cellIdx;
 
-    state->point.field_6.vx = cell->field_0_0;
-    state->point.field_6.vy = cell->field_2_0;
-    state->point.field_6.vz = cell->field_4;
+    state->point.offset.vx = cell->field_0_0;
+    state->point.offset.vy = cell->field_2_0;
+    state->point.offset.vz = cell->field_4;
 
     state->point.cellSplitVertex0 = collData->cellSplitVertices[cell->splitVertexIdx1];
     state->point.cellSplitVertex1 = collData->cellSplitVertices[cell->splitVertexIdx0];
@@ -1133,11 +1134,11 @@ bool func_8006B318(s_CollisionState* state, const s_IpdCollisionData* collData, 
         state->point.field_20.radiusCollDiffDist = Math_Vector2MagCalc(charaVertDiffX, charaVertDiffZ);
         state->point.field_20.collDiffDist       = -charaVertDiffX;
     }
-    else if (state->point.field_6.vz < charaVertDiffX)
+    else if (state->point.offset.vz < charaVertDiffX)
     {
         state->point.field_20.subChunkTransDir   = SubChunkTransitionDirection_X;
-        state->point.field_20.radiusCollDiffDist = Math_Vector2MagCalc(charaVertDiffX - state->point.field_6.vz, charaVertDiffZ);
-        state->point.field_20.collDiffDist       = charaVertDiffX - state->point.field_6.vz;
+        state->point.field_20.radiusCollDiffDist = Math_Vector2MagCalc(charaVertDiffX - state->point.offset.vz, charaVertDiffZ);
+        state->point.field_20.collDiffDist       = charaVertDiffX - state->point.offset.vz;
     }
     else
     {
@@ -1156,7 +1157,7 @@ bool func_8006B318(s_CollisionState* state, const s_IpdCollisionData* collData, 
     return true;
 }
 
-void func_8006B6E8(s_CollisionState* state, s_IpdCellRange* cellRanges) // 0x8006B6E8
+void func_8006B6E8(s_CollisionState* state, s_CellRange* cellRangePair) // 0x8006B6E8
 {
     s32                  idx;
     s32                  surfaceIdx0;
@@ -1298,15 +1299,15 @@ void func_8006B8F8(s_CollisionCellPoint* cellPoint) // 0x8006B8F8
     temp                                   = (u16)cellPoint->cellSplitVertex0.vx;
     temp_a1                                = (u16)cellPoint->cellSplitVertex1.vx;
     temp_a2                                = (u16)cellPoint->cellSplitVertex1.vz;
-    cellPoint->cellSplitVertex1.vx             = temp;
+    cellPoint->cellSplitVertex1.vx         = temp;
     temp                                   = (u16)cellPoint->cellSplitVertex0.vy;
-    cellPoint->cellSplitVertex0.vy             = cellPoint->cellSplitVertex1.vy;
-    cellPoint->cellSplitVertex0.vx             = temp_a1;
-    cellPoint->field_6.vx                  = -cellPoint->field_6.vx;
-    cellPoint->cellSplitVertex1.vy             = temp;
-    cellPoint->field_6.vy                  = -cellPoint->field_6.vy;
+    cellPoint->cellSplitVertex0.vy         = cellPoint->cellSplitVertex1.vy;
+    cellPoint->cellSplitVertex0.vx         = temp_a1;
+    cellPoint->offset.vx                   = -cellPoint->offset.vx;
+    cellPoint->cellSplitVertex1.vy         = temp;
+    cellPoint->offset.vy                   = -cellPoint->offset.vy;
     temp                                   = (u16)cellPoint->cellSplitVertex0.vz;
-    cellPoint->cellSplitVertex1.vz             = temp;
+    cellPoint->cellSplitVertex1.vz         = temp;
     temp                                   = cellPoint->field_C.cellSurfaces.surfaceIdx0;
     cellPoint->field_20.charaMoveOffset.vx = -cellPoint->field_20.charaMoveOffset.vx;
 
@@ -1322,9 +1323,9 @@ void func_8006B8F8(s_CollisionCellPoint* cellPoint) // 0x8006B8F8
     cellPoint->field_F                          = temp;
 
     ptr->charaVertDiff.vz     = -ptr->charaVertDiff.vz;
-    ptr->charaVertDiff.vx     = (cellPoint->field_6.vz - ptr->charaVertDiff.vx);
+    ptr->charaVertDiff.vx     = (cellPoint->offset.vz - ptr->charaVertDiff.vx);
     ptr->charaMoveVertDiff.vz = -ptr->charaMoveVertDiff.vz;
-    ptr->charaMoveVertDiff.vx = (cellPoint->field_6.vz - ptr->charaMoveVertDiff.vx);
+    ptr->charaMoveVertDiff.vx = (cellPoint->offset.vz - ptr->charaMoveVertDiff.vx);
 }
 
 void func_8006B9C8(s_CollisionState* state) // 0x8006B9C8
@@ -1355,8 +1356,8 @@ void func_8006B9C8(s_CollisionState* state) // 0x8006B9C8
                  -charaRadius < state->point.field_20.charaMoveVertDiff.vz) &&
                 (-charaRadius < state->point.field_20.charaVertDiff.vx ||
                  -charaRadius < state->point.field_20.charaMoveVertDiff.vx) &&
-                (state->point.field_20.charaVertDiff.vx     < (charaRadius + state->point.field_6.vz) ||
-                 state->point.field_20.charaMoveVertDiff.vx < (charaRadius + state->point.field_6.vz)))
+                (state->point.field_20.charaVertDiff.vx     < (charaRadius + state->point.offset.vz) ||
+                 state->point.field_20.charaMoveVertDiff.vx < (charaRadius + state->point.offset.vz)))
             {
                 func_8006BE40(state);
             }
@@ -1380,15 +1381,15 @@ void func_8006BB50(s_CollisionState* state, s32 arg1) // 0x8006BB50
         charaCollDistX = state->charaPositionFrom.offset.vx - state->point.cellSplitVertex0.vx;
         charaCollDistZ = state->charaPositionFrom.offset.vz - state->point.cellSplitVertex0.vz;
     }
-    else if (state->point.field_6.vz < state->point.field_20.charaVertDiff.vx)
+    else if (state->point.offset.vz < state->point.field_20.charaVertDiff.vx)
     {
         charaCollDistX = state->charaPositionFrom.offset.vx - state->point.cellSplitVertex1.vx;
         charaCollDistZ = state->charaPositionFrom.offset.vz - state->point.cellSplitVertex1.vz;
     }
     else
     {
-        charaCollDistX =  state->point.field_6.vy;
-        charaCollDistZ = -state->point.field_6.vx;
+        charaCollDistX =  state->point.offset.vy;
+        charaCollDistZ = -state->point.offset.vx;
     }
 
     temp2 = state->charaState.radius - state->point.field_20.radiusCollDiffDist;
@@ -1411,7 +1412,7 @@ q23_8 func_8006BC34(s_CollisionState* state)
     }
     else
     {
-        someZ = state->point.field_6.vz;
+        someZ = state->point.offset.vz;
         if (someZ < someX)
         {
             floorHeight = state->point.cellSplitVertex1.vy;
@@ -1510,7 +1511,7 @@ void func_8006BE40(s_CollisionState* state) // 0x8006BE40
     {
         if (state->point.field_20.charaVertDiff.vx >= Q8(0.0f))
         {
-            if (state->point.field_6.vz >= state->point.field_20.charaVertDiff.vx)
+            if (state->point.offset.vz >= state->point.field_20.charaVertDiff.vx)
             {
                 unkDist = state->point.field_20.charaVertDiff.vx;
                 unkSwitchType = 2;
@@ -1530,7 +1531,7 @@ void func_8006BE40(s_CollisionState* state) // 0x8006BE40
         if (state->point.field_20.charaMoveOffset.vz == 0)
         {
             if (state->point.field_20.charaVertDiff.vx > 0 &&
-                state->point.field_20.charaVertDiff.vx < state->point.field_6.vz)
+                state->point.field_20.charaVertDiff.vx < state->point.offset.vz)
             {
                 distAlpha = Q12(0.0f);
                 unkDist = state->point.field_20.charaVertDiff.vx;
@@ -1549,7 +1550,7 @@ void func_8006BE40(s_CollisionState* state) // 0x8006BE40
         {
             unkSwitchType = 0;
         }
-        else if (state->point.field_6.vz < unkDist)
+        else if (state->point.offset.vz < unkDist)
         {
             unkSwitchType = 1;
         }
@@ -1608,15 +1609,15 @@ void func_8006C0C8(s_CollisionState* state, q3_12 distAlpha, q7_8 arg2) // 0x800
         return;
     }
 
-    temp = ((state->point.cellSplitVertex1.vy - state->point.cellSplitVertex0.vy) * arg2) / state->point.field_6.vz;
+    temp = ((state->point.cellSplitVertex1.vy - state->point.cellSplitVertex0.vy) * arg2) / state->point.offset.vz;
     if (temp + state->point.cellSplitVertex0.vy < state->charaState.bottom)
     {
         state->field_40 = &state->point.ipdCollisionData->cellCheckIdxBuffer[state->point.cellIdx];
         state->field_34 = 1;
         state->field_38 = distAlpha;
         state->field_3A = Q12_TO_Q4(state->charaState.distance * distAlpha);
-        state->field_3C =  state->point.field_6.vy;
-        state->field_3E = -state->point.field_6.vx;
+        state->field_3C =  state->point.offset.vy;
+        state->field_3E = -state->point.offset.vx;
     }
 }
 
@@ -1720,22 +1721,22 @@ q3_12 func_8006C248(s32 packedDir, q3_12 arg1, q3_12 deltaX, q7_8 deltaZ, q7_8 r
 
 bool func_8006C3D4(s_CollisionState* state, s_IpdCollisionData* collData, s32 cellIdx) // 0x8006C3D4
 {
-    s_IpdCellAttribs* temp_a1;
+    s_IpdCellAttribs* cellAttribs;
 
     state->point.ipdCollisionData = collData;
-    state->point.cellIdx       = cellIdx;
-    temp_a1                       = &collData->cellAttribs[cellIdx - collData->cellCount];
+    state->point.cellIdx          = cellIdx;
+    cellAttribs                   = &collData->cellAttribs[cellIdx - collData->cellCount];
 
-    if (!((state->flags >> temp_a1->field_0_8) & (1 << 0)))
+    if (!((state->flags >> cellAttribs->field_0_8) & (1 << 0)))
     {
         return false;
     }
 
-    state->point.heightDisabled       = temp_a1->disableHeight;
-    state->point.field_6.vx           = temp_a1->offset.vx;
-    state->point.field_6.vy           = temp_a1->offset.vy;
-    state->point.field_6.vz           = temp_a1->offset.vz;
-    state->point.field_C.radiusOffset = temp_a1->radiusOffset;
+    state->point.heightDisabled       = cellAttribs->disableHeight;
+    state->point.offset.vx           = cellAttribs->offset.vx;
+    state->point.offset.vy           = cellAttribs->offset.vy;
+    state->point.offset.vz           = cellAttribs->offset.vz;
+    state->point.field_C.radiusOffset = cellAttribs->radiusOffset;
     return true;
 }
 
@@ -1753,7 +1754,7 @@ void func_8006C45C(s_CollisionState* state) // 0x8006C45C
 
     distMax = state->charaState.radius + state->point.field_C.radiusOffset;
     bound   = distMax + 8;
-    temp_v1 = state->point.field_6.vx - bound;
+    temp_v1 = state->point.offset.vx - bound;
 
     if (state->charaPositionFrom.offset.vx < temp_v1 &&
         state->charaPositionTo.offset.vx   < temp_v1)
@@ -1761,33 +1762,33 @@ void func_8006C45C(s_CollisionState* state) // 0x8006C45C
         return;
     }
 
-    if ((state->point.field_6.vx + bound) < state->charaPositionFrom.offset.vx &&
-        (state->point.field_6.vx + bound) < state->charaPositionTo.offset.vx)
+    if ((state->point.offset.vx + bound) < state->charaPositionFrom.offset.vx &&
+        (state->point.offset.vx + bound) < state->charaPositionTo.offset.vx)
     {
         return;
     }
 
-    if (state->charaPositionFrom.offset.vz < (state->point.field_6.vz - bound) &&
-        state->charaPositionTo.offset.vz   < (state->point.field_6.vz - bound))
+    if (state->charaPositionFrom.offset.vz < (state->point.offset.vz - bound) &&
+        state->charaPositionTo.offset.vz   < (state->point.offset.vz - bound))
     {
         return;
     }
 
-    if ((state->point.field_6.vz + bound) < state->charaPositionFrom.offset.vz &&
-        (state->point.field_6.vz + bound) < state->charaPositionTo.offset.vz)
+    if ((state->point.offset.vz + bound) < state->charaPositionFrom.offset.vz &&
+        (state->point.offset.vz + bound) < state->charaPositionTo.offset.vz)
     {
         return;
     }
 
-    distX = state->charaPositionFrom.offset.vx - state->point.field_6.vx;
-    distZ = state->charaPositionFrom.offset.vz - state->point.field_6.vz;
+    distX = state->charaPositionFrom.offset.vx - state->point.offset.vx;
+    distZ = state->charaPositionFrom.offset.vz - state->point.offset.vz;
     dist  = Math_Vector2MagCalc(distX, distZ);
 
     if (dist < state->point.field_C.radiusOffset && state->point.heightDisabled != true &&
-        (state->cellIdx == UCHAR_MAX || state->point.field_6.vy < state->floorHeight))
+        (state->cellIdx == UCHAR_MAX || state->point.offset.vy < state->floorHeight))
     {
         state->cellIdx   = state->point.cellIdx;
-        state->floorHeight = state->point.field_6.vy;
+        state->floorHeight = state->point.offset.vy;
     }
 
     if (!state->isCharaMoving && !state->field_0_9 || dist < state->point.field_C.radiusOffset)
@@ -1812,8 +1813,8 @@ void func_8006C45C(s_CollisionState* state) // 0x8006C45C
     }
 
     distAlpha = func_8006C248(*(s32*)&state->charaState.direction, state->charaState.distance,
-                              state->point.field_6.vx - state->charaPositionFrom.offset.vx,
-                              state->point.field_6.vz - state->charaPositionFrom.offset.vz,
+                              state->point.offset.vx - state->charaPositionFrom.offset.vx,
+                              state->point.offset.vz - state->charaPositionFrom.offset.vz,
                               distMax);
 
     if (distAlpha == NO_VALUE)
@@ -1826,54 +1827,54 @@ void func_8006C45C(s_CollisionState* state) // 0x8006C45C
         distAlpha = Q12(0.0f);
     }
 
-    if (func_8006C1B8(1, distAlpha, state) && state->charaState.bottom >= state->point.field_6.vy)
+    if (func_8006C1B8(1, distAlpha, state) && state->charaState.bottom >= state->point.offset.vy)
     {
         state->field_38 = distAlpha;
         state->field_34 = 1;
         temp                = state->charaPositionFrom.offset.vx + Q12_MULT(state->charaState.offset.vx, distAlpha);
         state->field_3A = Q12_TO_Q4(state->charaState.distance * distAlpha);
         state->field_40 = &state->point.ipdCollisionData->cellCheckIdxBuffer[state->point.cellIdx];
-        state->field_3C = temp - state->point.field_6.vx;
+        state->field_3C = temp - state->point.offset.vx;
         temp2               = state->charaPositionFrom.offset.vz + Q12_MULT(state->charaState.offset.vz, distAlpha);
-        state->field_3E = temp2 - state->point.field_6.vz;
+        state->field_3E = temp2 - state->point.offset.vz;
     }
 }
 
 void func_8006C794(s_CollisionState* state, s32 unkState, q23_8 dist) // 0x8006C794
 {
-    if (state->charaState.bottom >= (state->point.field_6.vy + (dist - state->point.field_C.radiusOffset)))
+    if (state->charaState.bottom >= (state->point.offset.vy + (dist - state->point.field_C.radiusOffset)))
     {
         func_8006BCC4(&state->field_44,
                       &state->point.ipdCollisionData->cellCheckIdxBuffer[state->point.cellIdx],
                       unkState,
-                      state->charaPositionFrom.offset.vx - state->point.field_6.vx,
-                      state->charaPositionFrom.offset.vz - state->point.field_6.vz,
+                      state->charaPositionFrom.offset.vx - state->point.offset.vx,
+                      state->charaPositionFrom.offset.vz - state->point.offset.vz,
                       (state->charaState.radius + state->point.field_C.radiusOffset) - dist);
     }
 }
 
 void func_8006C838(s_CollisionState* state, s_IpdCollisionData* collData) // 0x8006C838
 {
-    q19_12                 slopedFloorHeight;
-    s_CollisionState_A8*   curUnk;
-    s_IpdCellSurface*      curSurface;
-    s_IpdCellAttribs* temp_a0;
+    q19_12               slopedFloorHeight;
+    s_CollisionState_A8* curUnk;
+    s_IpdCellSurface*    curSurface;
+    s_IpdCellAttribs*    cellAttribs;
 
-    if (state->field_A0.s_0.cellRange == NULL)
+    if (state->field_A0.s_0.cellRangePair == NULL)
     {
         return;
     }
 
     if (state->cellIdx != UCHAR_MAX && state->floorHeight < state->slopedFloorHeight)
     {
-        temp_a0                   = &collData->cellAttribs[state->cellIdx - collData->cellCount];
+        cellAttribs              = &collData->cellAttribs[state->cellIdx - collData->cellCount];
         state->slopedFloorHeight = state->floorHeight;
-        state->charaCellOffsetX   = state->charaPositionFrom.offset.vx + collData->positionX;
-        state->charaCellOffsetZ   = state->charaPositionFrom.offset.vz + collData->positionZ;
-        state->tiltAngleX         = Q12_ANGLE(0.0f);
-        state->tiltAngleZ         = Q12_ANGLE(0.0f);
-        state->heightDisabled     = temp_a0->disableHeight;
-        state->floorType         = temp_a0->floorType;
+        state->charaCellOffsetX  = state->charaPositionFrom.offset.vx + collData->positionX;
+        state->charaCellOffsetZ  = state->charaPositionFrom.offset.vz + collData->positionZ;
+        state->tiltAngleX        = Q12_ANGLE(0.0f);
+        state->tiltAngleZ        = Q12_ANGLE(0.0f);
+        state->heightDisabled    = cellAttribs->disableHeight;
+        state->floorType         = cellAttribs->floorType;
     }
 
     for (curUnk = &state->field_A0.s_0.field_8[0]; curUnk < &state->field_A0.s_0.field_8[4]; curUnk++)
@@ -1896,37 +1897,37 @@ void func_8006C838(s_CollisionState* state, s_IpdCollisionData* collData) // 0x8
             if (slopedFloorHeight < state->slopedFloorHeight)
             {
                 state->slopedFloorHeight = slopedFloorHeight;
-                state->charaCellOffsetX   = state->charaPositionFrom.offset.vx + collData->positionX;
-                state->charaCellOffsetZ   = state->charaPositionFrom.offset.vz + collData->positionZ;
-                state->tiltAngleX         = curSurface->tiltAngleX;
-                state->tiltAngleZ         = curSurface->tiltAngleZ;
-                state->heightDisabled     = curSurface->disableHeight;
+                state->charaCellOffsetX  = state->charaPositionFrom.offset.vx + collData->positionX;
+                state->charaCellOffsetZ  = state->charaPositionFrom.offset.vz + collData->positionZ;
+                state->tiltAngleX        = curSurface->tiltAngleX;
+                state->tiltAngleZ        = curSurface->tiltAngleZ;
+                state->heightDisabled    = curSurface->disableHeight;
                 state->floorType         = curSurface->floorType;
             }
         }
     }
 }
 
-void func_8006CA18(s_CollisionState* state, s_IpdCollisionData* collData, s_IpdCellRange* cellRanges) // 0x8006CA18
+void func_8006CA18(s_CollisionState* state, s_IpdCollisionData* collData, s_CellRange* cellRangePair) // 0x8006CA18
 {
-    s32               unkSurfaceStartIdx;
-    s32               unkSurfaceEndIdx;
+    s32               surfaceLutStartIdx;
+    s32               surfaceLutEndIdx;
     q23_8             slopedFloorHeight;
     u8*               curSurfaceIdx;
     s_IpdCellSurface* curSurface;
 
-    unkSurfaceStartIdx = cellRanges[0].unkSurfaceIdx;
-    unkSurfaceEndIdx   = cellRanges[1].unkSurfaceIdx;
+    surfaceLutStartIdx = cellRangePair[0].surfaceLutIdx;
+    surfaceLutEndIdx   = cellRangePair[1].surfaceLutIdx;
 
-    // Check for invalid range.
-    if (unkSurfaceStartIdx == unkSurfaceEndIdx)
+    // Check for invalid surface LUT range.
+    if (surfaceLutStartIdx == surfaceLutEndIdx)
     {
         return;
     }
 
-    // Run through surfaces.
-    for (curSurfaceIdx = &collData->unkSurfaceIdxs[unkSurfaceStartIdx];
-         curSurfaceIdx < &collData->unkSurfaceIdxs[unkSurfaceEndIdx];
+    // Run through collision surfaces.
+    for (curSurfaceIdx = &collData->surfaceLut[surfaceLutStartIdx];
+         curSurfaceIdx < &collData->surfaceLut[surfaceLutEndIdx];
          curSurfaceIdx++)
     {
         curSurface = &collData->cellSurfaces[*curSurfaceIdx];
