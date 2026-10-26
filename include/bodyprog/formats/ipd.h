@@ -103,23 +103,23 @@ typedef struct _IpdCylinder
 } s_IpdCylinder;
 STATIC_ASSERT_SIZEOF(s_IpdCylinder, 10);
 
-/** @brief IPD collision shape range (represented by pair). */
-typedef struct _ShapeRange
+/** @brief IPD collision shape index range (represented by pair). */
+typedef struct _IpdShapeRange
 {
-    /* 0x0 */ s16 shapeLutIdx;   /** Index into `s_IpdCollisionData::shapeLut`.  */
-    /* 0x2 */ s16 surfaceLutIdx; /** Index into `s_IpdCollisionData::surfaceLut`.  */
-} s_ShapeRange;
-STATIC_ASSERT_SIZEOF(s_ShapeRange, 4);
+    /* 0x0 */ s16 shapeLutIdx;   /** Index into `s_IpdCollisionData::shapeLut`. */
+    /* 0x2 */ s16 surfaceLutIdx; /** Index into `s_IpdCollisionData::surfaceLut`. */
+} s_IpdShapeRange;
+STATIC_ASSERT_SIZEOF(s_IpdShapeRange, 4);
 
 /** @brief IPD collision data. */
 typedef struct _IpdCollisionData
 {
     /* 0x0    */ q23_8                positionX;
     /* 0x4    */ q23_8                positionZ;
-    /* 0x8+0  */ u32                  polygonSplitVertexCount : 8; /** `polygonSplitVertices` size. */
-    /* 0x8+8  */ u32                  polygonSurfaceCount     : 8; /** `polygonSurfaces` size. */
-    /* 0x8+16 */ u32                  polygonCount            : 8; /** `polygons` size. */
-    /* 0x8+24 */ u32                  cylinderCount           : 8; /** `cylinders` size. */
+    /* 0x8+0  */ u32                  polygonSplitVertexCount : 8; /** `polygonSplitVertices` array size. */
+    /* 0x8+8  */ u32                  polygonSurfaceCount     : 8; /** `polygonSurfaces` array size. */
+    /* 0x8+16 */ u32                  polygonCount            : 8; /** `polygons` array size. */
+    /* 0x8+24 */ u32                  cylinderCount           : 8; /** `cylinders` array size. */
     /* 0xC    */ SVECTOR3*            polygonSplitVertices;        /** Q7.8 | Pairs define a polygon line split. */
     /* 0x10   */ s_IpdPolygonSurface* polygonSurfaces;             /** Unique collision polygon surfaces. */
     /* 0x14   */ s_IpdPolygon*        polygons;                    /** Unique collision polygons. */
@@ -127,9 +127,9 @@ typedef struct _IpdCollisionData
     /* 0x1C   */ q7_8                 cellSize;                    /** `Q8(2.0f)` in most IPD files, sometimes `Q8(0.0f)`. */
     /* 0x1E   */ u8                   cellCountX;                  /** 20 in most IPD files, sometimes 0. */
     /* 0x1F   */ u8                   cellCountZ;                  /** 20 in most IPD files, sometimes 0. */
-    /* 0x20   */ s_ShapeRange*        shapeRanges;
-    /* 0x24   */ u16                  shapeLutSize;
-    /* 0x26   */ u16                  surfaceLutSize;
+    /* 0x20   */ s_IpdShapeRange*     shapeRanges;                 /** Pairs define ranges. */
+    /* 0x24   */ u16                  shapeLutSize;                /** `shapeLut` array size. */
+    /* 0x26   */ u16                  surfaceLutSize;              /** `surfaceLut` array size. */
     /* 0x28   */ u8*                  shapeLut;                    /** Indices into `shapeCheckIdxBuffer`. */
     /* 0x2C   */ u8*                  surfaceLut;                  /** Indices into `polygonSurfaces`. */
     /* 0x30   */ u8                   shapeCheckCount;

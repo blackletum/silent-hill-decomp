@@ -828,11 +828,11 @@ void Collision_MoveDirectionCalc(s_CollisionCharaState* charaState,
 
 void Collision_CharaCollisionHandle(s_CollisionState* state, s_IpdCollisionData* collData) // 0x8006AD44
 {
-    s32           endCellIdx;
-    s32           startCellIdx;
-    s32           cellXIdx;
-    s32           cellZIdx;
-    s_ShapeRange* shapeRangePair;
+    s32              endCellIdx;
+    s32              startCellIdx;
+    s32              cellXIdx;
+    s32              cellZIdx;
+    s_IpdShapeRange* shapeRangePair;
 
     // Check if IPD collision contains necessary information and current cell is accessible.
     if ((collData->polygonSurfaceCount == 0 &&
@@ -982,7 +982,7 @@ bool Collision_CellIdxGet(s_CollisionState* state, const s_IpdCollisionData* col
     return true;
 }
 
-void func_8006B1C8(s_CollisionState* state, s_IpdCollisionData* collData, s_ShapeRange* shapeRangePair) // 0x8006B1C8
+void func_8006B1C8(s_CollisionState* state, s_IpdCollisionData* collData, s_IpdShapeRange* shapeRangePair) // 0x8006B1C8
 {
     s32 polygonCount;
     s32 i;
@@ -1158,7 +1158,7 @@ bool func_8006B318(s_CollisionState* state, const s_IpdCollisionData* collData, 
     return true;
 }
 
-void func_8006B6E8(s_CollisionState* state, s_ShapeRange* shapeRangePair) // 0x8006B6E8
+void func_8006B6E8(s_CollisionState* state, s_IpdShapeRange* shapeRangePair) // 0x8006B6E8
 {
     s32                  idx;
     s32                  surfaceIdx0;
@@ -1907,7 +1907,7 @@ void func_8006C838(s_CollisionState* state, s_IpdCollisionData* collData) // 0x8
     }
 }
 
-void func_8006CA18(s_CollisionState* state, s_IpdCollisionData* collData, s_ShapeRange* shapeRangePair) // 0x8006CA18
+void func_8006CA18(s_CollisionState* state, s_IpdCollisionData* collData, s_IpdShapeRange* shapeRangePair) // 0x8006CA18
 {
     s32                  surfaceLutStartIdx;
     s32                  surfaceLutEndIdx;

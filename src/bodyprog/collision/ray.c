@@ -422,7 +422,7 @@ void func_8006E490(s_func_8006E490* arg0, u32 flags, q19_12 posX, q19_12 posZ) /
     }
 }
 
-void func_8006E53C(s_RayState* state, s_ShapeRange* shapeRangePair, s_IpdCollisionData* collData) // 0x8006E53C
+void func_8006E53C(s_RayState* state, s_IpdShapeRange* shapeRangePair, s_IpdCollisionData* collData) // 0x8006E53C
 {
     s32            i;
     bool           hasSurface;

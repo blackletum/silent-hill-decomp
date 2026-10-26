@@ -276,28 +276,28 @@ types:
         type: s4
         doc: Q23.8
 
-      - id: cell_split_vertex_count
+      - id: polygon_split_vertex_count
         type: b8
 
-      - id: cell_surface_count
+      - id: polygon_surface_count
         type: b8
 
-      - id: cell_count
+      - id: polygon_count
         type: b8
 
-      - id: cell_attribs_count
+      - id: cylinder_count
         type: b8
 
-      - id: cell_split_vertices_offset
+      - id: polygon_split_vertices_offset
         type: u4
 
-      - id: cell_surfaces_offset
+      - id: polygon_surfaces_offset
         type: u4
 
-      - id: cells_offset
+      - id: polygons_offset
         type: u4
 
-      - id: cell_attribs_offset
+      - id: cylinders_offset
         type: u4
 
       - id: cell_size
@@ -309,16 +309,16 @@ types:
       - id: cell_count_z
         type: u1
 
-      - id: cell_ranges_offset
+      - id: shape_ranges_offset
         type: u4
 
-      - id: cell_lut_size
+      - id: shape_lut_size
         type: u2
 
       - id: surface_lut_size
         type: u2
 
-      - id: cell_lut_offset
+      - id: shape_lut_offset
         type: u4
 
       - id: surface_lut_offset
@@ -329,48 +329,48 @@ types:
 
       - size: 3
 
-      - id: cell_check_idx_buffer
+      - id: shape_check_idx_buffer
         size: 256
-        doc: Static pool of `u1` with `cell_count` valid entries used by engine.
+        doc: Static pool used by engine.
 
     instances:
-      split_vertices:
-        pos: _root.header.collision_offset + cell_split_vertices_offset
+      polygon_split_vertices:
+        pos: _root.header.collision_offset + polygon_split_vertices_offset
         type: svector_3
         repeat: expr
-        repeat-expr: cell_split_vertex_count
+        repeat-expr: polygon_split_vertex_count
         doc: Q7.8.
 
-      surfaces:
-        pos: _root.header.collision_offset + cell_surfaces_offset
-        type: cell_surface
+      polygon_surfaces:
+        pos: _root.header.collision_offset + polygon_surfaces_offset
+        type: polygon_surface
         repeat: expr
-        repeat-expr: cell_surface_count
+        repeat-expr: polygon_surface_count
 
-      cells:
-        pos: _root.header.collision_offset + cells_offset
-        type: cell
+      polygons:
+        pos: _root.header.collision_offset + polygons_offset
+        type: polygon
         repeat: expr
-        repeat-expr: cell_count
+        repeat-expr: polygon_count
 
-      cell_attribs:
-        pos: _root.header.collision_offset + cell_attribs_offset
-        type: collision_18
+      cylinders:
+        pos: _root.header.collision_offset + cylinders_offset
+        type: cylinder
         repeat: expr
-        repeat-expr: cell_attribs_count
+        repeat-expr: cylinder_count
 
-      cell_ranges:
-        pos: _root.header.collision_offset + cell_ranges_offset
-        type: cell_range
+      shape_ranges:
+        pos: _root.header.collision_offset + shape_ranges_offset
+        type: shape_range
         repeat: expr
         repeat-expr: (cell_count_x * cell_count_z) + 1
         doc: TODO Unsure if `+ 1` is necessary, looks like one extra entry?
 
-      cell_lut:
-        pos: _root.header.collision_offset + cell_lut_offset
+      polygon_lut:
+        pos: _root.header.collision_offset + shape_lut_offset
         type: u1
         repeat: expr
-        repeat-expr: cell_lut_size
+        repeat-expr: shape_lut_size
 
       surface_lut:
         pos: _root.header.collision_offset + surface_lut_offset
@@ -378,7 +378,7 @@ types:
         repeat: expr
         repeat-expr: surface_lut_size
 
-  cell_surface:
+  polygon_surface:
     seq:
       - id: offset_x
         type: s2
@@ -412,7 +412,7 @@ types:
         type: s2
         doc: Q3.12.
 
-  cell:
+  polygon:
     seq:
       - id: offset_x
         type: b14
@@ -459,7 +459,7 @@ types:
       trigger_flags:
         value: (trigger_flag_idx_low << 2) | trigger_flag_idx_high
 
-  collision_18:
+  cylinder:
     seq:
       - id: floor_type
         type: b5
@@ -467,7 +467,7 @@ types:
       - id: disable_height
         type: b3
 
-      - id: field_0_8
+      - id: trigger_flag_idx
         type: b4
 
       - id: field_0_12
@@ -480,13 +480,13 @@ types:
         type: svector_3
         doc: Q7.8.
 
-      - id: field_8
+      - id: radius
         type: u2
         doc: Q7.8.
 
-  cell_range:
+  shape_range:
     seq:
-      - id: cell_lut_idx
+      - id: polygon_lut_idx
         type: s2
 
       - id: surface_lut_idx

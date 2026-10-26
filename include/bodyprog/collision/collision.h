@@ -180,7 +180,7 @@ typedef struct _CollisionState
                          /* 0x1 */ u8                  closestZCellIdx;
                          /* 0x2 */ u8                  cellSpanX;
                          /* 0x3 */ u8                  cellSpanZ;
-                         /* 0x4 */ s_ShapeRange*       shapeRangePair;
+                         /* 0x4 */ s_IpdShapeRange*       shapeRangePair;
                          /* 0x8 */ s_CollisionState_A8 field_8[4];
                      } s_0;
                      struct
@@ -379,12 +379,12 @@ bool Collision_CellInit(s_CollisionState* state, const s_IpdCollisionData* collD
 
 bool Collision_CellIdxGet(s_CollisionState* state, const s_IpdCollisionData* collData);
 
-void func_8006B1C8(s_CollisionState* state, s_IpdCollisionData* collData, s_ShapeRange* shapeRangePair);
+void func_8006B1C8(s_CollisionState* state, s_IpdCollisionData* collData, s_IpdShapeRange* shapeRangePair);
 
 bool func_8006B318(s_CollisionState* state, const s_IpdCollisionData* collData, s32 shapeIdx);
 
 /** `arg1` is unused, but `func_8006B1C8` passes second arg to this. */
-void func_8006B6E8(s_CollisionState* state, s_ShapeRange* shapeRangePair);
+void func_8006B6E8(s_CollisionState* state, s_IpdShapeRange* shapeRangePair);
 
 bool func_8006B7E0(s_CollisionState_A8* cur, s_CollisionState_CC_20* prev);
 
@@ -422,7 +422,7 @@ void func_8006C794(s_CollisionState* state, s32 unkState, q23_8 dist);
 void func_8006C838(s_CollisionState* state, s_IpdCollisionData* collData);
 
 // Accounts for slopes in floor height?
-void func_8006CA18(s_CollisionState* state, s_IpdCollisionData* collData, s_ShapeRange* shapeRangePair);
+void func_8006CA18(s_CollisionState* state, s_IpdCollisionData* collData, s_IpdShapeRange* shapeRangePair);
 
 // TODO: Computes alpha related to the floor slope?
 q3_12 Collision_OffsetAlphaGet(s_CollisionState* state);
