@@ -506,7 +506,7 @@ void func_8006E53C(s_RayState* state, s_IpdShapeRange* shapeRangePair, s_IpdColl
     }
 }
 
-void func_8006E78C(s_RayState* state, s_IpdPolygon* polygon, SVECTOR3* splitVerts, s_IpdPolygonSurface* surfaces, bool hasSurface) // 0x8006E78C
+void func_8006E78C(s_RayState* state, s_IpdPolygon* polygon, SVECTOR3* splitVerts, s_IpdSurface* surfaces, bool hasSurface) // 0x8006E78C
 {
     SVECTOR   sp0;
     SVECTOR   sp8;

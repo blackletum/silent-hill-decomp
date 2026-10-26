@@ -381,17 +381,8 @@ types:
 
   polygon_surface:
     seq:
-      - id: offset_x
-        type: s2
-        doc: Q7.8.
-
-      - id: offset_y
-        type: s2
-        doc: Q7.8.
-
-      - id: offset_z
-        type: s2
-        doc: Q7.8.
+      - id: offset
+        type: svector_3
 
       - id: floor_type
         type: b5
@@ -405,13 +396,20 @@ types:
       - id: trigger_flag_idx
         type: b4
 
-      - id: tilt_angle_x
+      - id: slope_gradient_x
         type: s2
-        doc: Q3.12.
+        doc: Q7.8.
 
-      - id: tilt_angle_z
+      - id: slope_gradient_z
         type: s2
-        doc: Q3.12.
+        doc: Q7.8.
+
+    instances:
+      slope_gradient_x_flt:
+        value: slope_gradient_x / (1 << 8).as<f4>
+
+      slope_gradient_z_flt:
+        value: slope_gradient_z / (1 << 8).as<f4>
 
   polygon:
     seq:
@@ -470,12 +468,6 @@ types:
 
       - id: trigger_flag_idx
         type: b4
-
-      - id: field_0_12
-        type: b3
-
-      - id: field_0_15
-        type: b1
 
       - id: offset
         type: svector_3

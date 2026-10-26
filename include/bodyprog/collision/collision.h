@@ -9,8 +9,9 @@
 #include "bodyprog/formats/ipd.h"
 #include "bodyprog/map/map.h"
 
-#define INTERSECTION_BUFFER    Q12(0.1f)
 #define DEFAULT_CEILING_HEIGHT -16.0f
+#define DEFAULT_FLOOR_HEIGHT   30.0f
+#define INTERSECTION_BUFFER    Q12(0.1f)
 
 /** @brief Collision types. */
 typedef enum _CollisionType
@@ -32,8 +33,8 @@ typedef enum _SubChunkTransitionDirection
 typedef struct _CollisionSurface
 {
     /* 0x0 */ q19_12 floorHeight;
-    /* 0x4 */ q3_12  tiltAngleX;
-    /* 0x6 */ q3_12  tiltAngleZ;
+    /* 0x4 */ q7_8   slopeGradientX;
+    /* 0x6 */ q7_8   slopeGradientZ;
     /* 0x8 */ s8     floorType; /** `e_FloorType` */
               // 3 bytes of padding.
 } s_CollisionSurface;
@@ -55,13 +56,14 @@ typedef struct _CollisionResult
     /* 0x18 */ q19_12             ceilingHeight;
 } s_CollisionResult;
 
-typedef struct
+/** @brief Cached collision surface. */
+typedef struct _CollisionCachedSurface
 {
     /* 0x0 */ u8    subChunkTransDir; /**`e_SubChunkTransitionDirection` */
     /* 0x1 */ u8    surfaceIdx;       // Index for `s_IpdCollisionData::polygonSurfaces`.
     /* 0x2 */ q7_8  collDiffDist;
     /* 0x4 */ q23_8 radiusCollDiffDist;
-} s_CollisionState_A8;
+} s_CollisionCachedSurface;
 
 typedef struct
 {
@@ -92,6 +94,7 @@ typedef struct
     /* 0x14 */ DVECTOR_XZ charaMoveOffset;
 } s_CollisionState_CC_20;
 
+/** @brief Copied collision polygon or cylinder attributes. */
 typedef union _CollisionShapeAttribs
 {
               struct
@@ -102,10 +105,10 @@ typedef union _CollisionShapeAttribs
               {
                   /* 0x0 */ u8       surfaceIdx0;
                   /* 0x1 */ u8       surfaceIdx1;
-                  /* 0x2 */ u8       field_E;               // For surface 0. } Set to `s_IpdCollisionData::field_6_8`.
-                  /* 0x3 */ u8       field_F;               // For surface 1. }
-                  /* 0x4 */ u8       disableSurface0Height; /** `bool` */
-                  /* 0x5 */ u8       disableSurface1Height; /** `bool` */
+                  /* 0x2 */ u8       surfaceCacheIdx0;
+                  /* 0x3 */ u8       surfaceCacheIdx1;
+                  /* 0x4 */ u8       disableSurfaceHeight0; /** `bool` */
+                  /* 0x5 */ u8       disableSurfaceHeight1; /** `bool` */
                   /* 0x8 */ SVECTOR3 polygonSplitVertex0;   /** Q7.8 | Vertex from `s_IpdCollisionData::polygonSplitVertices`. */
                   /* 0xE */ SVECTOR3 polygonSplitVertex1;   /** Q7.8 | Vertex from `s_IpdCollisionData::polygonSplitVertices`. */
     /* 0x0 */ } polygon;
@@ -159,8 +162,8 @@ typedef struct _CollisionState
     /* 0x7C   */ q23_8                 slopedFloorHeight; // TODO: How is `floorHeight` different?
     /* 0x80   */ q23_8                 charaCellOffsetX; // } Character position in cell.
     /* 0x84   */ q23_8                 charaCellOffsetZ; // } 
-    /* 0x88   */ q19_12                tiltAngleX;
-    /* 0x8C   */ q19_12                tiltAngleZ;
+    /* 0x88   */ q23_8                 slopeGradientX;
+    /* 0x8C   */ q23_8                 slopeGradientZ;
     /* 0x90   */ bool                  disableHeight; /** `bool` | TODO: Does disabled height indicate a wall or pit? */
     /* 0x94   */ s32                   floorType;      /** `e_FloorType` */
 
@@ -178,12 +181,12 @@ typedef struct _CollisionState
                  {
                      struct
                      {
-                         /* 0x0 */ u8                  closestXCellIdx;
-                         /* 0x1 */ u8                  closestZCellIdx;
-                         /* 0x2 */ u8                  cellSpanX;
-                         /* 0x3 */ u8                  cellSpanZ;
-                         /* 0x4 */ s_IpdShapeRange*    shapeRangePair;
-                         /* 0x8 */ s_CollisionState_A8 field_8[4];
+                         /* 0x0 */ u8                       closestXCellIdx;
+                         /* 0x1 */ u8                       closestZCellIdx;
+                         /* 0x2 */ u8                       cellSpanX;
+                         /* 0x3 */ u8                       cellSpanZ;
+                         /* 0x4 */ s_IpdShapeRange*         shapeRangePair;
+                         /* 0x8 */ s_CollisionCachedSurface surfaceCache[4];
                      } s_0;
                      struct
                      {
@@ -195,8 +198,8 @@ typedef struct _CollisionState
                      } s_1;
     /* 0xA0   */ } field_A0; // Floor info? Cell info? Cell state?
 
-    /* 0xC8   */ u8                   shapeIdx; /** Secondary. Used only if detecting a cell after not finding one. */
-    /* 0xCA   */ q7_8                 floorHeight; // TODO: Base floor height with slope unaccounted for?
+    /* 0xC8   */ u8                    shapeIdx; /** Secondary. Used only if detecting a cell after not finding one. */
+    /* 0xCA   */ q7_8                  floorHeight; // TODO: Base floor height with slope unaccounted for?
     /* 0xCC   */ s_CollisionShapePoint point;
     // TODO: Maybe incomplete. Maybe not, added the final padding based on `Collision_SurfaceGet`.
 } s_CollisionState;
@@ -400,7 +403,7 @@ bool func_8006B318(s_CollisionState* state, const s_IpdCollisionData* collData, 
 void func_8006B6E8(s_CollisionState* state, s_IpdShapeRange* shapeRangePair);
 
 // Related to polygons.
-bool func_8006B7E0(s_CollisionState_A8* cur, s_CollisionState_CC_20* prev);
+bool func_8006B7E0(s_CollisionCachedSurface* cachedSurface, s_CollisionState_CC_20* prev);
 
 // Related to polygons.
 void func_8006B8F8(s_CollisionShapePoint* cellPoint);

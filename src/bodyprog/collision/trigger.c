@@ -15,6 +15,8 @@
 #include "bodyprog/sound/sound_system.h"
 #include "main/rng.h"
 
+#define DEFAULT_TRIGGER_HEIGHT (SHRT_MIN * 2)
+
 /** @brief Computes a trigger height from half-meter height steps.
  *
  * @note The trigger height has a default offset of `Q12(-1.5f)`.
@@ -68,7 +70,7 @@ void func_8006F338(s_func_8006F338* arg0, q19_12 posX, q19_12 posZ, q19_12 offse
     arg0->offsetX       = offsetX;
     arg0->newPositionX  = posX + offsetX;
     arg0->field_28      = Q12(1.0f);
-    arg0->triggerHeight = Q12(1048560.0f);
+    arg0->triggerHeight = DEFAULT_TRIGGER_HEIGHT;
     arg0->offsetZ       = offsetZ;
 
     arg0->newPositionZ = posZ + offsetZ;

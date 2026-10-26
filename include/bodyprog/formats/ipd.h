@@ -6,10 +6,12 @@
 
 /** @brief GLOSSARY OF TERMS
  *
- * Chunk:    40x40 cell or 5x5 subchunk area. 1 per IPD file.
- * Subchunk: 8x8 cell area. 25 per chunk.
- * Cell:     1x1 collision unit.
- * Surface:  Cell split containing fine-grained collision attributes. 2 per cell.
+ * Chunk:    40x40 meter area. 1 per IPD file, usually contain 20x20 cells.
+ * Subchunk: 8x8 meter area. 25 per chunk.
+ * Cell:     Variable-size collision grid unit, usually 2x2 meters.
+ * Polygon:  Collision shape with up to 2 surfaces divided  by a split.
+ * Surface:  Polygon split containing fine-grained collision attributes.
+ * Cylinder: Collision shape.
  */
 
 #define IPD_HEADER_MAGIC 20
@@ -28,7 +30,7 @@ typedef enum _CollisionTriggerFlags
     CollisionTriggerFlag_All     = 0xFFFF
 } e_CollisionTriggerFlags;
 
-/** @brief IPD collision shape types. TODO: Theoretical, should investigate `func_8006C794`. Are there actually 3? */
+/** @brief IPD collision shape types. TODO: Theoretical, not certain how shapes are distinguished in certain cases yet. */
 typedef enum _IpdShapeType
 {
     IpdShapeType_Polygon  = 0,
@@ -53,29 +55,20 @@ typedef enum _FloorType
     FloorType_None    = 12
 } e_FloorType;
 
-/** @brief IPD collision polygon surface split. TODO: Don't know how this works exactly, need to visualise. */
-typedef struct _IpdPolygonSurface
+/** @brief IPD collision surface. */
+typedef struct _IpdSurface
 {
-    /* 0x0    */ q7_8 offsetX;
-    /* 0x2    */ q7_8 offsetY;
-    /* 0x4    */ q7_8 offsetZ;
-    /* 0x6+0  */ u16  floorType      : 5; /** `e_FloorType` */
-    /* 0x6+5  */ u16  disableHeight  : 3; /** `bool` */
-    /* 0x6+8  */ u16  field_6_8      : 3; // Some slot index. Causes special collision triggers to behave differently.
-                                          // The properties should be based upon a value set at
-                                          // `s_CollisionState::field_A0::s_0::field_8` and it shouldn't
-                                          // be bigger than 3.
-                                          // Side note: Maybe the bits number is incorrect as in reality
-                                          // it gives values up to 7 when it should have been `2` as it would
-                                          // only ever give a value up to 4, but some dev didn't paid attention
-                                          // and assigned 3 instead.
-    /* 0x6+11 */ u16  triggerFlagIdx : 4; /** `e_CollisionTriggerFlags` index. */
-    /* 0x8    */ q7_8 tiltAngleX;
-    /* 0xA    */ q7_8 tiltAngleZ;
-} s_IpdPolygonSurface;
-STATIC_ASSERT_SIZEOF(s_IpdPolygonSurface, 12);
+    /* 0x0    */ SVECTOR3 offset;              /** Q7.8 */
+    /* 0x6+0  */ u16      floorType       : 5; /** `e_FloorType` */
+    /* 0x6+5  */ u16      disableHeight   : 3; /** `bool` */
+    /* 0x6+8  */ u16      surfaceCacheIdx : 3; /** Index into `s_CollisionState::s_0.surfaceCache`. */
+    /* 0x6+11 */ u16      triggerFlagIdx  : 4; /** `e_CollisionTriggerFlags` index. */
+    /* 0x8    */ q7_8     slopeGradientX;
+    /* 0xA    */ q7_8     slopeGradientZ;
+} s_IpdSurface;
+STATIC_ASSERT_SIZEOF(s_IpdSurface, 12);
 
-/** @brief IPD collision polygon shape. */
+/** @brief IPD collision polygon shape composed of up to 2 surfaces split by a line. */
 typedef struct _IpdPolygon
 {
     /* 0x0+0  */ q7_8 offsetX            : 14;
@@ -96,8 +89,6 @@ typedef struct _IpdCylinder
     /* 0x0+0  */ u16      floorType      : 5; /** `e_FloorType` */
     /* 0x0+5  */ u16      disableHeight  : 3; /** `bool` */
     /* 0x0+8  */ u16      triggerFlagIdx : 4; /** `e_CollisionTriggerFlags` index. */
-    /* 0x0+12 */ u16      field_0_12     : 3; // Unused?
-    /* 0x0+15 */ u16      field_0_15     : 1; // `bool` | Unused?
     /* 0x2    */ SVECTOR3 offset;             /** Q7.8 */
     /* 0x8    */ q7_8     radius;
 } s_IpdCylinder;
@@ -114,27 +105,27 @@ STATIC_ASSERT_SIZEOF(s_IpdShapeRange, 4);
 /** @brief IPD collision data. */
 typedef struct _IpdCollisionData
 {
-    /* 0x0    */ q23_8                positionX;
-    /* 0x4    */ q23_8                positionZ;
-    /* 0x8+0  */ u32                  polygonSplitVertexCount : 8; /** `polygonSplitVertices` array size. */
-    /* 0x8+8  */ u32                  polygonSurfaceCount     : 8; /** `polygonSurfaces` array size. */
-    /* 0x8+16 */ u32                  polygonCount            : 8; /** `polygons` array size. */
-    /* 0x8+24 */ u32                  cylinderCount           : 8; /** `cylinders` array size. */
-    /* 0xC    */ SVECTOR3*            polygonSplitVertices;        /** Q7.8 | Pairs define a polygon line split. */
-    /* 0x10   */ s_IpdPolygonSurface* polygonSurfaces;             /** Unique collision polygon surfaces. */
-    /* 0x14   */ s_IpdPolygon*        polygons;                    /** Unique collision polygons. */
-    /* 0x18   */ s_IpdCylinder*       cylinders;                   /** Unique collision cylinders. */
-    /* 0x1C   */ q7_8                 cellSize;                    /** `Q8(2.0f)` in most IPD files, sometimes `Q8(0.0f)`. */
-    /* 0x1E   */ u8                   cellCountX;                  /** 20 in most IPD files, sometimes 0. */
-    /* 0x1F   */ u8                   cellCountZ;                  /** 20 in most IPD files, sometimes 0. */
-    /* 0x20   */ s_IpdShapeRange*     shapeRanges;                 /** Pairs of elements define each range. */
-    /* 0x24   */ u16                  shapeLutSize;                /** `shapeLut` array size. */
-    /* 0x26   */ u16                  surfaceLutSize;              /** `surfaceLut` array size. */
-    /* 0x28   */ u8*                  shapeLut;                    /** Indices into `polygons` + `cylinders`. */
-    /* 0x2C   */ u8*                  surfaceLut;                  /** Indices into `polygonSurfaces`. */
-    /* 0x30   */ u8                   shapePassCounter;            /** Active shape pass. Stamps below this value, i.e. from an older pass, are "unvisited". */
-    /* 0x31   */ s8                   __pad_31[3];
-    /* 0x34   */ u8                   shapePassStampBuffer[256];   /** Tracks visited shapes per query pass. */
+    /* 0x0    */ q23_8            positionX;
+    /* 0x4    */ q23_8            positionZ;
+    /* 0x8+0  */ u32              polygonSplitVertexCount : 8; /** `polygonSplitVertices` array size. */
+    /* 0x8+8  */ u32              polygonSurfaceCount     : 8; /** `polygonSurfaces` array size. */
+    /* 0x8+16 */ u32              polygonCount            : 8; /** `polygons` array size. */
+    /* 0x8+24 */ u32              cylinderCount           : 8; /** `cylinders` array size. */
+    /* 0xC    */ SVECTOR3*        polygonSplitVertices;        /** Q7.8 | Pairs define a polygon line split. */
+    /* 0x10   */ s_IpdSurface*    polygonSurfaces;             /** Unique collision surfaces. */
+    /* 0x14   */ s_IpdPolygon*    polygons;                    /** Unique collision polygons. */
+    /* 0x18   */ s_IpdCylinder*   cylinders;                   /** Unique collision cylinders. */
+    /* 0x1C   */ q7_8             cellSize;                    /** `Q8(2.0f)` in most IPD files, sometimes `Q8(0.0f)`. */
+    /* 0x1E   */ u8               cellCountX;                  /** 20 in most IPD files, sometimes 0. */
+    /* 0x1F   */ u8               cellCountZ;                  /** 20 in most IPD files, sometimes 0. */
+    /* 0x20   */ s_IpdShapeRange* shapeRanges;                 /** Pairs of elements define each range. */
+    /* 0x24   */ u16              shapeLutSize;                /** `shapeLut` array size. */
+    /* 0x26   */ u16              surfaceLutSize;              /** `surfaceLut` array size. */
+    /* 0x28   */ u8*              shapeLut;                    /** Indices into `polygons` + `cylinders`. */
+    /* 0x2C   */ u8*              surfaceLut;                  /** Indices into `polygonSurfaces`. */
+    /* 0x30   */ u8               shapePassCounter;            /** Active shape pass. Stamps below this value, i.e. from an older pass, are "unvisited". */
+    /* 0x31   */ s8               __pad_31[3];
+    /* 0x34   */ u8               shapePassStampBuffer[256];   /** Tracks visited shapes per query pass. */
 } s_IpdCollisionData;
 STATIC_ASSERT_SIZEOF(s_IpdCollisionData, 308);
 
