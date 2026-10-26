@@ -1420,7 +1420,7 @@ bool WorldMap_SubchunkVisibleCheck(s_IpdModelBuffer* modelBuf,
 
     // Run through subchunk ranges.
     for (curSubchunkRange = modelBuf->subchunkRanges;
-         curSubchunkRange < &modelBuf->subchunkRanges[modelBuf->cellCount];
+         curSubchunkRange < &modelBuf->subchunkRanges[modelBuf->polygonCount];
          curSubchunkRange++)
     {
         if (subchunkX > curSubchunkRange->minX &&

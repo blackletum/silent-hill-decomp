@@ -28,6 +28,13 @@ typedef enum _CollisionTriggerFlags
     CollisionTriggerFlag_All     = 0xFFFF
 } e_CollisionTriggerFlags;
 
+/** @brief IPD collision shape types. TODO: Theoretical, should investigate `func_8006C794`. Are there actually 3? */
+typedef enum _IpdShapeType
+{
+    IpdShapeType_Polygon  = 0,
+    IpdShapeType_Cylinder = 1
+} s_IpdShapeType;
+
 /** @brief Floor material types. TODO: SH2 suggests "material"? */
 typedef enum _FloorType
 {
@@ -46,8 +53,8 @@ typedef enum _FloorType
     FloorType_None    = 12
 } e_FloorType;
 
-/** @brief IPD collision cell surface split. */
-typedef struct _IpdCellSurface
+/** @brief IPD collision polygon surface split. TODO: Don't know how this works exactly, need to visualise. */
+typedef struct _IpdPolygonSurface
 {
     /* 0x0    */ q7_8 offsetX;
     /* 0x2    */ q7_8 offsetY;
@@ -65,27 +72,26 @@ typedef struct _IpdCellSurface
     /* 0x6+11 */ u16  triggerFlagIdx : 4; /** `e_CollisionTriggerFlags` index. */
     /* 0x8    */ q7_8 tiltAngleX;
     /* 0xA    */ q7_8 tiltAngleZ;
-} s_IpdCellSurface;
-STATIC_ASSERT_SIZEOF(s_IpdCellSurface, 12);
+} s_IpdPolygonSurface;
+STATIC_ASSERT_SIZEOF(s_IpdPolygonSurface, 12);
 
-// TODO: Confusing "grid cells" with "collision geometry data items", so this name might be wrong.
-/** @brief IPD collision cell with two cell surfaces. */
-typedef struct _IpdCell
+/** @brief IPD collision polygon shape. */
+typedef struct _IpdPolygon
 {
-    /* 0x0+0  */ q7_8 offsetX          : 14;
-    /* 0x0+14 */ u16  triggerFlagsLow  : 2; /** `e_CollisionTriggerFlags` | Combined with `triggerFlagsHigh` for complete field. */
-    /* 0x2+0  */ q7_8 offsetY          : 14;
-    /* 0x2+14 */ u16  triggerFlagsHigh : 2; /** `e_CollisionTriggerFlags` | Combined with `triggerFlagsLow` for complete field. */
+    /* 0x0+0  */ q7_8 offsetX            : 14;
+    /* 0x0+14 */ u16  triggerFlagIdxLow  : 2; /** `e_CollisionTriggerFlags` index | Combined with `triggerFlagIdxHigh` for complete field. */
+    /* 0x2+0  */ q7_8 offsetY            : 14;
+    /* 0x2+14 */ u16  triggerFlagIdxHigh : 2; /** `e_CollisionTriggerFlags` index | Combined with `triggerFlagIdxLow` for complete field. */
     /* 0x4    */ q7_8 offsetZ;
-    /* 0x6    */ u8   splitVertexIdx0; // `s_IpdCollisionData::cellSplitVertices` index.
-    /* 0x7    */ u8   splitVertexIdx1; // `s_IpdCollisionData::cellSplitVertices` index.
-    /* 0x8    */ u8   surfaceIdx0;     // `s_IpdCollisionData::cellSurfaces` index.
-    /* 0x9    */ u8   surfaceIdx1;     // `s_IpdCollisionData::cellSurfaces` index.
-} s_IpdCell;
-STATIC_ASSERT_SIZEOF(s_IpdCell, 10);
+    /* 0x6    */ u8   splitVertexIdx0; // `s_IpdCollisionData::polygonSplitVertices` index.
+    /* 0x7    */ u8   splitVertexIdx1; // `s_IpdCollisionData::polygonSplitVertices` index.
+    /* 0x8    */ u8   surfaceIdx0;     // `s_IpdCollisionData::polygonSurfaces` index.
+    /* 0x9    */ u8   surfaceIdx1;     // `s_IpdCollisionData::polygonSurfaces` index.
+} s_IpdPolygon;
+STATIC_ASSERT_SIZEOF(s_IpdPolygon, 10);
 
-/** @brief IPD collision cell attributes. TODO: Name uncertain. */
-typedef struct _IpdCellAttribs
+/** @brief IPD collision cylinder shape. */
+typedef struct _IpdCylinder
 {
     /* 0x0+0  */ u16      floorType      : 5; /** `e_FloorType` */
     /* 0x0+5  */ u16      disableHeight  : 3; /** `bool` */
@@ -93,43 +99,42 @@ typedef struct _IpdCellAttribs
     /* 0x0+12 */ u16      field_0_12     : 3; // Unused?
     /* 0x0+15 */ u16      field_0_15     : 1; // `bool` | Unused?
     /* 0x2    */ SVECTOR3 offset;             /** Q7.8 */
-    /* 0x8    */ q7_8     radiusOffset;
-} s_IpdCellAttribs;
-STATIC_ASSERT_SIZEOF(s_IpdCellAttribs, 10);
+    /* 0x8    */ q7_8     radius;
+} s_IpdCylinder;
+STATIC_ASSERT_SIZEOF(s_IpdCylinder, 10);
 
-typedef struct _CellRange
+/** @brief IPD collision shape range (represented by pair). */
+typedef struct _ShapeRange
 {
-    /* 0x0 */ s16 cellLutIdx;    /** Index into `s_IpdCollisionData::cellLut`.  */
+    /* 0x0 */ s16 shapeLutIdx;   /** Index into `s_IpdCollisionData::shapeLut`.  */
     /* 0x2 */ s16 surfaceLutIdx; /** Index into `s_IpdCollisionData::surfaceLut`.  */
-} s_CellRange;
-STATIC_ASSERT_SIZEOF(s_CellRange, 4);
+} s_ShapeRange;
+STATIC_ASSERT_SIZEOF(s_ShapeRange, 4);
 
 /** @brief IPD collision data. */
 typedef struct _IpdCollisionData
 {
-    /* 0x0    */ q23_8             positionX;
-    /* 0x4    */ q23_8             positionZ;
-    /* 0x8+0  */ u32               cellSplitVertexCount : 8; /** `cellSplitVertices` size. */
-    /* 0x8+8  */ u32               cellSurfaceCount     : 8; /** `cellSurfaces` size. */
-    /* 0x8+16 */ u32               cellCount            : 8; /** `cells` size. */
-    /* 0x8+24 */ u32               cellAttribsCount     : 8; /** `cellAttribs` size. */
-    /* 0xC    */ SVECTOR3*         cellSplitVertices;        /** Q7.8 | Pairs define a cell line split. */
-    /* 0x10   */ s_IpdCellSurface* cellSurfaces;             /** Unique tangible collision cell surfaces. */
-    /* 0x14   */ s_IpdCell*        cells;                    /** Unique tangible collision cells. NOT 1 per grid cell??? */
-    /* 0x18   */ s_IpdCellAttribs* cellAttribs;              /** Collision cell attributes. */
-    /* 0x1C   */ q7_8              cellSize;                 /** `Q8(2.0f)` in most IPD files, sometimes `Q8(0.0f)`. */
-    /* 0x1E   */ u8                cellCountX;               /** 20 in most IPD files, sometimes 0. */
-    /* 0x1F   */ u8                cellCountZ;               /** 20 in most IPD files, sometimes 0. */
-    /* 0x20   */ s_CellRange*      cellRanges;               /** TODO: There's a difference between "grid cells" and "collision cells"? Very confusing.
-                                                              * Level grid cells contain multiple collision cells/geom items. Terms used seem very wrong.
-                                                              */
-    /* 0x24   */ u16               cellLutSize;
-    /* 0x26   */ u16               surfaceLutSize;
-    /* 0x28   */ u8*               cellLut;                  /** Indices into `cells` and `cellCheckIdxBuffer`. */
-    /* 0x2C   */ u8*               surfaceLut;               /** Indices into `cellSurfaces`. */
-    /* 0x30   */ u8                cellCheckCount;
-    /* 0x31   */ s8                __pad_31[3];
-    /* 0x34   */ u8                cellCheckIdxBuffer[256]; // Cell indices, unkown purpose. Contains `s_IpdCollisionData::cellCount` valid entries.
+    /* 0x0    */ q23_8                positionX;
+    /* 0x4    */ q23_8                positionZ;
+    /* 0x8+0  */ u32                  polygonSplitVertexCount : 8; /** `polygonSplitVertices` size. */
+    /* 0x8+8  */ u32                  polygonSurfaceCount     : 8; /** `polygonSurfaces` size. */
+    /* 0x8+16 */ u32                  polygonCount            : 8; /** `polygons` size. */
+    /* 0x8+24 */ u32                  cylinderCount           : 8; /** `cylinders` size. */
+    /* 0xC    */ SVECTOR3*            polygonSplitVertices;        /** Q7.8 | Pairs define a polygon line split. */
+    /* 0x10   */ s_IpdPolygonSurface* polygonSurfaces;             /** Unique collision polygon surfaces. */
+    /* 0x14   */ s_IpdPolygon*        polygons;                    /** Unique collision polygons. */
+    /* 0x18   */ s_IpdCylinder*       cylinders;                   /** Unique collision cylinders. */
+    /* 0x1C   */ q7_8                 cellSize;                    /** `Q8(2.0f)` in most IPD files, sometimes `Q8(0.0f)`. */
+    /* 0x1E   */ u8                   cellCountX;                  /** 20 in most IPD files, sometimes 0. */
+    /* 0x1F   */ u8                   cellCountZ;                  /** 20 in most IPD files, sometimes 0. */
+    /* 0x20   */ s_ShapeRange*        shapeRanges;
+    /* 0x24   */ u16                  shapeLutSize;
+    /* 0x26   */ u16                  surfaceLutSize;
+    /* 0x28   */ u8*                  shapeLut;                    /** Indices into `shapeCheckIdxBuffer`. */
+    /* 0x2C   */ u8*                  surfaceLut;                  /** Indices into `polygonSurfaces`. */
+    /* 0x30   */ u8                   shapeCheckCount;
+    /* 0x31   */ s8                   __pad_31[3];
+    /* 0x34   */ u8                   shapeCheckIdxBuffer[256];    // Shape indices, used when conducting queries? Contains `s_IpdCollisionData::polygonCount` valid entries?
 } s_IpdCollisionData;
 STATIC_ASSERT_SIZEOF(s_IpdCollisionData, 308);
 
@@ -165,7 +170,7 @@ typedef struct _IpdModelBuffer
 {
     /* 0x0  */ u8                  modelInstanceCount; /** `modelInstances` size. */
     /* 0x1  */ u8                  field_1;
-    /* 0x2  */ u8                  cellCount;
+    /* 0x2  */ u8                  polygonCount;
     /* 0x3  */ s8                  __pad_3;
     /* 0x4  */ q7_8                minX; // } `s_SubchunkRange`?
     /* 0x6  */ q7_8                maxX; // }

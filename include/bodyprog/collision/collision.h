@@ -58,7 +58,7 @@ typedef struct _CollisionResult
 typedef struct
 {
     /* 0x0 */ u8    subChunkTransDir; /**`e_SubChunkTransitionDirection` */
-    /* 0x1 */ u8    surfaceIdx;       // Index for `s_IpdCollisionData::cellSurfaces`.
+    /* 0x1 */ u8    surfaceIdx;       // Index for `s_IpdCollisionData::polygonSurfaces`.
     /* 0x2 */ q7_8  collDiffDist;
     /* 0x4 */ q23_8 radiusCollDiffDist;
 } s_CollisionState_A8;
@@ -94,12 +94,12 @@ typedef struct
 
 typedef union
 {
-    /* 0x0 */ q7_8 radiusOffset;
+    /* 0x0 */ q7_8 radius;
               struct
               {
                   /* 0x0 */ u8 surfaceIdx0;
                   /* 0x1 */ u8 surfaceIdx1;
-    /* 0x0 */ } cellSurfaces;
+    /* 0x0 */ } polygonSurfaces;
 } s_CollisionState_CC_C;
 
 // TODO: Maybe "split vertices" is the wrong idea.
@@ -107,7 +107,7 @@ typedef union
 typedef struct _CollisionCellPoint
 {
     /* 0x0  */ s_IpdCollisionData*    ipdCollisionData;
-    /* 0x4  */ u8                     cellIdx;               // `s_IpdCollisionData::cells` index.
+    /* 0x4  */ u8                     shapeIdx;              // `s_IpdCollisionData::polygons` index.
     /* 0x5  */ u8                     disableHeight;
     /* 0x6  */ SVECTOR3               offset;                // Q7.8 | Probe position inside cell/cell? Wrong struct? Y is maybe Z.
     /* 0xC  */ s_CollisionState_CC_C  field_C;               // Cell surface??
@@ -115,8 +115,8 @@ typedef struct _CollisionCellPoint
     /* 0xF  */ u8                     field_F;               // For surface 1. }
     /* 0x10 */ u8                     disableSurface0Height; /** `bool` */
     /* 0x11 */ u8                     disableSurface1Height; /** `bool` */
-    /* 0x12 */ SVECTOR3               cellSplitVertex0;      /** Q7.8 | Vertex from `s_IpdCollisionData::cellSplitVertices`. */
-    /* 0x18 */ SVECTOR3               cellSplitVertex1;      /** Q7.8 | Vertex from `s_IpdCollisionData::cellSplitVertices`. */
+    /* 0x12 */ SVECTOR3               polygonSplitVertex0;      /** Q7.8 | Vertex from `s_IpdCollisionData::polygonSplitVertices`. */
+    /* 0x18 */ SVECTOR3               polygonSplitVertex1;      /** Q7.8 | Vertex from `s_IpdCollisionData::polygonSplitVertices`. */
     /* 0x20 */ s_CollisionState_CC_20 field_20;
 } s_CollisionCellPoint;
 STATIC_ASSERT_SIZEOF(s_CollisionCellPoint, 56);
@@ -152,7 +152,7 @@ typedef struct _CollisionState
     /* 0x3A   */ q11_4                 field_3A;
     /* 0x3C   */ q7_8                  field_3C; // X?
     /* 0x3E   */ q7_8                  field_3E; // Z?
-    /* 0x40   */ s8*                   field_40;
+    /* 0x40   */ s8*                   field_40; // Collision shape index?
     /* 0x44   */ s_CollisionState_44   field_44;
     /* 0x7C   */ q23_8                 slopedFloorHeight; // TODO: How is `floorHeight` different?
     /* 0x80   */ q23_8                 charaCellOffsetX; // } Character position in cell.
@@ -180,7 +180,7 @@ typedef struct _CollisionState
                          /* 0x1 */ u8                  closestZCellIdx;
                          /* 0x2 */ u8                  cellSpanX;
                          /* 0x3 */ u8                  cellSpanZ;
-                         /* 0x4 */ s_CellRange*        cellRangePair;
+                         /* 0x4 */ s_ShapeRange*       shapeRangePair;
                          /* 0x8 */ s_CollisionState_A8 field_8[4];
                      } s_0;
                      struct
@@ -193,7 +193,7 @@ typedef struct _CollisionState
                      } s_1;
     /* 0xA0   */ } field_A0; // Floor info? Cell info? Cell state?
 
-    /* 0xC8   */ u8                   cellIdx; /** Secondary. Used only if detecting a cell after not finding one. */
+    /* 0xC8   */ u8                   shapeIdx; /** Secondary. Used only if detecting a cell after not finding one. */
     /* 0xCA   */ q7_8                 floorHeight; // TODO: Base floor height with slope unaccounted for?
     /* 0xCC   */ s_CollisionCellPoint point;
     // TODO: Maybe incomplete. Maybe not, added the final padding based on `Collision_SurfaceGet`.
@@ -379,12 +379,12 @@ bool Collision_CellInit(s_CollisionState* state, const s_IpdCollisionData* collD
 
 bool Collision_CellIdxGet(s_CollisionState* state, const s_IpdCollisionData* collData);
 
-void func_8006B1C8(s_CollisionState* state, s_IpdCollisionData* collData, s_CellRange* cellRangePair);
+void func_8006B1C8(s_CollisionState* state, s_IpdCollisionData* collData, s_ShapeRange* shapeRangePair);
 
-bool func_8006B318(s_CollisionState* state, const s_IpdCollisionData* collData, s32 cellIdx);
+bool func_8006B318(s_CollisionState* state, const s_IpdCollisionData* collData, s32 shapeIdx);
 
 /** `arg1` is unused, but `func_8006B1C8` passes second arg to this. */
-void func_8006B6E8(s_CollisionState* state, s_CellRange* cellRangePair);
+void func_8006B6E8(s_CollisionState* state, s_ShapeRange* shapeRangePair);
 
 bool func_8006B7E0(s_CollisionState_A8* cur, s_CollisionState_CC_20* prev);
 
@@ -397,7 +397,7 @@ void func_8006BB50(s_CollisionState* state, s32 arg1);
 // Computes floor height, accounting for differences in cell split vertex heights?
 q23_8 func_8006BC34(s_CollisionState* state);
 
-/** `arg1` is cell check idx? */
+/** `arg1` is shape check idx? */
 void func_8006BCC4(s_CollisionState_44* arg0, s8* arg1, u32 unkState, q7_8 distX, q7_8 distZ, q7_8 radiusOffset);
 
 void func_8006BDDC(s_CollisionState_44_0* arg0, q3_12 rotX, q3_12 rotY);
@@ -412,16 +412,17 @@ bool func_8006C1B8(u32 arg0, q3_12 distAlpha, s_CollisionState* state);
 
 q3_12 func_8006C248(s32 packedDir, q3_12 arg1, q3_12 deltaX, q7_8 deltaZ, q7_8 radius);
 
-bool func_8006C3D4(s_CollisionState* state, s_IpdCollisionData* collData, s32 cellIdx);
+bool func_8006C3D4(s_CollisionState* state, s_IpdCollisionData* collData, s32 shapeIdx);
 
 void func_8006C45C(s_CollisionState* state);
 
+// `unkState` is maybe shape type?
 void func_8006C794(s_CollisionState* state, s32 unkState, q23_8 dist);
 
 void func_8006C838(s_CollisionState* state, s_IpdCollisionData* collData);
 
 // Accounts for slopes in floor height?
-void func_8006CA18(s_CollisionState* state, s_IpdCollisionData* collData, s_CellRange* cellRangePair);
+void func_8006CA18(s_CollisionState* state, s_IpdCollisionData* collData, s_ShapeRange* shapeRangePair);
 
 // TODO: Computes alpha related to the floor slope?
 q3_12 Collision_OffsetAlphaGet(s_CollisionState* state);

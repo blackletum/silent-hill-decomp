@@ -84,27 +84,27 @@ void Collision_NearbyTriggersGet(q19_12 posX, q19_12 posZ, const s_CollisionTrig
 
 void Collision_ChunkHeaderPtrsInit(s_IpdCollisionData* collData) // 0x8006993C
 {
-    collData->cellSplitVertices = (u8*)collData->cellSplitVertices + (u32)collData;
-    collData->cellSurfaces      = (u8*)collData->cellSurfaces      + (u32)collData;
-    collData->cells             = (u8*)collData->cells             + (u32)collData;
-    collData->cellAttribs       = (u8*)collData->cellAttribs       + (u32)collData;
-    collData->cellRanges        = (u8*)collData->cellRanges        + (u32)collData;
-    collData->cellLut           = (u8*)collData->cellLut           + (u32)collData;
-    collData->surfaceLut        = (u8*)collData->surfaceLut        + (u32)collData;
+    collData->polygonSplitVertices = (u8*)collData->polygonSplitVertices + (u32)collData;
+    collData->polygonSurfaces      = (u8*)collData->polygonSurfaces      + (u32)collData;
+    collData->polygons             = (u8*)collData->polygons             + (u32)collData;
+    collData->cylinders            = (u8*)collData->cylinders            + (u32)collData;
+    collData->shapeRanges          = (u8*)collData->shapeRanges          + (u32)collData;
+    collData->shapeLut             = (u8*)collData->shapeLut             + (u32)collData;
+    collData->surfaceLut           = (u8*)collData->surfaceLut           + (u32)collData;
 }
 
 void Collision_CellChecksReset(s_IpdCollisionData* collData) // 0x80069994
 {
     s32* curCellCheckIdx;
 
-    collData->cellCheckCount++;
-    if (collData->cellCheckCount > (sizeof(collData->cellCheckIdxBuffer) - 4))
+    collData->shapeCheckCount++;
+    if (collData->shapeCheckCount > (sizeof(collData->shapeCheckIdxBuffer) - 4))
     {
-        collData->cellCheckCount = 0;
+        collData->shapeCheckCount = 0;
 
         // TODO: Is this `memset`/`bzero`?
-        for (curCellCheckIdx = &collData->cellCheckIdxBuffer[0];
-             curCellCheckIdx < &collData->cellCheckIdxBuffer[sizeof(collData->cellCheckIdxBuffer)];
+        for (curCellCheckIdx = &collData->shapeCheckIdxBuffer[0];
+             curCellCheckIdx < &collData->shapeCheckIdxBuffer[sizeof(collData->shapeCheckIdxBuffer)];
              curCellCheckIdx++)
         {
             *curCellCheckIdx = 0;
@@ -114,7 +114,7 @@ void Collision_CellChecksReset(s_IpdCollisionData* collData) // 0x80069994
 
 void Collision_CellChecksCountUpdate(s_IpdCollisionData* collData) // 0x800699E4
 {
-    collData->cellCheckCount++;
+    collData->shapeCheckCount++;
 }
 
 void Collision_SurfaceGet(s_CollisionSurface* surface, q19_12 posX, q19_12 posZ) // 0x800699F8
@@ -828,16 +828,16 @@ void Collision_MoveDirectionCalc(s_CollisionCharaState* charaState,
 
 void Collision_CharaCollisionHandle(s_CollisionState* state, s_IpdCollisionData* collData) // 0x8006AD44
 {
-    s32          endCellIdx;
-    s32          startCellIdx;
-    s32          cellXIdx;
-    s32          cellZIdx;
-    s_CellRange* cellRangePair;
+    s32           endCellIdx;
+    s32           startCellIdx;
+    s32           cellXIdx;
+    s32           cellZIdx;
+    s_ShapeRange* shapeRangePair;
 
     // Check if IPD collision contains necessary information and current cell is accessible.
-    if ((collData->cellSurfaceCount == 0 &&
-         collData->cellCount        == 0 &&
-         collData->cellAttribsCount == 0) ||
+    if ((collData->polygonSurfaceCount == 0 &&
+         collData->polygonCount        == 0 &&
+         collData->cylinderCount       == 0) ||
         !Collision_CellInit(state, collData))
     {
         return;
@@ -855,13 +855,13 @@ void Collision_CharaCollisionHandle(s_CollisionState* state, s_IpdCollisionData*
          cellXIdx < (state->field_A0.s_0.closestZCellIdx + state->field_A0.s_0.cellSpanZ);
          cellXIdx++)
     {
-        cellRangePair = &collData->cellRanges[(cellXIdx * collData->cellCountX) + startCellIdx];
+        shapeRangePair = &collData->shapeRanges[(cellXIdx * collData->cellCountX) + startCellIdx];
 
         for (cellZIdx = startCellIdx;
              cellZIdx <= endCellIdx;
-             cellZIdx++, cellRangePair++)
+             cellZIdx++, shapeRangePair++)
         {
-            func_8006B1C8(state, collData, cellRangePair);
+            func_8006B1C8(state, collData, shapeRangePair);
         }
     }
 
@@ -874,9 +874,9 @@ void Collision_CharaCollisionHandle(s_CollisionState* state, s_IpdCollisionData*
     if (state->field_0_10)
     {
         func_8006C838(state, collData);
-        if (state->field_A0.s_0.cellRangePair != NULL)
+        if (state->field_A0.s_0.shapeRangePair != NULL)
         {
-            func_8006CA18(state, collData, state->field_A0.s_0.cellRangePair);
+            func_8006CA18(state, collData, state->field_A0.s_0.shapeRangePair);
         }
     }
 }
@@ -900,13 +900,13 @@ bool Collision_CellInit(s_CollisionState* state, const s_IpdCollisionData* collD
         (state->charaPositionFrom.offset.vz / collData->cellSize) <  0                    ||
         (state->charaPositionFrom.offset.vz / collData->cellSize) >= collData->cellCountZ)
     {
-        state->field_A0.s_0.cellRangePair = NULL;
+        state->field_A0.s_0.shapeRangePair = NULL;
     }
     else
     {
-        state->field_A0.s_0.cellRangePair = &collData->cellRanges[((state->charaPositionFrom.offset.vz / collData->cellSize) * collData->cellCountX) +
-                                                                  (state->charaPositionFrom.offset.vx / collData->cellSize)];
-        state->cellIdx                    = NO_VALUE;
+        state->field_A0.s_0.shapeRangePair = &collData->shapeRanges[((state->charaPositionFrom.offset.vz / collData->cellSize) * collData->cellCountX) +
+                                                                    (state->charaPositionFrom.offset.vx / collData->cellSize)];
+        state->shapeIdx                    = NO_VALUE;
 
         for (curUnk = &state->field_A0.s_0.field_8[0]; curUnk < &state->field_A0.s_0.field_8[4]; curUnk++)
         {
@@ -982,41 +982,41 @@ bool Collision_CellIdxGet(s_CollisionState* state, const s_IpdCollisionData* col
     return true;
 }
 
-void func_8006B1C8(s_CollisionState* state, s_IpdCollisionData* collData, s_CellRange* cellRangePair) // 0x8006B1C8
+void func_8006B1C8(s_CollisionState* state, s_IpdCollisionData* collData, s_ShapeRange* shapeRangePair) // 0x8006B1C8
 {
-    s32 cellCount;
+    s32 polygonCount;
     s32 i;
-    u8  cellIdx;
+    u8  shapeIdx;
 
-    // Run through collision cells.
-    for (i = cellRangePair[0].cellLutIdx; i < cellRangePair[1].cellLutIdx; i++)
+    // Run through collision shapes.
+    for (i = shapeRangePair[0].shapeLutIdx; i < shapeRangePair[1].shapeLutIdx; i++)
     {
-        cellIdx = collData->cellLut[i];
+        shapeIdx = collData->shapeLut[i];
 
-        // Check if cell element hasn't been analyzed.
-        if (collData->cellCheckCount >= collData->cellCheckIdxBuffer[cellIdx])
+        // Check if shape hasn't been analyzed.
+        if (collData->shapeCheckCount >= collData->shapeCheckIdxBuffer[shapeIdx])
         {
-            collData->cellCheckIdxBuffer[cellIdx] = collData->cellCheckCount + 1;
-            cellCount                             = collData->cellCount;
+            collData->shapeCheckIdxBuffer[shapeIdx] = collData->shapeCheckCount + 1;
 
-            // Check if cell index is inside defined cell.
-            if (cellIdx < cellCount)
+            // Handle polygon shape.
+            polygonCount = collData->polygonCount;
+            if (shapeIdx < polygonCount)
             {
-                if (func_8006B318(state, collData, cellIdx))
+                if (func_8006B318(state, collData, shapeIdx))
                 {
                     if (state->field_0_10)
                     {
-                        func_8006B6E8(state, cellRangePair);
+                        func_8006B6E8(state, shapeRangePair);
                     }
 
                     if (state->isCharaMoving || state->field_0_9)
                     {
-                        if (state->point.field_C.cellSurfaces.surfaceIdx1 == UCHAR_MAX)
+                        if (state->point.field_C.polygonSurfaces.surfaceIdx1 == UCHAR_MAX)
                         {
                             func_8006B9C8(state);
                         }
 
-                        if (state->point.field_C.cellSurfaces.surfaceIdx0 == UCHAR_MAX)
+                        if (state->point.field_C.polygonSurfaces.surfaceIdx0 == UCHAR_MAX)
                         {
                             func_8006B8F8(&state->point);
                             func_8006B9C8(state);
@@ -1024,7 +1024,8 @@ void func_8006B1C8(s_CollisionState* state, s_IpdCollisionData* collData, s_Cell
                     }
                 }
             }
-            else if (func_8006C3D4(state, collData, cellIdx))
+            // Handle cylinder shape.
+            else if (func_8006C3D4(state, collData, shapeIdx))
             {
                 func_8006C45C(state);
             }
@@ -1032,65 +1033,65 @@ void func_8006B1C8(s_CollisionState* state, s_IpdCollisionData* collData, s_Cell
     }
 }
 
-bool func_8006B318(s_CollisionState* state, const s_IpdCollisionData* collData, s32 cellIdx) // 0x8006B318
+bool func_8006B318(s_CollisionState* state, const s_IpdCollisionData* collData, s32 shapeIdx) // 0x8006B318
 {
-    q23_8             charaVertDiffZ;
-    q23_8             charaVertDiffX;
-    s32               temp_v0;
-    s_IpdCellSurface* curSurface;
-    s_IpdCell*        cell;
+    q23_8                charaVertDiffZ;
+    q23_8                charaVertDiffX;
+    s32                  temp_v0;
+    s_IpdPolygonSurface* curSurface;
+    s_IpdPolygon*        polygon;
 
-    cell = &collData->cells[cellIdx];
+    polygon = &collData->polygons[shapeIdx];
     
     // Alternative collision enabling?
     // As noted briefly in `e_CollisionTriggerFlags` the game contains two flags (three, but one is unused)
     // which specifically enable certain collisions under specific game events, see for example the school
     // boss valve puzzle which relays in this flag system in order to enable and disable the collision that
     // blocks the player from progressing until the puzzle is solved.
-    if (CHECK_FLAG_IDX(state->triggerFlags, (cell->triggerFlagsLow << 2) | cell->triggerFlagsHigh, false))
+    if (CHECK_FLAG_IDX(state->triggerFlags, (polygon->triggerFlagIdxLow << 2) | polygon->triggerFlagIdxHigh, false))
     {
         return false;
     }
 
     state->point.ipdCollisionData = collData;
-    state->point.cellIdx          = cellIdx;
+    state->point.shapeIdx          = shapeIdx;
 
-    state->point.offset.vx = cell->offsetX;
-    state->point.offset.vy = cell->offsetY;
-    state->point.offset.vz = cell->offsetZ;
+    state->point.offset.vx = polygon->offsetX;
+    state->point.offset.vy = polygon->offsetY;
+    state->point.offset.vz = polygon->offsetZ;
 
-    state->point.cellSplitVertex0 = collData->cellSplitVertices[cell->splitVertexIdx1];
-    state->point.cellSplitVertex1 = collData->cellSplitVertices[cell->splitVertexIdx0];
+    state->point.polygonSplitVertex0 = collData->polygonSplitVertices[polygon->splitVertexIdx1];
+    state->point.polygonSplitVertex1 = collData->polygonSplitVertices[polygon->splitVertexIdx0];
 
-    state->point.field_C.cellSurfaces.surfaceIdx0 = cell->surfaceIdx0;
+    state->point.field_C.polygonSurfaces.surfaceIdx0 = polygon->surfaceIdx0;
 
-    if (state->point.field_C.cellSurfaces.surfaceIdx0 != UCHAR_MAX)
+    if (state->point.field_C.polygonSurfaces.surfaceIdx0 != UCHAR_MAX)
     {
-        curSurface                         = &collData->cellSurfaces[state->point.field_C.cellSurfaces.surfaceIdx0];
+        curSurface                         = &collData->polygonSurfaces[state->point.field_C.polygonSurfaces.surfaceIdx0];
         state->point.field_E               = curSurface->field_6_8;
         state->point.disableSurface0Height = curSurface->disableHeight;
 
         if (state->charaState.field_4 &&
             (curSurface->disableHeight == true || curSurface->floorType == FloorType_None))
         {
-            state->point.cellSplitVertex0.vy -= Q8(-DEFAULT_CEILING_HEIGHT);
-            state->point.cellSplitVertex1.vy -= Q8(-DEFAULT_CEILING_HEIGHT);
+            state->point.polygonSplitVertex0.vy -= Q8(-DEFAULT_CEILING_HEIGHT);
+            state->point.polygonSplitVertex1.vy -= Q8(-DEFAULT_CEILING_HEIGHT);
         }
     }
 
-    state->point.field_C.cellSurfaces.surfaceIdx1 = cell->surfaceIdx1;
+    state->point.field_C.polygonSurfaces.surfaceIdx1 = polygon->surfaceIdx1;
 
-    if (state->point.field_C.cellSurfaces.surfaceIdx1 != UCHAR_MAX)
+    if (state->point.field_C.polygonSurfaces.surfaceIdx1 != UCHAR_MAX)
     {
-        curSurface                         = &collData->cellSurfaces[state->point.field_C.cellSurfaces.surfaceIdx1];
+        curSurface                         = &collData->polygonSurfaces[state->point.field_C.polygonSurfaces.surfaceIdx1];
         state->point.field_F               = curSurface->field_6_8;
         state->point.disableSurface1Height = curSurface->disableHeight;
 
         if (state->charaState.field_4 &&
             (curSurface->disableHeight == true || curSurface->floorType == FloorType_None))
         {
-            state->point.cellSplitVertex0.vy = Q8(DEFAULT_CEILING_HEIGHT);
-            state->point.cellSplitVertex1.vy = Q8(DEFAULT_CEILING_HEIGHT);
+            state->point.polygonSplitVertex0.vy = Q8(DEFAULT_CEILING_HEIGHT);
+            state->point.polygonSplitVertex1.vy = Q8(DEFAULT_CEILING_HEIGHT);
         }
     }
 
@@ -1100,7 +1101,7 @@ bool func_8006B318(s_CollisionState* state, const s_IpdCollisionData* collData, 
        the transition between cells because onces the player is in the cell with different height to the previous one they
        can walk normally.
     */
-    temp_v0 = PACKED_XZ16(cell->offsetX, cell->offsetY);
+    temp_v0 = PACKED_XZ16(polygon->offsetX, polygon->offsetY);
     gte_ldR11R12(temp_v0);
     gte_ldR13R21(temp_v0);
     
@@ -1116,8 +1117,8 @@ bool func_8006B318(s_CollisionState* state, const s_IpdCollisionData* collData, 
        that may explain why it's 0 when standing still.
     */
     
-    temp_v0 = PACKED_XZ16(state->charaPositionFrom.offset.vx - state->point.cellSplitVertex0.vx,
-                          state->charaPositionFrom.offset.vz - state->point.cellSplitVertex0.vz);
+    temp_v0 = PACKED_XZ16(state->charaPositionFrom.offset.vx - state->point.polygonSplitVertex0.vx,
+                          state->charaPositionFrom.offset.vz - state->point.polygonSplitVertex0.vz);
     gte_ldvxy0(temp_v0);
     gte_ldvz0();
     gte_rtv0();
@@ -1157,7 +1158,7 @@ bool func_8006B318(s_CollisionState* state, const s_IpdCollisionData* collData, 
     return true;
 }
 
-void func_8006B6E8(s_CollisionState* state, s_CellRange* cellRangePair) // 0x8006B6E8
+void func_8006B6E8(s_CollisionState* state, s_ShapeRange* shapeRangePair) // 0x8006B6E8
 {
     s32                  idx;
     s32                  surfaceIdx0;
@@ -1166,8 +1167,8 @@ void func_8006B6E8(s_CollisionState* state, s_CellRange* cellRangePair) // 0x800
     bool                 disableSurface1Height;
     s_CollisionState_A8* temp_s0;
 
-    surfaceIdx0           = state->point.field_C.cellSurfaces.surfaceIdx0;
-    surfaceIdx1           = state->point.field_C.cellSurfaces.surfaceIdx1;
+    surfaceIdx0           = state->point.field_C.polygonSurfaces.surfaceIdx0;
+    surfaceIdx1           = state->point.field_C.polygonSurfaces.surfaceIdx1;
     disableSurface0Height = state->point.disableSurface0Height;
     disableSurface1Height = state->point.disableSurface1Height;
 
@@ -1296,31 +1297,31 @@ void func_8006B8F8(s_CollisionCellPoint* cellPoint) // 0x8006B8F8
     s32                     temp_a2;
     s32                     temp;
 
-    temp                                   = (u16)cellPoint->cellSplitVertex0.vx;
-    temp_a1                                = (u16)cellPoint->cellSplitVertex1.vx;
-    temp_a2                                = (u16)cellPoint->cellSplitVertex1.vz;
-    cellPoint->cellSplitVertex1.vx         = temp;
-    temp                                   = (u16)cellPoint->cellSplitVertex0.vy;
-    cellPoint->cellSplitVertex0.vy         = cellPoint->cellSplitVertex1.vy;
-    cellPoint->cellSplitVertex0.vx         = temp_a1;
+    temp                                   = (u16)cellPoint->polygonSplitVertex0.vx;
+    temp_a1                                = (u16)cellPoint->polygonSplitVertex1.vx;
+    temp_a2                                = (u16)cellPoint->polygonSplitVertex1.vz;
+    cellPoint->polygonSplitVertex1.vx      = temp;
+    temp                                   = (u16)cellPoint->polygonSplitVertex0.vy;
+    cellPoint->polygonSplitVertex0.vy      = cellPoint->polygonSplitVertex1.vy;
+    cellPoint->polygonSplitVertex0.vx      = temp_a1;
     cellPoint->offset.vx                   = -cellPoint->offset.vx;
-    cellPoint->cellSplitVertex1.vy         = temp;
+    cellPoint->polygonSplitVertex1.vy      = temp;
     cellPoint->offset.vy                   = -cellPoint->offset.vy;
-    temp                                   = (u16)cellPoint->cellSplitVertex0.vz;
-    cellPoint->cellSplitVertex1.vz         = temp;
-    temp                                   = cellPoint->field_C.cellSurfaces.surfaceIdx0;
+    temp                                   = (u16)cellPoint->polygonSplitVertex0.vz;
+    cellPoint->polygonSplitVertex1.vz      = temp;
+    temp                                   = cellPoint->field_C.polygonSurfaces.surfaceIdx0;
     cellPoint->field_20.charaMoveOffset.vx = -cellPoint->field_20.charaMoveOffset.vx;
 
-    cellPoint->cellSplitVertex0.vz                  = temp_a2;
-    cellPoint->field_C.cellSurfaces.surfaceIdx0 = cellPoint->field_C.cellSurfaces.surfaceIdx1;
+    cellPoint->polygonSplitVertex0.vz              = temp_a2;
+    cellPoint->field_C.polygonSurfaces.surfaceIdx0 = cellPoint->field_C.polygonSurfaces.surfaceIdx1;
 
     ptr = &cellPoint->field_20;
 
-    cellPoint->field_C.cellSurfaces.surfaceIdx1 = temp;
-    temp                                        = cellPoint->field_E;
-    cellPoint->field_20.charaMoveOffset.vz      = -cellPoint->field_20.charaMoveOffset.vz;
-    cellPoint->field_E                          = cellPoint->field_F;
-    cellPoint->field_F                          = temp;
+    cellPoint->field_C.polygonSurfaces.surfaceIdx1 = temp;
+    temp                                           = cellPoint->field_E;
+    cellPoint->field_20.charaMoveOffset.vz         = -cellPoint->field_20.charaMoveOffset.vz;
+    cellPoint->field_E                             = cellPoint->field_F;
+    cellPoint->field_F                             = temp;
 
     ptr->charaVertDiff.vz     = -ptr->charaVertDiff.vz;
     ptr->charaVertDiff.vx     = (cellPoint->offset.vz - ptr->charaVertDiff.vx);
@@ -1332,21 +1333,21 @@ void func_8006B9C8(s_CollisionState* state) // 0x8006B9C8
 {
     q23_8 charaRadius;
 
-    if (state->point.field_C.cellSurfaces.surfaceIdx1 == UCHAR_MAX &&
+    if (state->point.field_C.polygonSurfaces.surfaceIdx1 == UCHAR_MAX &&
         state->point.field_20.charaVertDiff.vz < Q8(0.0f) &&
-        (state->charaState.bottom >= state->point.cellSplitVertex0.vy ||
-         state->charaState.bottom >= state->point.cellSplitVertex1.vy))
+        (state->charaState.bottom >= state->point.polygonSplitVertex0.vy ||
+         state->charaState.bottom >= state->point.polygonSplitVertex1.vy))
     {
         if (state->field_0_9 && state->point.field_20.radiusCollDiffDist < state->charaState.radius)
         {
-            func_8006BB50(state, 0);
+            func_8006BB50(state, 0); // TODO: 0 = polygon?
             return;
         }
 
         charaRadius = state->charaState.radius;
-        if (state->field_0_9 && state->point.field_20.radiusCollDiffDist < (charaRadius + 8))
+        if (state->field_0_9 && state->point.field_20.radiusCollDiffDist < (charaRadius + Q8(1.0f / 32.0f)))
         {
-            func_8006BB50(state, 1);
+            func_8006BB50(state, 1); // TODO: 1 = cylinder?
         }
 
         if (state->isCharaMoving)
@@ -1378,13 +1379,13 @@ void func_8006BB50(s_CollisionState* state, s32 arg1) // 0x8006BB50
 
     if (state->point.field_20.charaVertDiff.vx < Q8(0.0f))
     {
-        charaCollDistX = state->charaPositionFrom.offset.vx - state->point.cellSplitVertex0.vx;
-        charaCollDistZ = state->charaPositionFrom.offset.vz - state->point.cellSplitVertex0.vz;
+        charaCollDistX = state->charaPositionFrom.offset.vx - state->point.polygonSplitVertex0.vx;
+        charaCollDistZ = state->charaPositionFrom.offset.vz - state->point.polygonSplitVertex0.vz;
     }
     else if (state->point.offset.vz < state->point.field_20.charaVertDiff.vx)
     {
-        charaCollDistX = state->charaPositionFrom.offset.vx - state->point.cellSplitVertex1.vx;
-        charaCollDistZ = state->charaPositionFrom.offset.vz - state->point.cellSplitVertex1.vz;
+        charaCollDistX = state->charaPositionFrom.offset.vx - state->point.polygonSplitVertex1.vx;
+        charaCollDistZ = state->charaPositionFrom.offset.vz - state->point.polygonSplitVertex1.vz;
     }
     else
     {
@@ -1393,7 +1394,7 @@ void func_8006BB50(s_CollisionState* state, s32 arg1) // 0x8006BB50
     }
 
     temp2 = state->charaState.radius - state->point.field_20.radiusCollDiffDist;
-    func_8006BCC4(&state->field_44, &state->point.ipdCollisionData->cellCheckIdxBuffer[state->point.cellIdx], arg1, charaCollDistX, charaCollDistZ, temp2);
+    func_8006BCC4(&state->field_44, &state->point.ipdCollisionData->shapeCheckIdxBuffer[state->point.shapeIdx], arg1, charaCollDistX, charaCollDistZ, temp2);
 }
 
 q23_8 func_8006BC34(s_CollisionState* state)
@@ -1408,20 +1409,20 @@ q23_8 func_8006BC34(s_CollisionState* state)
     someX = state->point.field_20.charaVertDiff.vx;
     if (someX < Q8(0.0f))
     {
-        floorHeight = state->point.cellSplitVertex0.vy;
+        floorHeight = state->point.polygonSplitVertex0.vy;
     }
     else
     {
         someZ = state->point.offset.vz;
         if (someZ < someX)
         {
-            floorHeight = state->point.cellSplitVertex1.vy;
+            floorHeight = state->point.polygonSplitVertex1.vy;
         }
         else
         {
-            height0 = state->point.cellSplitVertex0.vy;
-            height1 = state->point.cellSplitVertex1.vy;
-            height2 = state->point.cellSplitVertex0.vy;
+            height0 = state->point.polygonSplitVertex0.vy;
+            height1 = state->point.polygonSplitVertex1.vy;
+            height2 = state->point.polygonSplitVertex0.vy;
 
             if (height0 == height1)
             {
@@ -1563,11 +1564,11 @@ void func_8006BE40(s_CollisionState* state) // 0x8006BE40
     switch (unkSwitchType)
     {
         case 0: // Vertex 0.
-            func_8006BF88(state, &state->point.cellSplitVertex0);
+            func_8006BF88(state, &state->point.polygonSplitVertex0);
             break;
 
         case 1: // Vertex 1.
-            func_8006BF88(state, &state->point.cellSplitVertex1);
+            func_8006BF88(state, &state->point.polygonSplitVertex1);
             break;
 
         case 2: // Non-split?
@@ -1592,7 +1593,7 @@ void func_8006BF88(s_CollisionState* state, const SVECTOR3* splitVert) // 0x8006
         state->field_34 = 2;
         temp2               = state->charaPositionFrom.offset.vx + Q12_MULT(state->charaState.offset.vx, distAlpha);
         state->field_3A = Q12_TO_Q4(state->charaState.distance * distAlpha);
-        state->field_40 = &state->point.ipdCollisionData->cellCheckIdxBuffer[state->point.cellIdx];
+        state->field_40 = &state->point.ipdCollisionData->shapeCheckIdxBuffer[state->point.shapeIdx];
 
         state->field_3C = temp2 - splitVert->vx;
         temp3               = state->charaPositionFrom.offset.vz + Q12_MULT(state->charaState.offset.vz, distAlpha);
@@ -1609,10 +1610,10 @@ void func_8006C0C8(s_CollisionState* state, q3_12 distAlpha, q7_8 arg2) // 0x800
         return;
     }
 
-    temp = ((state->point.cellSplitVertex1.vy - state->point.cellSplitVertex0.vy) * arg2) / state->point.offset.vz;
-    if (temp + state->point.cellSplitVertex0.vy < state->charaState.bottom)
+    temp = ((state->point.polygonSplitVertex1.vy - state->point.polygonSplitVertex0.vy) * arg2) / state->point.offset.vz;
+    if (temp + state->point.polygonSplitVertex0.vy < state->charaState.bottom)
     {
-        state->field_40 = &state->point.ipdCollisionData->cellCheckIdxBuffer[state->point.cellIdx];
+        state->field_40 = &state->point.ipdCollisionData->shapeCheckIdxBuffer[state->point.shapeIdx];
         state->field_34 = 1;
         state->field_38 = distAlpha;
         state->field_3A = Q12_TO_Q4(state->charaState.distance * distAlpha);
@@ -1719,24 +1720,24 @@ q3_12 func_8006C248(s32 packedDir, q3_12 arg1, q3_12 deltaX, q7_8 deltaZ, q7_8 r
     return alpha;
 }
 
-bool func_8006C3D4(s_CollisionState* state, s_IpdCollisionData* collData, s32 cellIdx) // 0x8006C3D4
+bool func_8006C3D4(s_CollisionState* state, s_IpdCollisionData* collData, s32 shapeIdx) // 0x8006C3D4
 {
-    s_IpdCellAttribs* cellAttribs;
+    s_IpdCylinder* cylinder;
 
     state->point.ipdCollisionData = collData;
-    state->point.cellIdx          = cellIdx;
-    cellAttribs                   = &collData->cellAttribs[cellIdx - collData->cellCount];
+    state->point.shapeIdx         = shapeIdx;
+    cylinder                      = &collData->cylinders[shapeIdx - collData->polygonCount];
 
-    if (CHECK_FLAG_IDX(state->triggerFlags, cellAttribs->triggerFlagIdx, false))
+    if (CHECK_FLAG_IDX(state->triggerFlags, cylinder->triggerFlagIdx, false))
     {
         return false;
     }
 
-    state->point.disableHeight        = cellAttribs->disableHeight;
-    state->point.offset.vx            = cellAttribs->offset.vx;
-    state->point.offset.vy            = cellAttribs->offset.vy;
-    state->point.offset.vz            = cellAttribs->offset.vz;
-    state->point.field_C.radiusOffset = cellAttribs->radiusOffset;
+    state->point.disableHeight  = cylinder->disableHeight;
+    state->point.offset.vx      = cylinder->offset.vx;
+    state->point.offset.vy      = cylinder->offset.vy;
+    state->point.offset.vz      = cylinder->offset.vz;
+    state->point.field_C.radius = cylinder->radius;
     return true;
 }
 
@@ -1751,8 +1752,8 @@ void func_8006C45C(s_CollisionState* state) // 0x8006C45C
     s32   temp;
     s32   temp2;
 
-    distMax = state->charaState.radius + state->point.field_C.radiusOffset;
-    bound   = distMax + 8;
+    distMax = state->charaState.radius + state->point.field_C.radius;
+    bound   = distMax + Q8(1.0f / 32.0f);
 
     if (state->charaPositionFrom.offset.vx < (state->point.offset.vx - bound) &&
         state->charaPositionTo.offset.vx   < (state->point.offset.vx - bound))
@@ -1782,14 +1783,14 @@ void func_8006C45C(s_CollisionState* state) // 0x8006C45C
     distZ = state->charaPositionFrom.offset.vz - state->point.offset.vz;
     dist  = Math_Vector2MagCalc(distX, distZ);
 
-    if (dist < state->point.field_C.radiusOffset && state->point.disableHeight != true &&
-        (state->cellIdx == UCHAR_MAX || state->point.offset.vy < state->floorHeight))
+    if (dist < state->point.field_C.radius && state->point.disableHeight != true &&
+        (state->shapeIdx == UCHAR_MAX || state->point.offset.vy < state->floorHeight))
     {
-        state->cellIdx     = state->point.cellIdx;
+        state->shapeIdx     = state->point.shapeIdx;
         state->floorHeight = state->point.offset.vy;
     }
 
-    if ((!state->isCharaMoving && !state->field_0_9) || dist < state->point.field_C.radiusOffset)
+    if ((!state->isCharaMoving && !state->field_0_9) || dist < state->point.field_C.radius)
     {
         return;
     }
@@ -1831,7 +1832,7 @@ void func_8006C45C(s_CollisionState* state) // 0x8006C45C
         state->field_34 = 1;
         temp                = state->charaPositionFrom.offset.vx + Q12_MULT(state->charaState.offset.vx, distAlpha);
         state->field_3A = Q12_TO_Q4(state->charaState.distance * distAlpha);
-        state->field_40 = &state->point.ipdCollisionData->cellCheckIdxBuffer[state->point.cellIdx];
+        state->field_40 = &state->point.ipdCollisionData->shapeCheckIdxBuffer[state->point.shapeIdx];
         state->field_3C = temp - state->point.offset.vx;
         temp2               = state->charaPositionFrom.offset.vz + Q12_MULT(state->charaState.offset.vz, distAlpha);
         state->field_3E = temp2 - state->point.offset.vz;
@@ -1840,14 +1841,14 @@ void func_8006C45C(s_CollisionState* state) // 0x8006C45C
 
 void func_8006C794(s_CollisionState* state, s32 unkState, q23_8 dist) // 0x8006C794
 {
-    if (state->charaState.bottom >= (state->point.offset.vy + (dist - state->point.field_C.radiusOffset)))
+    if (state->charaState.bottom >= (state->point.offset.vy + (dist - state->point.field_C.radius)))
     {
         func_8006BCC4(&state->field_44,
-                      &state->point.ipdCollisionData->cellCheckIdxBuffer[state->point.cellIdx],
+                      &state->point.ipdCollisionData->shapeCheckIdxBuffer[state->point.shapeIdx],
                       unkState,
                       state->charaPositionFrom.offset.vx - state->point.offset.vx,
                       state->charaPositionFrom.offset.vz - state->point.offset.vz,
-                      (state->charaState.radius + state->point.field_C.radiusOffset) - dist);
+                      (state->charaState.radius + state->point.field_C.radius) - dist);
     }
 }
 
@@ -1855,31 +1856,31 @@ void func_8006C838(s_CollisionState* state, s_IpdCollisionData* collData) // 0x8
 {
     q19_12               slopedFloorHeight;
     s_CollisionState_A8* curUnk;
-    s_IpdCellSurface*    curSurface;
-    s_IpdCellAttribs*    cellAttribs;
+    s_IpdPolygonSurface* curSurface;
+    s_IpdCylinder*       cylinder;
 
-    if (state->field_A0.s_0.cellRangePair == NULL)
+    if (state->field_A0.s_0.shapeRangePair == NULL)
     {
         return;
     }
 
-    if (state->cellIdx != UCHAR_MAX && state->floorHeight < state->slopedFloorHeight)
+    if (state->shapeIdx != UCHAR_MAX && state->floorHeight < state->slopedFloorHeight)
     {
-        cellAttribs              = &collData->cellAttribs[state->cellIdx - collData->cellCount];
+        cylinder                 = &collData->cylinders[state->shapeIdx - collData->polygonCount];
         state->slopedFloorHeight = state->floorHeight;
         state->charaCellOffsetX  = state->charaPositionFrom.offset.vx + collData->positionX;
         state->charaCellOffsetZ  = state->charaPositionFrom.offset.vz + collData->positionZ;
         state->tiltAngleX        = Q12_ANGLE(0.0f);
         state->tiltAngleZ        = Q12_ANGLE(0.0f);
-        state->disableHeight     = cellAttribs->disableHeight;
-        state->floorType         = cellAttribs->floorType;
+        state->disableHeight     = cylinder->disableHeight;
+        state->floorType         = cylinder->floorType;
     }
 
     for (curUnk = &state->field_A0.s_0.field_8[0]; curUnk < &state->field_A0.s_0.field_8[4]; curUnk++)
     {
         if (curUnk->surfaceIdx != UCHAR_MAX)
         {
-            curSurface = &collData->cellSurfaces[curUnk->surfaceIdx];
+            curSurface = &collData->polygonSurfaces[curUnk->surfaceIdx];
 
             // Compute sloped floor height.
             slopedFloorHeight = curSurface->offsetY;
@@ -1906,29 +1907,29 @@ void func_8006C838(s_CollisionState* state, s_IpdCollisionData* collData) // 0x8
     }
 }
 
-void func_8006CA18(s_CollisionState* state, s_IpdCollisionData* collData, s_CellRange* cellRangePair) // 0x8006CA18
+void func_8006CA18(s_CollisionState* state, s_IpdCollisionData* collData, s_ShapeRange* shapeRangePair) // 0x8006CA18
 {
-    s32               surfaceLutStartIdx;
-    s32               surfaceLutEndIdx;
-    q23_8             slopedFloorHeight;
-    u8*               curSurfaceIdx;
-    s_IpdCellSurface* curSurface;
+    s32                  surfaceLutStartIdx;
+    s32                  surfaceLutEndIdx;
+    q23_8                slopedFloorHeight;
+    u8*                  curSurfaceIdx;
+    s_IpdPolygonSurface* curSurface;
 
-    surfaceLutStartIdx = cellRangePair[0].surfaceLutIdx;
-    surfaceLutEndIdx   = cellRangePair[1].surfaceLutIdx;
+    surfaceLutStartIdx = shapeRangePair[0].surfaceLutIdx;
+    surfaceLutEndIdx   = shapeRangePair[1].surfaceLutIdx;
 
-    // Check for invalid surface LUT range.
+    // Check for invalid polygon surface LUT range.
     if (surfaceLutStartIdx == surfaceLutEndIdx)
     {
         return;
     }
 
-    // Run through collision surfaces.
+    // Run through collision polygon surfaces.
     for (curSurfaceIdx = &collData->surfaceLut[surfaceLutStartIdx];
          curSurfaceIdx < &collData->surfaceLut[surfaceLutEndIdx];
          curSurfaceIdx++)
     {
-        curSurface = &collData->cellSurfaces[*curSurfaceIdx];
+        curSurface = &collData->polygonSurfaces[*curSurfaceIdx];
 
         if (CHECK_FLAG_IDX(state->triggerFlags, curSurface->triggerFlagIdx, true) &&
             curSurface->disableHeight != true)

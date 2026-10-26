@@ -41,7 +41,7 @@ typedef struct _RayState
 {
     /* 0x0  */ bool             field_0; // "Use cylinder"?
     /* 0x4  */ s16              triggerFlags; /** `e_CollisionTriggerFlags` */
-    /* 0x6  */ q7_8             radiusOffset;
+    /* 0x6  */ q7_8             radius;
     /* 0x8  */ q7_8             hitDistance;
     /* 0xA  */ s8               __pad_A[2];
     /* 0xC  */ VECTOR3          target; // Q23.8
@@ -122,11 +122,11 @@ void func_8006E150(s_func_8006E490* arg0, DVECTOR arg1, DVECTOR arg2);
 
 void func_8006E490(s_func_8006E490* arg0, u32 flags, q19_12 posX, q19_12 posZ);
 
-void func_8006E53C(s_RayState* state, s_CellRange* cellRangePair, s_IpdCollisionData* collData);
+void func_8006E53C(s_RayState* state, s_ShapeRange* shapeRangePair, s_IpdCollisionData* collData);
 
-void func_8006E78C(s_RayState* state, s_IpdCell* cell, SVECTOR3* splitVerts, s_IpdCellSurface* cellSurfaces, bool hasSurface);
+void func_8006E78C(s_RayState* state, s_IpdPolygon* polygon, SVECTOR3* splitVerts, s_IpdPolygonSurface* surfaces, bool hasSurface);
 
-void func_8006EB8C(s_RayState* state, s_IpdCellAttribs* arg1);
+void func_8006EB8C(s_RayState* state, s_IpdCylinder* radius);
 
 // Fills ray hit data?
 void func_8006EE0C(s_RayState_6C* arg0, bool useCylinder, const s_SubCharacter* chara);

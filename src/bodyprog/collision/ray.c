@@ -148,7 +148,7 @@ bool Ray_TraceSetup(s_RayState* state, bool useCylinder, q7_8 radiusOffset, cons
 
     state->field_0      = useCylinder;
     state->triggerFlags = g_ActiveCollisionTriggers.flags; // TODO: Struct could begin some point earlier.
-    state->radiusOffset = radiusOffset;
+    state->radius       = radiusOffset;
     state->hitDistance  = SHRT_MAX;
     state->character    = NULL;
 
@@ -210,9 +210,9 @@ bool Ray_TraceRun(s_RayTrace* trace, s_RayState* state) // 0x8006DEB0
     {
         collData = *curCollData;
 
-        if (collData->cellSurfaceCount != 0 ||
-            collData->cellCount        != 0 ||
-            collData->cellAttribsCount != 0)
+        if (collData->polygonSurfaceCount != 0 ||
+            collData->polygonCount        != 0 ||
+            collData->cylinderCount       != 0)
         {
             func_8006E0AC(state, collData);
             Collision_CellChecksReset(collData);
@@ -220,7 +220,7 @@ bool Ray_TraceRun(s_RayTrace* trace, s_RayState* state) // 0x8006DEB0
             for (curUnk = &state->field_8C; curUnk < &state->field_8C[state->field_88]; curUnk++)
             {
                 temp_lo = curUnk->field_2 * state->cellCountX;
-                func_8006E53C(state, &collData->cellRanges[temp_lo + curUnk->field_0], collData);
+                func_8006E53C(state, &collData->shapeRanges[temp_lo + curUnk->field_0], collData);
             }
         }
     }
@@ -270,7 +270,7 @@ void func_8006E150(s_func_8006E490* arg0, DVECTOR arg1, DVECTOR arg2) // 0x8006E
 {
     DVECTOR subroutine_arg4;
     VECTOR  sp18;
-    VECTOR  pos;
+    VECTOR  pos; // TODO: Wrong struct, `pad` is also used.
     s16     temp_lo;
     s16     temp_lo_2;
     s32     temp_a0_3;
@@ -422,34 +422,35 @@ void func_8006E490(s_func_8006E490* arg0, u32 flags, q19_12 posX, q19_12 posZ) /
     }
 }
 
-void func_8006E53C(s_RayState* state, s_CellRange* cellRangePair, s_IpdCollisionData* collData) // 0x8006E53C
+void func_8006E53C(s_RayState* state, s_ShapeRange* shapeRangePair, s_IpdCollisionData* collData) // 0x8006E53C
 {
-    s32               i;
-    bool              hasSurface;
-    bool              cond1;
-    bool              cond2;
-    s32               surfaceIdx0;
-    s32               surfaceIdx1;
-    s32               cellIdx;
-    s_IpdCellAttribs* curCellAttribs;
-    s_IpdCell*        curCell;
+    s32            i;
+    bool           hasSurface;
+    bool           cond1;
+    bool           cond2;
+    s32            surfaceIdx0;
+    s32            surfaceIdx1;
+    s32            shapeIdx;
+    s_IpdCylinder* curCylinder;
+    s_IpdPolygon*  curPolygon;
 
-    for (i = cellRangePair[0].cellLutIdx; i < cellRangePair[1].cellLutIdx; i++)
+    for (i = shapeRangePair[0].shapeLutIdx; i < shapeRangePair[1].shapeLutIdx; i++)
     {
-        cellIdx = collData->cellLut[i];
+        shapeIdx = collData->shapeLut[i];
 
-        if (collData->cellCheckCount >= collData->cellCheckIdxBuffer[cellIdx])
+        if (collData->shapeCheckCount >= collData->shapeCheckIdxBuffer[shapeIdx])
         {
-            collData->cellCheckIdxBuffer[cellIdx] = collData->cellCheckCount + 1;
+            collData->shapeCheckIdxBuffer[shapeIdx] = collData->shapeCheckCount + 1;
 
-            if (cellIdx < collData->cellCount)
+            // Handle polygon shape.
+            if (shapeIdx < collData->polygonCount)
             {
-                curCell = &collData->cells[cellIdx];
+                curPolygon = &collData->polygons[shapeIdx];
 
-                if (CHECK_FLAG_IDX(state->triggerFlags, (curCell->triggerFlagsLow << 2) | curCell->triggerFlagsHigh, true))
+                if (CHECK_FLAG_IDX(state->triggerFlags, (curPolygon->triggerFlagIdxLow << 2) | curPolygon->triggerFlagIdxHigh, true))
                 {
-                    surfaceIdx0 = curCell->surfaceIdx0;
-                    surfaceIdx1 = curCell->surfaceIdx1;
+                    surfaceIdx0 = curPolygon->surfaceIdx0;
+                    surfaceIdx1 = curPolygon->surfaceIdx1;
                     hasSurface  = surfaceIdx0 != UCHAR_MAX && surfaceIdx1 != UCHAR_MAX;
 
                     if (state->field_0 == true)
@@ -465,15 +466,15 @@ void func_8006E53C(s_RayState* state, s_CellRange* cellRangePair, s_IpdCollision
                         cond2 = false;
 
                         if (surfaceIdx0 == UCHAR_MAX ||
-                            collData->cellSurfaces[surfaceIdx0].floorType == FloorType_Default ||
-                            collData->cellSurfaces[surfaceIdx0].floorType == FloorType_None)
+                            collData->polygonSurfaces[surfaceIdx0].floorType == FloorType_Default ||
+                            collData->polygonSurfaces[surfaceIdx0].floorType == FloorType_None)
                         {
                             cond1 = true;
                         }
 
                         if (surfaceIdx1 == UCHAR_MAX ||
-                            collData->cellSurfaces[surfaceIdx1].floorType == FloorType_Default ||
-                            collData->cellSurfaces[surfaceIdx1].floorType == FloorType_None)
+                            collData->polygonSurfaces[surfaceIdx1].floorType == FloorType_Default ||
+                            collData->polygonSurfaces[surfaceIdx1].floorType == FloorType_None)
                         {
                             cond2 = true;
                         }
@@ -484,27 +485,28 @@ void func_8006E53C(s_RayState* state, s_CellRange* cellRangePair, s_IpdCollision
                         }
                     }
 
-                    func_8006E78C(state, curCell, collData->cellSplitVertices, collData->cellSurfaces, hasSurface);
+                    func_8006E78C(state, curPolygon, collData->polygonSplitVertices, collData->polygonSurfaces, hasSurface);
                 }
             }
+            // Handle cylinder shape.
             else
             {
-                curCellAttribs = &collData->cellAttribs[cellIdx - collData->cellCount];
+                curCylinder = &collData->cylinders[shapeIdx - collData->polygonCount];
 
-                if (CHECK_FLAG_IDX(state->triggerFlags, curCellAttribs->triggerFlagIdx, true) &&
+                if (CHECK_FLAG_IDX(state->triggerFlags, curCylinder->triggerFlagIdx, true) &&
                     (state->field_0 == true ||
-                     (curCellAttribs->floorType != FloorType_Default &&
-                      curCellAttribs->floorType != FloorType_None)) &&
-                    curCellAttribs->radiusOffset >= state->radiusOffset)
+                     (curCylinder->floorType != FloorType_Default &&
+                      curCylinder->floorType != FloorType_None)) &&
+                    curCylinder->radius >= state->radius)
                 {
-                    func_8006EB8C(state, curCellAttribs);
+                    func_8006EB8C(state, curCylinder);
                 }
             }
         }
     }
 }
 
-void func_8006E78C(s_RayState* state, s_IpdCell* cell, SVECTOR3* splitVerts, s_IpdCellSurface* cellSurfaces, bool hasSurface) // 0x8006E78C
+void func_8006E78C(s_RayState* state, s_IpdPolygon* polygon, SVECTOR3* splitVerts, s_IpdPolygonSurface* surfaces, bool hasSurface) // 0x8006E78C
 {
     SVECTOR   sp0;
     SVECTOR   sp8;
@@ -520,18 +522,18 @@ void func_8006E78C(s_RayState* state, s_IpdCell* cell, SVECTOR3* splitVerts, s_I
     s32       var_v1;
 
     floorType = FloorType_Default;
-    splitVert1 = &splitVerts[cell->splitVertexIdx1];
-    splitVert0 = &splitVerts[cell->splitVertexIdx0];
+    splitVert1 = &splitVerts[polygon->splitVertexIdx1];
+    splitVert0 = &splitVerts[polygon->splitVertexIdx0];
 
     if (state->field_5E >= splitVert1->vy || state->field_5E >= splitVert0->vy)
     {
-        if (cell->surfaceIdx0 != UCHAR_MAX)
+        if (polygon->surfaceIdx0 != UCHAR_MAX)
         {
-            floorType = cellSurfaces[cell->surfaceIdx0].floorType;
+            floorType = surfaces[polygon->surfaceIdx0].floorType;
         }
-        if (cell->surfaceIdx1 != UCHAR_MAX)
+        if (polygon->surfaceIdx1 != UCHAR_MAX)
         {
-            floorType = cellSurfaces[cell->surfaceIdx1].floorType;
+            floorType = surfaces[polygon->surfaceIdx1].floorType;
         }
 
         unkXz = PACKED_XZ16(state->field_58, state->field_5A);
@@ -556,14 +558,14 @@ void func_8006E78C(s_RayState* state, s_IpdCell* cell, SVECTOR3* splitVerts, s_I
 
                 if (gte_stMAC0() >= 0)
                 {
-                    if (cell->surfaceIdx0 != UCHAR_MAX)
+                    if (polygon->surfaceIdx0 != UCHAR_MAX)
                     {
                         return;
                     }
                 }
                 else
                 {
-                    if (cell->surfaceIdx1 != UCHAR_MAX)
+                    if (polygon->surfaceIdx1 != UCHAR_MAX)
                     {
                         return;
                     }
@@ -593,12 +595,12 @@ void func_8006E78C(s_RayState* state, s_IpdCell* cell, SVECTOR3* splitVerts, s_I
 
                     if (maybeRayStep >= maybeSplitDiff.vy && hitDist < state->hitDistance)
                     {
-                        offsetX = cell->offsetY;
-                        offsetZ = -cell->offsetX;
+                        offsetX = polygon->offsetY;
+                        offsetZ = -polygon->offsetX;
                         if (state->field_0 != true && hasSurface && (sp8.vy - sp0.vy) > 0)
                         {
                             offsetX = -offsetX;
-                            offsetZ = cell->offsetX;
+                            offsetZ = polygon->offsetX;
                         }
 
                         state->hitDistance  = hitDist;
@@ -617,17 +619,17 @@ void func_8006E78C(s_RayState* state, s_IpdCell* cell, SVECTOR3* splitVerts, s_I
     }
 }
 
-void func_8006EB8C(s_RayState* state, s_IpdCellAttribs* arg1) // 0x8006EB8C
+void func_8006EB8C(s_RayState* state, s_IpdCylinder* cylinder) // 0x8006EB8C
 {
     SVECTOR sp10;
     SVECTOR sp18; // Q7.8
     q7_8    hitDist;
     q23_8   temp_v0;
-    q7_8    radiusOffset;
+    q7_8    radius;
     s32     temp_v1;
 
-    radiusOffset = arg1->radiusOffset;
-    if (state->field_5E <= arg1->offset.vy)
+    radius = cylinder->radius;
+    if (state->field_5E <= cylinder->offset.vy)
     {
         return;
     }
@@ -635,15 +637,15 @@ void func_8006EB8C(s_RayState* state, s_IpdCellAttribs* arg1) // 0x8006EB8C
     temp_v1 = PACKED_XZ16(state->field_58, state->field_5A);
     gte_ldR11R12(temp_v1);
     gte_ldR13R21(temp_v1);
-    gte_ldvxy0(PACKED_XZ16(arg1->offset.vx - state->field_6C.floorHeight, arg1->offset.vz - state->field_6C.topHeight));
+    gte_ldvxy0(PACKED_XZ16(cylinder->offset.vx - state->field_6C.floorHeight, cylinder->offset.vz - state->field_6C.topHeight));
     gte_ldvz0();
     gte_rtv0();
     gte_stMAC12(&sp10);
 
-    if (-radiusOffset < sp10.vx && sp10.vx < (state->rayDistance + radiusOffset) &&
-        -radiusOffset < sp10.vy && sp10.vy < radiusOffset)
+    if (-radius < sp10.vx && sp10.vx < (state->rayDistance + radius) &&
+        -radius < sp10.vy && sp10.vy < radius)
     {
-        temp_v0   = SquareRoot0(SQUARE(radiusOffset) - SQUARE(sp10.vy));
+        temp_v0   = SquareRoot0(SQUARE(radius) - SQUARE(sp10.vy));
         hitDist = sp10.vx - temp_v0;
 
         if (hitDist >= -temp_v0 && state->rayDistance >= hitDist && hitDist < state->hitDistance)
@@ -653,17 +655,17 @@ void func_8006EB8C(s_RayState* state, s_IpdCellAttribs* arg1) // 0x8006EB8C
             gte_gpf12();
             gte_stsv(&sp18);
 
-            if ((sp18.vy + state->from.vy + state->field_4E) >= arg1->offset.vy)
+            if ((sp18.vy + state->from.vy + state->field_4E) >= cylinder->offset.vy)
             {
                 state->hitDistance  = hitDist;
                 state->target.vx    = sp18.vx + state->field_6C.floorHeight + state->field_6C.positionX;
                 state->target.vy    = sp18.vy + state->from.vy;
                 state->target.vz    = sp18.vz + state->field_6C.topHeight + state->field_6C.positionZ;
-                state->floorHeight = arg1->offset.vy;
-                state->offsetX      = (sp18.vx + state->field_6C.floorHeight) - arg1->offset.vx;
-                state->offsetZ      = (sp18.vz + state->field_6C.topHeight)    - arg1->offset.vz;
+                state->floorHeight = cylinder->offset.vy;
+                state->offsetX      = (sp18.vx + state->field_6C.floorHeight) - cylinder->offset.vx;
+                state->offsetZ      = (sp18.vz + state->field_6C.topHeight)    - cylinder->offset.vz;
                 state->character    = NULL;
-                state->floorType   = arg1->floorType;
+                state->floorType   = cylinder->floorType;
             }
         }
     }

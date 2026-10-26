@@ -418,14 +418,14 @@ types:
         type: b14
         doc: Q7.8.
 
-      - id: trigger_flags_low
+      - id: trigger_flag_idx_low
         type: b2
 
       - id: offset_y
         type: b14
         doc: Q7.8.
 
-      - id: trigger_flags_high
+      - id: trigger_flag_idx_high
         type: b2
 
       - id: offset_z
@@ -457,7 +457,7 @@ types:
         value: offset_z / (1 << 8).as<f4>
 
       trigger_flags:
-        value: (trigger_flags_low << 2) | trigger_flags_high
+        value: (trigger_flag_idx_low << 2) | trigger_flag_idx_high
 
   collision_18:
     seq:
