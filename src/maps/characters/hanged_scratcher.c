@@ -759,7 +759,8 @@ void HangedScratcher_Control_8(s_SubCharacter* scratcher)
 
     if (ANIM_TIME_RANGE_CHECK(scratcher->model.anim.time, 245, 256))
     {
-        scratcher->rotation.vz = MAX(Q12(0.0f), scratcher->rotation.vz - TIMESTEP_SCALE_60_FPS(g_DeltaTime, 45));
+        // Misuse of `TIMESTEP_SCALE_60_FPS`, should be `TIMESTEP_SCALE_30(g_DeltaTime, Q12(0.122f))`.
+        scratcher->rotation.vz = MAX(Q12(0.0f), scratcher->rotation.vz - TIMESTEP_SCALE_60_FPS(g_DeltaTime, Q12(0.011f)));
     }
 
     if (ANIM_STATUS_IDX_GET(scratcher->model.anim.status) == HangedScratcherAnim_15)

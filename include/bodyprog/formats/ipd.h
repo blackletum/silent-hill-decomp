@@ -24,7 +24,7 @@ typedef enum _CollisionTriggerFlags
     CollisionTriggerFlag_Map     = 1 << 0,
     CollisionTriggerFlag_Objects = 1 << 1,
     CollisionTriggerFlag_Block   = 1 << 2, /** Blocks select passages, e.g. the gate to the Split Head boss elevator. */
-    CollisionTriggerFlag_3       = 1 << 3, /** @unused Secondary block? Only ever called in `MAP6_S05`. */
+    CollisionTriggerFlag_Unused3 = 1 << 3, /** @unused Secondary block? Only ever set in `MAP6_S05`. */
     CollisionTriggerFlag_All     = 0xFFFF
 } e_CollisionTriggerFlags;
 
@@ -49,9 +49,9 @@ typedef enum _FloorType
 /** @brief IPD collision cell surface split. */
 typedef struct _IpdCellSurface
 {
-    /* 0x0    */ q7_8 positionX;          // Relative X.
-    /* 0x2    */ q7_8 baseFloorHeight;    // Base floor height with slope unaccounted for?
-    /* 0x4    */ q7_8 positionZ;          // Relative Z.
+    /* 0x0    */ q7_8 offsetX;
+    /* 0x2    */ q7_8 offsetY;
+    /* 0x4    */ q7_8 offsetZ;
     /* 0x6+0  */ u16  floorType      : 5; /** `e_FloorType` */
     /* 0x6+5  */ u16  disableHeight  : 3; /** `bool` */
     /* 0x6+8  */ u16  field_6_8      : 3; // Some slot index. Causes special collision triggers to behave differently.
@@ -73,9 +73,9 @@ STATIC_ASSERT_SIZEOF(s_IpdCellSurface, 12);
 typedef struct _IpdCell
 {
     /* 0x0+0  */ q7_8 offsetX          : 14;
-    /* 0x0+14 */ u16  triggerFlagsLow  : 2; /** Combined with `triggerFlagsHigh` for complete field. */
+    /* 0x0+14 */ u16  triggerFlagsLow  : 2; /** `e_CollisionTriggerFlags` | Combined with `triggerFlagsHigh` for complete field. */
     /* 0x2+0  */ q7_8 offsetY          : 14;
-    /* 0x2+14 */ u16  triggerFlagsHigh : 2; /** Combined with `triggerFlagsLow` for complete field. */
+    /* 0x2+14 */ u16  triggerFlagsHigh : 2; /** `e_CollisionTriggerFlags` | Combined with `triggerFlagsLow` for complete field. */
     /* 0x4    */ q7_8 offsetZ;
     /* 0x6    */ u8   splitVertexIdx0; // `s_IpdCollisionData::cellSplitVertices` index.
     /* 0x7    */ u8   splitVertexIdx1; // `s_IpdCollisionData::cellSplitVertices` index.

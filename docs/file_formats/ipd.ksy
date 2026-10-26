@@ -360,11 +360,11 @@ types:
         repeat-expr: cell_attribs_count
 
       cell_ranges:
-        doc: TODO Unsure if `+ 1` is necessary, looks like one extra entry?
         pos: _root.header.collision_offset + cell_ranges_offset
         type: cell_range
         repeat: expr
         repeat-expr: (cell_count_x * cell_count_z) + 1
+        doc: TODO Unsure if `+ 1` is necessary, looks like one extra entry?
 
       cell_lut:
         pos: _root.header.collision_offset + cell_lut_offset
@@ -380,15 +380,15 @@ types:
 
   cell_surface:
     seq:
-      - id: field_0
+      - id: offset_x
         type: s2
         doc: Q7.8.
 
-      - id: base_floor_height
+      - id: offset_y
         type: s2
         doc: Q7.8.
 
-      - id: field_4
+      - id: offset_z
         type: s2
         doc: Q7.8.
 
@@ -398,14 +398,11 @@ types:
       - id: disable_height
         type: b3
 
-      - id: field_5_8
+      - id: field_6_8
         type: b3
 
-      - id: field_6_11
+      - id: trigger_flag_idx
         type: b4
-
-      - id: field_6_15
-        type: b1
 
       - id: tilt_angle_x
         type: s2
@@ -417,21 +414,21 @@ types:
 
   cell:
     seq:
-      - id: position_x
+      - id: offset_x
         type: b14
         doc: Q7.8.
 
-      - id: field_0_14
+      - id: trigger_flags_low
         type: b2
 
-      - id: position_y
+      - id: offset_y
         type: b14
         doc: Q7.8.
 
-      - id: field_2_14
+      - id: trigger_flags_high
         type: b2
 
-      - id: position_z
+      - id: offset_z
         type: s2
         doc: Q7.8.
 
@@ -450,14 +447,17 @@ types:
       - size: 2
 
     instances:
-      position_x_flt:
-        value: position_x / (1 << 8).as<f4>
+      offset_x_flt:
+        value: offset_x / (1 << 8).as<f4>
 
-      position_y_flt:
-        value: position_y / (1 << 8).as<f4>
+      offset_y_flt:
+        value: offset_y / (1 << 8).as<f4>
 
-      position_z_flt:
-        value: position_z / (1 << 8).as<f4>
+      offset_z_flt:
+        value: offset_z / (1 << 8).as<f4>
+
+      trigger_flags:
+        value: (trigger_flags_low << 2) | trigger_flags_high
 
   collision_18:
     seq:
@@ -590,6 +590,16 @@ types:
 
       - id: z
         type: s2
+
+    instances:
+      x_flt:
+        value: x / (1 << 8).as<f4>
+
+      y_flt:
+        value: y / (1 << 8).as<f4>
+
+      z_flt:
+        value: z / (1 << 8).as<f4>
 
   normal:
     seq:

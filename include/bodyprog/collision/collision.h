@@ -433,7 +433,7 @@ void func_8006CC9C(s_CollisionState* state);
 
 void func_8006CF18(s_CollisionState* state, s_func_8006CF18* arg1, s32 idx);
 
-void func_8006D01C(VECTOR3* arg0, VECTOR3* offset, q3_12 offsetAlpha, s_CollisionState* state);
+void func_8006D01C(VECTOR3* extraOffset, VECTOR3* offset, q3_12 offsetAlpha, s_CollisionState* state);
 
 void func_8006D2B4(VECTOR3* offset, s_CollisionState_44* arg1);
 

@@ -89,7 +89,7 @@
  * @return `true` if the flag is set to the required status, `false` otherwise.
  */
 #define CHECK_FLAG_IDX(flags, flagIdx, isSet) \
-    (!(((flags) >> (flagIdx)) & (1 << 0)) == !(isSet))
+    (!(((u16)(flags) >> (flagIdx)) & (1 << 0)) == !(isSet))
 
 /** @brief Scales a Q19.12 fixed-point value by a delta time relative to a 30 FPS timestep.
  *

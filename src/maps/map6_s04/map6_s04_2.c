@@ -1986,7 +1986,7 @@ void func_800E1D50(void) // 0x800E1D50
             SysWork_StateSetNext(SysState_Gameplay);
             vcReturnPreAutoCamWork(true);
             Chara_ProcessLoads();
-            Chara_Spawn(Chara_MonsterCybil, 0, Q12(26.5f), Q12(108.5f), Q12(0.03125f), 3);
+            Chara_Spawn(Chara_MonsterCybil, 0, Q12(26.5f), Q12(108.5f), Q12(1.0f / 32.0f), 3);
             func_800E15FC(&g_SysWork.playerWork.player, &g_SysWork.npcs[0], true);
             Savegame_EventFlagSet(EventFlag_441);
             break;

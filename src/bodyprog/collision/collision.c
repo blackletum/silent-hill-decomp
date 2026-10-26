@@ -669,7 +669,7 @@ s32 func_8006A4A8(s_CollisionResult* collResult, VECTOR3* moveOffset, const s_Co
     {
         collResult->surface.floorType = state.floorType;
         floorHeight                   = Q8_TO_Q12(Ipd_FloorHeightGet(state.charaState.positionFromX + Q12_TO_Q8(extraOffset.vx),
-                                                                       state.charaState.positionFromZ + Q12_TO_Q8(extraOffset.vz), &state));
+                                                                     state.charaState.positionFromZ + Q12_TO_Q8(extraOffset.vz), &state));
     }
 
     collResult->surface.floorHeight = floorHeight;
@@ -784,10 +784,10 @@ void Collision_CollStateInit(s_CollisionState* state, VECTOR3* moveOffset, const
     state->field_44.field_36         = Q8(0.0f);
     state->field_44.field_30.field_0 = 0;
     
-    state->tiltAngleZ     = Q12_ANGLE(0.0f);
-    state->tiltAngleX     = Q12_ANGLE(0.0f);
+    state->tiltAngleZ    = Q12_ANGLE(0.0f);
+    state->tiltAngleX    = Q12_ANGLE(0.0f);
     state->disableHeight = true;
-    state->floorType      = FloorType_Default;
+    state->floorType     = FloorType_Default;
 }
 
 void Collision_MoveDirectionCalc(s_CollisionCharaState* charaState,
@@ -1748,16 +1748,14 @@ void func_8006C45C(s_CollisionState* state) // 0x8006C45C
     q23_8 bound;
     q23_8 distX;
     q23_8 distZ;
-    q23_8 temp_v1;
     s32   temp;
     s32   temp2;
 
     distMax = state->charaState.radius + state->point.field_C.radiusOffset;
     bound   = distMax + 8;
-    temp_v1 = state->point.offset.vx - bound;
 
-    if (state->charaPositionFrom.offset.vx < temp_v1 &&
-        state->charaPositionTo.offset.vx   < temp_v1)
+    if (state->charaPositionFrom.offset.vx < (state->point.offset.vx - bound) &&
+        state->charaPositionTo.offset.vx   < (state->point.offset.vx - bound))
     {
         return;
     }
@@ -1787,11 +1785,11 @@ void func_8006C45C(s_CollisionState* state) // 0x8006C45C
     if (dist < state->point.field_C.radiusOffset && state->point.disableHeight != true &&
         (state->cellIdx == UCHAR_MAX || state->point.offset.vy < state->floorHeight))
     {
-        state->cellIdx   = state->point.cellIdx;
+        state->cellIdx     = state->point.cellIdx;
         state->floorHeight = state->point.offset.vy;
     }
 
-    if (!state->isCharaMoving && !state->field_0_9 || dist < state->point.field_C.radiusOffset)
+    if ((!state->isCharaMoving && !state->field_0_9) || dist < state->point.field_C.radiusOffset)
     {
         return;
     }
@@ -1873,7 +1871,7 @@ void func_8006C838(s_CollisionState* state, s_IpdCollisionData* collData) // 0x8
         state->charaCellOffsetZ  = state->charaPositionFrom.offset.vz + collData->positionZ;
         state->tiltAngleX        = Q12_ANGLE(0.0f);
         state->tiltAngleZ        = Q12_ANGLE(0.0f);
-        state->disableHeight    = cellAttribs->disableHeight;
+        state->disableHeight     = cellAttribs->disableHeight;
         state->floorType         = cellAttribs->floorType;
     }
 
@@ -1884,14 +1882,14 @@ void func_8006C838(s_CollisionState* state, s_IpdCollisionData* collData) // 0x8
             curSurface = &collData->cellSurfaces[curUnk->surfaceIdx];
 
             // Compute sloped floor height.
-            slopedFloorHeight = curSurface->baseFloorHeight;
+            slopedFloorHeight = curSurface->offsetY;
             if (curSurface->tiltAngleX != Q12_ANGLE(0.0f))
             {
-                slopedFloorHeight += Q12_MULT(curSurface->tiltAngleX, state->charaPositionFrom.offset.vx - curSurface->positionX);
+                slopedFloorHeight += Q12_MULT(curSurface->tiltAngleX, state->charaPositionFrom.offset.vx - curSurface->offsetX);
             }
             if (curSurface->tiltAngleZ != Q12_ANGLE(0.0f))
             {
-                slopedFloorHeight += Q12_MULT(curSurface->tiltAngleZ, state->charaPositionFrom.offset.vz - curSurface->positionZ);
+                slopedFloorHeight += Q12_MULT(curSurface->tiltAngleZ, state->charaPositionFrom.offset.vz - curSurface->offsetZ);
             }
 
             if (slopedFloorHeight < state->slopedFloorHeight)
@@ -1901,7 +1899,7 @@ void func_8006C838(s_CollisionState* state, s_IpdCollisionData* collData) // 0x8
                 state->charaCellOffsetZ  = state->charaPositionFrom.offset.vz + collData->positionZ;
                 state->tiltAngleX        = curSurface->tiltAngleX;
                 state->tiltAngleZ        = curSurface->tiltAngleZ;
-                state->disableHeight    = curSurface->disableHeight;
+                state->disableHeight     = curSurface->disableHeight;
                 state->floorType         = curSurface->floorType;
             }
         }
@@ -1936,14 +1934,14 @@ void func_8006CA18(s_CollisionState* state, s_IpdCollisionData* collData, s_Cell
             curSurface->disableHeight != true)
         {
             // Compute sloped floor height.
-            slopedFloorHeight = curSurface->baseFloorHeight;
+            slopedFloorHeight = curSurface->offsetY;
             if (curSurface->tiltAngleX != Q8_ANGLE(0.0f))
             {
-                slopedFloorHeight += Q12_MULT(curSurface->tiltAngleX, state->charaPositionFrom.offset.vx - curSurface->positionX);
+                slopedFloorHeight += Q12_MULT(curSurface->tiltAngleX, state->charaPositionFrom.offset.vx - curSurface->offsetX);
             }
             if (curSurface->tiltAngleZ != Q8_ANGLE(0.0f))
             {
-                slopedFloorHeight += Q12_MULT(curSurface->tiltAngleZ, state->charaPositionFrom.offset.vz - curSurface->positionZ);
+                slopedFloorHeight += Q12_MULT(curSurface->tiltAngleZ, state->charaPositionFrom.offset.vz - curSurface->offsetZ);
             }
 
             if (slopedFloorHeight < state->slopedFloorHeight)
@@ -1953,7 +1951,7 @@ void func_8006CA18(s_CollisionState* state, s_IpdCollisionData* collData, s_Cell
                 state->charaCellOffsetZ  = state->charaPositionFrom.offset.vz + collData->positionZ;
                 state->tiltAngleX        = curSurface->tiltAngleX;
                 state->tiltAngleZ        = curSurface->tiltAngleZ;
-                state->disableHeight    = curSurface->disableHeight;
+                state->disableHeight     = curSurface->disableHeight;
                 state->floorType         = curSurface->floorType;
             }
         }
@@ -2100,7 +2098,7 @@ void func_8006CF18(s_CollisionState* state, s_func_8006CF18* arg1, s32 idx) // 0
     }
 }
 
-void func_8006D01C(VECTOR3* arg0, VECTOR3* offset, q3_12 offsetAlpha, s_CollisionState* state) // 0x8006D01C
+void func_8006D01C(VECTOR3* extraOffset, VECTOR3* offset, q3_12 offsetAlpha, s_CollisionState* state) // 0x8006D01C
 {
     VECTOR3 adjOffset;
     s32     temp_s0;
@@ -2113,34 +2111,34 @@ void func_8006D01C(VECTOR3* arg0, VECTOR3* offset, q3_12 offsetAlpha, s_Collisio
 
     if (state->field_44.field_0.field_0 || state->field_44.field_30.field_0)
     {
-        arg0->vx = Q12(0.0f);
-        arg0->vz = Q12(0.0f);
-        *offset  = adjOffset;
+        extraOffset->vx = Q12(0.0f);
+        extraOffset->vz = Q12(0.0f);
+        *offset         = adjOffset;
         func_8006D2B4(offset, &state->field_44);
         return;
     }
 
     if (!state->field_34)
     {
-        *arg0    = adjOffset;
-        offset->vz = Q12(0.0f);
-        offset->vx = Q12(0.0f);
+        *extraOffset = adjOffset;
+        offset->vz   = Q12(0.0f);
+        offset->vx   = Q12(0.0f);
         return;
     }
 
     if (offsetAlpha < state->field_38)
     {
         state->field_34 = 0;
-        *arg0          = adjOffset;
-        offset->vz       = Q12(0.0f);
-        offset->vx       = Q12(0.0f);
+        *extraOffset    = adjOffset;
+        offset->vz      = Q12(0.0f);
+        offset->vx      = Q12(0.0f);
         return;
     }
 
-    arg0->vx = Q12_MULT(offset->vx, state->field_38);
-    arg0->vz = Q12_MULT(offset->vz, state->field_38);
-    offset->vx = adjOffset.vx - arg0->vx;
-    offset->vz = adjOffset.vz - arg0->vz;
+    extraOffset->vx = Q12_MULT(offset->vx, state->field_38);
+    extraOffset->vz = Q12_MULT(offset->vz, state->field_38);
+    offset->vx      = adjOffset.vx - extraOffset->vx;
+    offset->vz      = adjOffset.vz - extraOffset->vz;
 
     temp_s0 = state->field_3C;
     temp_s1 = state->field_3E;
@@ -2165,20 +2163,20 @@ void func_8006D01C(VECTOR3* arg0, VECTOR3* offset, q3_12 offsetAlpha, s_Collisio
 
     if (temp_s0 > Q12(1.0f / 3.0f))
     {
-        arg0->vx += Q12(0.004f);
+        extraOffset->vx += Q12(1.0f / 256.0f);
     }
     else if (temp_s0 < Q12(-1.0f / 3.0f))
     {
-        arg0->vx -= Q12(0.004f);
+        extraOffset->vx -= Q12(1.0f / 256.0f);
     }
 
     if (temp_s1 > Q12(1.0f / 3.0f))
     {
-        arg0->vz += Q12(0.004f);
+        extraOffset->vz += Q12(1.0f / 256.0f);
     }
     else if (temp_s1 < Q12(-1.0f / 3.0f))
     {
-        arg0->vz -= Q12(0.004f);
+        extraOffset->vz -= Q12(1.0f / 256.0f);
     }
 }
 

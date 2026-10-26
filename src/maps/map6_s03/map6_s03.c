@@ -363,7 +363,8 @@ void Map_WorldObjectsUpdate(void) // 0x800D89A0
         WorldObjects_Add(&g_WorldObject0[temp_s0], &g_WorldObjectPos0, &D_800CB258);
         if (temp_s0 != 0)
         {
-            triggerFlags = CollisionTriggerFlag_Block | CollisionTriggerFlag_3;
+            // @bug? `CollisionTriggerFlag_Unused3` is set but never checked. TODO: Find out what the intent was.
+            triggerFlags = CollisionTriggerFlag_Block | CollisionTriggerFlag_Unused3;
         }
         else
         {

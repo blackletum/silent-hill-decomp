@@ -116,11 +116,11 @@ void Map_RoomBgmInit_CondFalse(void)
                 dist = Math_Distance2dGet(&g_SysWork.playerWork.player.position, &sharedData_800EB750_6_s04);
                 if (dist < Q12(10.0f))
                 {
-                    dist = Q12(0.03125f);
+                    dist = Q12(1.0f / 32.0f);
                 }
                 else
                 {
-                    dist = Q12(0.03125f) - Q12_MULT_PRECISE(dist - Q12(10.0f), Q12(0.004f));
+                    dist = Q12(1.0f / 32.0f) - Q12_MULT_PRECISE(dist - Q12(10.0f), Q12(1.0f / 256.0f));
                     if (dist < Q12(0.0f))
                     {
                         dist = Q12(0.0f);

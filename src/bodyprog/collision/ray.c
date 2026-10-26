@@ -446,8 +446,7 @@ void func_8006E53C(s_RayState* state, s_CellRange* cellRangePair, s_IpdCollision
             {
                 curCell = &collData->cells[cellIdx];
 
-                // TODO: `CHECK_FLAG_IDX` macro doesn't match.
-                if (((u16)state->triggerFlags >> ((curCell->triggerFlagsLow << 2) | curCell->triggerFlagsHigh)) & (1 << 0))
+                if (CHECK_FLAG_IDX(state->triggerFlags, (curCell->triggerFlagsLow << 2) | curCell->triggerFlagsHigh, true))
                 {
                     surfaceIdx0 = curCell->surfaceIdx0;
                     surfaceIdx1 = curCell->surfaceIdx1;
@@ -492,8 +491,7 @@ void func_8006E53C(s_RayState* state, s_CellRange* cellRangePair, s_IpdCollision
             {
                 curCellAttribs = &collData->cellAttribs[cellIdx - collData->cellCount];
 
-                // TODO: `CHECK_FLAG_IDX` doesn't match.`
-                if ((((u16)state->triggerFlags >> curCellAttribs->triggerFlagIdx) & (1 << 0)) &&
+                if (CHECK_FLAG_IDX(state->triggerFlags, curCellAttribs->triggerFlagIdx, true) &&
                     (state->field_0 == true ||
                      (curCellAttribs->floorType != FloorType_Default &&
                       curCellAttribs->floorType != FloorType_None)) &&
