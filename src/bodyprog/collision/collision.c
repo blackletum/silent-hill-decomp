@@ -1015,12 +1015,12 @@ void func_8006B1C8(s_CollisionState* state, s_IpdCollisionData* collData, s_IpdS
 
                     if (state->isCharaMoving || state->field_0_9)
                     {
-                        if (state->point.attribs.surfaces.surfaceIdx1 == UCHAR_MAX)
+                        if (state->point.shapeAttribs.polygon.surfaceIdx1 == UCHAR_MAX)
                         {
                             func_8006B9C8(state);
                         }
 
-                        if (state->point.attribs.surfaces.surfaceIdx0 == UCHAR_MAX)
+                        if (state->point.shapeAttribs.polygon.surfaceIdx0 == UCHAR_MAX)
                         {
                             func_8006B8F8(&state->point);
                             func_8006B9C8(state);
@@ -1064,38 +1064,37 @@ bool func_8006B318(s_CollisionState* state, const s_IpdCollisionData* collData, 
     state->point.offset.vy = polygon->offsetY;
     state->point.offset.vz = polygon->offsetZ;
 
-    state->point.polygonSplitVertex0 = collData->polygonSplitVertices[polygon->splitVertexIdx1];
-    state->point.polygonSplitVertex1 = collData->polygonSplitVertices[polygon->splitVertexIdx0];
+    state->point.shapeAttribs.polygon.polygonSplitVertex0 = collData->polygonSplitVertices[polygon->splitVertexIdx1];
+    state->point.shapeAttribs.polygon.polygonSplitVertex1 = collData->polygonSplitVertices[polygon->splitVertexIdx0];
+    state->point.shapeAttribs.polygon.surfaceIdx0         = polygon->surfaceIdx0;
 
-    state->point.attribs.surfaces.surfaceIdx0 = polygon->surfaceIdx0;
-
-    if (state->point.attribs.surfaces.surfaceIdx0 != UCHAR_MAX)
+    if (state->point.shapeAttribs.polygon.surfaceIdx0 != UCHAR_MAX)
     {
-        curSurface                         = &collData->polygonSurfaces[state->point.attribs.surfaces.surfaceIdx0];
-        state->point.field_E               = curSurface->field_6_8;
-        state->point.disableSurface0Height = curSurface->disableHeight;
+        curSurface                                              = &collData->polygonSurfaces[state->point.shapeAttribs.polygon.surfaceIdx0];
+        state->point.shapeAttribs.polygon.field_E               = curSurface->field_6_8;
+        state->point.shapeAttribs.polygon.disableSurface0Height = curSurface->disableHeight;
 
         if (state->charaState.field_4 &&
             (curSurface->disableHeight == true || curSurface->floorType == FloorType_None))
         {
-            state->point.polygonSplitVertex0.vy -= Q8(-DEFAULT_CEILING_HEIGHT);
-            state->point.polygonSplitVertex1.vy -= Q8(-DEFAULT_CEILING_HEIGHT);
+            state->point.shapeAttribs.polygon.polygonSplitVertex0.vy -= Q8(-DEFAULT_CEILING_HEIGHT);
+            state->point.shapeAttribs.polygon.polygonSplitVertex1.vy -= Q8(-DEFAULT_CEILING_HEIGHT);
         }
     }
 
-    state->point.attribs.surfaces.surfaceIdx1 = polygon->surfaceIdx1;
+    state->point.shapeAttribs.polygon.surfaceIdx1 = polygon->surfaceIdx1;
 
-    if (state->point.attribs.surfaces.surfaceIdx1 != UCHAR_MAX)
+    if (state->point.shapeAttribs.polygon.surfaceIdx1 != UCHAR_MAX)
     {
-        curSurface                         = &collData->polygonSurfaces[state->point.attribs.surfaces.surfaceIdx1];
-        state->point.field_F               = curSurface->field_6_8;
-        state->point.disableSurface1Height = curSurface->disableHeight;
+        curSurface                                              = &collData->polygonSurfaces[state->point.shapeAttribs.polygon.surfaceIdx1];
+        state->point.shapeAttribs.polygon.field_F               = curSurface->field_6_8;
+        state->point.shapeAttribs.polygon.disableSurface1Height = curSurface->disableHeight;
 
         if (state->charaState.field_4 &&
             (curSurface->disableHeight == true || curSurface->floorType == FloorType_None))
         {
-            state->point.polygonSplitVertex0.vy = Q8(DEFAULT_CEILING_HEIGHT);
-            state->point.polygonSplitVertex1.vy = Q8(DEFAULT_CEILING_HEIGHT);
+            state->point.shapeAttribs.polygon.polygonSplitVertex0.vy = Q8(DEFAULT_CEILING_HEIGHT);
+            state->point.shapeAttribs.polygon.polygonSplitVertex1.vy = Q8(DEFAULT_CEILING_HEIGHT);
         }
     }
 
@@ -1121,8 +1120,8 @@ bool func_8006B318(s_CollisionState* state, const s_IpdCollisionData* collData, 
        that may explain why it's 0 when standing still.
     */
     
-    temp_v0 = PACKED_XZ16(state->charaPositionFrom.offset.vx - state->point.polygonSplitVertex0.vx,
-                          state->charaPositionFrom.offset.vz - state->point.polygonSplitVertex0.vz);
+    temp_v0 = PACKED_XZ16(state->charaPositionFrom.offset.vx - state->point.shapeAttribs.polygon.polygonSplitVertex0.vx,
+                          state->charaPositionFrom.offset.vz - state->point.shapeAttribs.polygon.polygonSplitVertex0.vz);
     gte_ldvxy0(temp_v0);
     gte_ldvz0();
     gte_rtv0();
@@ -1171,10 +1170,10 @@ void func_8006B6E8(s_CollisionState* state, s_IpdShapeRange* shapeRangePair) // 
     bool                 disableSurface1Height;
     s_CollisionState_A8* temp_s0;
 
-    surfaceIdx0           = state->point.attribs.surfaces.surfaceIdx0;
-    surfaceIdx1           = state->point.attribs.surfaces.surfaceIdx1;
-    disableSurface0Height = state->point.disableSurface0Height;
-    disableSurface1Height = state->point.disableSurface1Height;
+    surfaceIdx0           = state->point.shapeAttribs.polygon.surfaceIdx0;
+    surfaceIdx1           = state->point.shapeAttribs.polygon.surfaceIdx1;
+    disableSurface0Height = state->point.shapeAttribs.polygon.disableSurface0Height;
+    disableSurface1Height = state->point.shapeAttribs.polygon.disableSurface1Height;
 
     if (surfaceIdx0 == UCHAR_MAX)
     {
@@ -1183,11 +1182,11 @@ void func_8006B6E8(s_CollisionState* state, s_IpdShapeRange* shapeRangePair) // 
             return;
         }
 
-        idx = state->point.field_F;
+        idx = state->point.shapeAttribs.polygon.field_F;
     }
     else
     {
-        idx = state->point.field_E;
+        idx = state->point.shapeAttribs.polygon.field_E;
     }
 
     /* Will - 1: checks if the value at whatever the struct is `temp_s0`
@@ -1301,31 +1300,31 @@ void func_8006B8F8(s_CollisionShapePoint* cellPoint) // 0x8006B8F8
     s32                     temp_a2;
     s32                     temp;
 
-    temp                                   = (u16)cellPoint->polygonSplitVertex0.vx;
-    temp_a1                                = (u16)cellPoint->polygonSplitVertex1.vx;
-    temp_a2                                = (u16)cellPoint->polygonSplitVertex1.vz;
-    cellPoint->polygonSplitVertex1.vx      = temp;
-    temp                                   = (u16)cellPoint->polygonSplitVertex0.vy;
-    cellPoint->polygonSplitVertex0.vy      = cellPoint->polygonSplitVertex1.vy;
-    cellPoint->polygonSplitVertex0.vx      = temp_a1;
-    cellPoint->offset.vx                   = -cellPoint->offset.vx;
-    cellPoint->polygonSplitVertex1.vy      = temp;
-    cellPoint->offset.vy                   = -cellPoint->offset.vy;
-    temp                                   = (u16)cellPoint->polygonSplitVertex0.vz;
-    cellPoint->polygonSplitVertex1.vz      = temp;
-    temp                                   = cellPoint->attribs.surfaces.surfaceIdx0;
-    cellPoint->field_20.charaMoveOffset.vx = -cellPoint->field_20.charaMoveOffset.vx;
+    temp                                                   = (u16)cellPoint->shapeAttribs.polygon.polygonSplitVertex0.vx;
+    temp_a1                                                = (u16)cellPoint->shapeAttribs.polygon.polygonSplitVertex1.vx;
+    temp_a2                                                = (u16)cellPoint->shapeAttribs.polygon.polygonSplitVertex1.vz;
+    cellPoint->shapeAttribs.polygon.polygonSplitVertex1.vx = temp;
+    temp                                                   = (u16)cellPoint->shapeAttribs.polygon.polygonSplitVertex0.vy;
+    cellPoint->shapeAttribs.polygon.polygonSplitVertex0.vy = cellPoint->shapeAttribs.polygon.polygonSplitVertex1.vy;
+    cellPoint->shapeAttribs.polygon.polygonSplitVertex0.vx = temp_a1;
+    cellPoint->offset.vx                                   = -cellPoint->offset.vx;
+    cellPoint->shapeAttribs.polygon.polygonSplitVertex1.vy = temp;
+    cellPoint->offset.vy                                   = -cellPoint->offset.vy;
+    temp                                                   = (u16)cellPoint->shapeAttribs.polygon.polygonSplitVertex0.vz;
+    cellPoint->shapeAttribs.polygon.polygonSplitVertex1.vz = temp;
+    temp                                                   = cellPoint->shapeAttribs.polygon.surfaceIdx0;
+    cellPoint->field_20.charaMoveOffset.vx                 = -cellPoint->field_20.charaMoveOffset.vx;
 
-    cellPoint->polygonSplitVertex0.vz       = temp_a2;
-    cellPoint->attribs.surfaces.surfaceIdx0 = cellPoint->attribs.surfaces.surfaceIdx1;
+    cellPoint->shapeAttribs.polygon.polygonSplitVertex0.vz = temp_a2;
+    cellPoint->shapeAttribs.polygon.surfaceIdx0            = cellPoint->shapeAttribs.polygon.surfaceIdx1;
 
     ptr = &cellPoint->field_20;
 
-    cellPoint->attribs.surfaces.surfaceIdx1 = temp;
-    temp                                    = cellPoint->field_E;
-    cellPoint->field_20.charaMoveOffset.vz  = -cellPoint->field_20.charaMoveOffset.vz;
-    cellPoint->field_E                      = cellPoint->field_F;
-    cellPoint->field_F                      = temp;
+    cellPoint->shapeAttribs.polygon.surfaceIdx1 = temp;
+    temp                                        = cellPoint->shapeAttribs.polygon.field_E;
+    cellPoint->field_20.charaMoveOffset.vz      = -cellPoint->field_20.charaMoveOffset.vz;
+    cellPoint->shapeAttribs.polygon.field_E     = cellPoint->shapeAttribs.polygon.field_F;
+    cellPoint->shapeAttribs.polygon.field_F     = temp;
 
     ptr->charaVertDiff.vz     = -ptr->charaVertDiff.vz;
     ptr->charaVertDiff.vx     = (cellPoint->offset.vz - ptr->charaVertDiff.vx);
@@ -1337,10 +1336,10 @@ void func_8006B9C8(s_CollisionState* state) // 0x8006B9C8
 {
     q23_8 charaRadius;
 
-    if (state->point.attribs.surfaces.surfaceIdx1 == UCHAR_MAX &&
+    if (state->point.shapeAttribs.polygon.surfaceIdx1 == UCHAR_MAX &&
         state->point.field_20.charaVertDiff.vz < Q8(0.0f) &&
-        (state->charaState.bottom >= state->point.polygonSplitVertex0.vy ||
-         state->charaState.bottom >= state->point.polygonSplitVertex1.vy))
+        (state->charaState.bottom >= state->point.shapeAttribs.polygon.polygonSplitVertex0.vy ||
+         state->charaState.bottom >= state->point.shapeAttribs.polygon.polygonSplitVertex1.vy))
     {
         if (state->field_0_9 && state->point.field_20.radiusCollDiffDist < state->charaState.radius)
         {
@@ -1383,13 +1382,13 @@ void func_8006BB50(s_CollisionState* state, s32 arg1) // 0x8006BB50
 
     if (state->point.field_20.charaVertDiff.vx < Q8(0.0f))
     {
-        charaCollDistX = state->charaPositionFrom.offset.vx - state->point.polygonSplitVertex0.vx;
-        charaCollDistZ = state->charaPositionFrom.offset.vz - state->point.polygonSplitVertex0.vz;
+        charaCollDistX = state->charaPositionFrom.offset.vx - state->point.shapeAttribs.polygon.polygonSplitVertex0.vx;
+        charaCollDistZ = state->charaPositionFrom.offset.vz - state->point.shapeAttribs.polygon.polygonSplitVertex0.vz;
     }
     else if (state->point.offset.vz < state->point.field_20.charaVertDiff.vx)
     {
-        charaCollDistX = state->charaPositionFrom.offset.vx - state->point.polygonSplitVertex1.vx;
-        charaCollDistZ = state->charaPositionFrom.offset.vz - state->point.polygonSplitVertex1.vz;
+        charaCollDistX = state->charaPositionFrom.offset.vx - state->point.shapeAttribs.polygon.polygonSplitVertex1.vx;
+        charaCollDistZ = state->charaPositionFrom.offset.vz - state->point.shapeAttribs.polygon.polygonSplitVertex1.vz;
     }
     else
     {
@@ -1398,7 +1397,8 @@ void func_8006BB50(s_CollisionState* state, s32 arg1) // 0x8006BB50
     }
 
     temp2 = state->charaState.radius - state->point.field_20.radiusCollDiffDist;
-    func_8006BCC4(&state->field_44, &state->point.ipdCollisionData->shapePassStampBuffer[state->point.shapeIdx], arg1, charaCollDistX, charaCollDistZ, temp2);
+    func_8006BCC4(&state->field_44, &state->point.ipdCollisionData->shapePassStampBuffer[state->point.shapeIdx],
+                  arg1, charaCollDistX, charaCollDistZ, temp2);
 }
 
 q23_8 func_8006BC34(s_CollisionState* state)
@@ -1413,20 +1413,20 @@ q23_8 func_8006BC34(s_CollisionState* state)
     someX = state->point.field_20.charaVertDiff.vx;
     if (someX < Q8(0.0f))
     {
-        floorHeight = state->point.polygonSplitVertex0.vy;
+        floorHeight = state->point.shapeAttribs.polygon.polygonSplitVertex0.vy;
     }
     else
     {
         someZ = state->point.offset.vz;
         if (someZ < someX)
         {
-            floorHeight = state->point.polygonSplitVertex1.vy;
+            floorHeight = state->point.shapeAttribs.polygon.polygonSplitVertex1.vy;
         }
         else
         {
-            height0 = state->point.polygonSplitVertex0.vy;
-            height1 = state->point.polygonSplitVertex1.vy;
-            height2 = state->point.polygonSplitVertex0.vy;
+            height0 = state->point.shapeAttribs.polygon.polygonSplitVertex0.vy;
+            height1 = state->point.shapeAttribs.polygon.polygonSplitVertex1.vy;
+            height2 = state->point.shapeAttribs.polygon.polygonSplitVertex0.vy;
 
             if (height0 == height1)
             {
@@ -1442,7 +1442,8 @@ q23_8 func_8006BC34(s_CollisionState* state)
     return state->charaState.bottom - floorHeight;
 }
 
-void func_8006BCC4(s_CollisionState_44* arg0, s8* arg1, u32 unkState, q7_8 distX, q7_8 distZ, q7_8 radiusOffset) // 0x8006BCC4
+void func_8006BCC4(s_CollisionState_44* arg0, u8* shapePassStamp,
+                   u32 unkState, q7_8 distX, q7_8 distZ, q7_8 radiusOffset) // 0x8006BCC4
 {
     q7_8 rotX;
     q7_8 rotY;
@@ -1454,7 +1455,7 @@ void func_8006BCC4(s_CollisionState_44* arg0, s8* arg1, u32 unkState, q7_8 distX
     switch (unkState)
     {
         case 0:
-            *arg1 += 1;
+            *shapePassStamp += 1;
 
             func_8006BDDC(&arg0->field_0, rotX, rotY);
 
@@ -1469,12 +1470,12 @@ void func_8006BCC4(s_CollisionState_44* arg0, s8* arg1, u32 unkState, q7_8 distX
 
             if (arg0->field_8.field_0 < 9)
             {
-                arg0->field_10[arg0->field_8.field_0 - 1] = arg1;
+                arg0->field_10[arg0->field_8.field_0 - 1] = shapePassStamp;
             }
             break;
         
         case 2:
-            *arg1 += 1;
+            *shapePassStamp += 1;
 
             func_8006BDDC(&arg0->field_30, rotX, rotY);
 
@@ -1568,11 +1569,11 @@ void func_8006BE40(s_CollisionState* state) // 0x8006BE40
     switch (unkSwitchType)
     {
         case 0: // Vertex 0.
-            func_8006BF88(state, &state->point.polygonSplitVertex0);
+            func_8006BF88(state, &state->point.shapeAttribs.polygon.polygonSplitVertex0);
             break;
 
         case 1: // Vertex 1.
-            func_8006BF88(state, &state->point.polygonSplitVertex1);
+            func_8006BF88(state, &state->point.shapeAttribs.polygon.polygonSplitVertex1);
             break;
 
         case 2: // Non-split?
@@ -1614,8 +1615,9 @@ void func_8006C0C8(s_CollisionState* state, q3_12 distAlpha, q7_8 arg2) // 0x800
         return;
     }
 
-    temp = ((state->point.polygonSplitVertex1.vy - state->point.polygonSplitVertex0.vy) * arg2) / state->point.offset.vz;
-    if (temp + state->point.polygonSplitVertex0.vy < state->charaState.bottom)
+    temp = ((state->point.shapeAttribs.polygon.polygonSplitVertex1.vy -
+             state->point.shapeAttribs.polygon.polygonSplitVertex0.vy) * arg2) / state->point.offset.vz;
+    if (temp + state->point.shapeAttribs.polygon.polygonSplitVertex0.vy < state->charaState.bottom)
     {
         state->field_40 = &state->point.ipdCollisionData->shapePassStampBuffer[state->point.shapeIdx];
         state->field_34 = 1;
@@ -1737,11 +1739,11 @@ bool func_8006C3D4(s_CollisionState* state, s_IpdCollisionData* collData, s32 sh
         return false;
     }
 
-    state->point.disableHeight  = cylinder->disableHeight;
-    state->point.offset.vx      = cylinder->offset.vx;
-    state->point.offset.vy      = cylinder->offset.vy;
-    state->point.offset.vz      = cylinder->offset.vz;
-    state->point.attribs.radius = cylinder->radius;
+    state->point.disableHeight                = cylinder->disableHeight;
+    state->point.offset.vx                    = cylinder->offset.vx;
+    state->point.offset.vy                    = cylinder->offset.vy;
+    state->point.offset.vz                    = cylinder->offset.vz;
+    state->point.shapeAttribs.cylinder.radius = cylinder->radius;
     return true;
 }
 
@@ -1756,7 +1758,7 @@ void func_8006C45C(s_CollisionState* state) // 0x8006C45C
     s32   temp;
     s32   temp2;
 
-    distMax = state->charaState.radius + state->point.attribs.radius;
+    distMax = state->charaState.radius + state->point.shapeAttribs.cylinder.radius;
     bound   = distMax + Q8(1.0f / 32.0f);
 
     if (state->charaPositionFrom.offset.vx < (state->point.offset.vx - bound) &&
@@ -1787,14 +1789,14 @@ void func_8006C45C(s_CollisionState* state) // 0x8006C45C
     distZ = state->charaPositionFrom.offset.vz - state->point.offset.vz;
     dist  = Math_Vector2MagCalc(distX, distZ);
 
-    if (dist < state->point.attribs.radius && state->point.disableHeight != true &&
+    if (dist < state->point.shapeAttribs.cylinder.radius && state->point.disableHeight != true &&
         (state->shapeIdx == UCHAR_MAX || state->point.offset.vy < state->floorHeight))
     {
         state->shapeIdx    = state->point.shapeIdx;
         state->floorHeight = state->point.offset.vy;
     }
 
-    if ((!state->isCharaMoving && !state->field_0_9) || dist < state->point.attribs.radius)
+    if ((!state->isCharaMoving && !state->field_0_9) || dist < state->point.shapeAttribs.cylinder.radius)
     {
         return;
     }
@@ -1845,14 +1847,14 @@ void func_8006C45C(s_CollisionState* state) // 0x8006C45C
 
 void func_8006C794(s_CollisionState* state, s32 unkState, q23_8 dist) // 0x8006C794
 {
-    if (state->charaState.bottom >= (state->point.offset.vy + (dist - state->point.attribs.radius)))
+    if (state->charaState.bottom >= (state->point.offset.vy + (dist - state->point.shapeAttribs.cylinder.radius)))
     {
         func_8006BCC4(&state->field_44,
                       &state->point.ipdCollisionData->shapePassStampBuffer[state->point.shapeIdx],
                       unkState,
                       state->charaPositionFrom.offset.vx - state->point.offset.vx,
                       state->charaPositionFrom.offset.vz - state->point.offset.vz,
-                      (state->charaState.radius + state->point.attribs.radius) - dist);
+                      (state->charaState.radius + state->point.shapeAttribs.cylinder.radius) - dist);
     }
 }
 

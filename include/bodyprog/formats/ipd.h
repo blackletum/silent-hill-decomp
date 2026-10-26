@@ -130,7 +130,7 @@ typedef struct _IpdCollisionData
     /* 0x20   */ s_IpdShapeRange*     shapeRanges;                 /** Pairs of elements define each range. */
     /* 0x24   */ u16                  shapeLutSize;                /** `shapeLut` array size. */
     /* 0x26   */ u16                  surfaceLutSize;              /** `surfaceLut` array size. */
-    /* 0x28   */ u8*                  shapeLut;                    /** Indices into `shapePassStampBuffer`. */
+    /* 0x28   */ u8*                  shapeLut;                    /** Indices into `polygons` + `cylinders`. */
     /* 0x2C   */ u8*                  surfaceLut;                  /** Indices into `polygonSurfaces`. */
     /* 0x30   */ u8                   shapePassCounter;            /** Active shape pass. Stamps below this value, i.e. from an older pass, are "unvisited". */
     /* 0x31   */ s8                   __pad_31[3];

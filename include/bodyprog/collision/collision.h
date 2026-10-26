@@ -92,30 +92,33 @@ typedef struct
     /* 0x14 */ DVECTOR_XZ charaMoveOffset;
 } s_CollisionState_CC_20;
 
-typedef union
+typedef union _CollisionShapeAttribs
 {
-    /* 0x0 */ q7_8 radius;
               struct
               {
-                  /* 0x0 */ u8 surfaceIdx0;
-                  /* 0x1 */ u8 surfaceIdx1;
-    /* 0x0 */ } surfaces;
+                  /* 0x0 */ q7_8 radius;
+    /* 0x0 */ } cylinder;
+              struct
+              {
+                  /* 0x0 */ u8       surfaceIdx0;
+                  /* 0x1 */ u8       surfaceIdx1;
+                  /* 0x2 */ u8       field_E;               // For surface 0. } Set to `s_IpdCollisionData::field_6_8`.
+                  /* 0x3 */ u8       field_F;               // For surface 1. }
+                  /* 0x4 */ u8       disableSurface0Height; /** `bool` */
+                  /* 0x5 */ u8       disableSurface1Height; /** `bool` */
+                  /* 0x8 */ SVECTOR3 polygonSplitVertex0;   /** Q7.8 | Vertex from `s_IpdCollisionData::polygonSplitVertices`. */
+                  /* 0xE */ SVECTOR3 polygonSplitVertex1;   /** Q7.8 | Vertex from `s_IpdCollisionData::polygonSplitVertices`. */
+    /* 0x0 */ } polygon;
 } s_CollisionShapeAttribs;
 
-/** @brief Collision shape point data. */
+/** @brief Collision shape point data. TODO: Come up with better naame. */
 typedef struct _CollisionShapePoint
 {
     /* 0x0  */ s_IpdCollisionData*     ipdCollisionData;
-    /* 0x4  */ u8                      shapeIdx;              // `s_IpdCollisionData::polygons` index.
+    /* 0x4  */ u8                      shapeIdx; // `s_IpdCollisionData::polygons` index.
     /* 0x5  */ u8                      disableHeight;
-    /* 0x6  */ SVECTOR3                offset;                // Q7.8 | Probe position inside cell/cell? Wrong struct? Y is maybe Z.
-    /* 0xC  */ s_CollisionShapeAttribs attribs;
-    /* 0xE  */ u8                      field_E;               // For surface 0. } Set to `s_IpdCollisionData::field_6_8`.
-    /* 0xF  */ u8                      field_F;               // For surface 1. }
-    /* 0x10 */ u8                      disableSurface0Height; /** `bool` */
-    /* 0x11 */ u8                      disableSurface1Height; /** `bool` */
-    /* 0x12 */ SVECTOR3                polygonSplitVertex0;      /** Q7.8 | Vertex from `s_IpdCollisionData::polygonSplitVertices`. */
-    /* 0x18 */ SVECTOR3                polygonSplitVertex1;      /** Q7.8 | Vertex from `s_IpdCollisionData::polygonSplitVertices`. */
+    /* 0x6  */ SVECTOR3                offset; // Q7.8 | Probe position inside cell/cell? Wrong struct? Y is maybe Z.
+    /* 0xC  */ s_CollisionShapeAttribs shapeAttribs;
     /* 0x20 */ s_CollisionState_CC_20  field_20;
 } s_CollisionShapePoint;
 STATIC_ASSERT_SIZEOF(s_CollisionShapePoint, 56);
@@ -386,29 +389,38 @@ bool Collision_CellInit(s_CollisionState* state, const s_IpdCollisionData* collD
 
 bool Collision_CellIdxGet(s_CollisionState* state, const s_IpdCollisionData* collData);
 
+// Related to polygons.
 void func_8006B1C8(s_CollisionState* state, s_IpdCollisionData* collData, s_IpdShapeRange* shapeRangePair);
 
+// Related to polygons.
 bool func_8006B318(s_CollisionState* state, const s_IpdCollisionData* collData, s32 shapeIdx);
 
+// Related to polygons.
 /** `arg1` is unused, but `func_8006B1C8` passes second arg to this. */
 void func_8006B6E8(s_CollisionState* state, s_IpdShapeRange* shapeRangePair);
 
+// Related to polygons.
 bool func_8006B7E0(s_CollisionState_A8* cur, s_CollisionState_CC_20* prev);
 
+// Related to polygons.
 void func_8006B8F8(s_CollisionShapePoint* cellPoint);
 
+// Related to polygons.
 void func_8006B9C8(s_CollisionState* state);
 
+// Related to polygons.
 void func_8006BB50(s_CollisionState* state, s32 arg1);
 
+// Related to polygons.
 // Computes floor height, accounting for differences in cell split vertex heights?
 q23_8 func_8006BC34(s_CollisionState* state);
 
-/** `arg1` is shape check idx? */
-void func_8006BCC4(s_CollisionState_44* arg0, s8* arg1, u32 unkState, q7_8 distX, q7_8 distZ, q7_8 radiusOffset);
+void func_8006BCC4(s_CollisionState_44* arg0, u8* shapePassStamp,
+                   u32 unkState, q7_8 distX, q7_8 distZ, q7_8 radiusOffset);
 
 void func_8006BDDC(s_CollisionState_44_0* arg0, q3_12 rotX, q3_12 rotY);
 
+// Related to polygons.
 void func_8006BE40(s_CollisionState* state);
 
 void func_8006BF88(s_CollisionState* state, const SVECTOR3* splitVert);
@@ -419,11 +431,13 @@ bool func_8006C1B8(u32 arg0, q3_12 distAlpha, s_CollisionState* state);
 
 q3_12 func_8006C248(s32 packedDir, q3_12 arg1, q3_12 deltaX, q7_8 deltaZ, q7_8 radius);
 
+// Related to cylinders.
 bool func_8006C3D4(s_CollisionState* state, s_IpdCollisionData* collData, s32 shapeIdx);
 
+// Related to cylinders.
 void func_8006C45C(s_CollisionState* state);
 
-// `unkState` is maybe shape type?
+// Related to cylinders.
 void func_8006C794(s_CollisionState* state, s32 unkState, q23_8 dist);
 
 void func_8006C838(s_CollisionState* state, s_IpdCollisionData* collData);
