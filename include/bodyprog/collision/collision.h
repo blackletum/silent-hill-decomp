@@ -93,18 +93,6 @@ typedef struct _CollisionObstacleContext
     /* 0x36 */ q7_8                      charaIntersectDepth;
 } s_CollisionObstacleContext;
 
-// TODO: Rough name.
-typedef struct _CollisionCharaDeltas
-{
-    /* 0x0  */ DVECTOR_XZ charaVertDiff;
-    /* 0x4  */ DVECTOR_XZ charaMoveVertDiff;
-    /* 0x8  */ u32        subChunkTransDir;   /** `e_SubChunkTransitionDirection` */
-    /* 0xC  */ q23_8      radiusCollDiffDist; // Radius?
-    /* 0x10 */ q7_8       collDiffDist;
-    /* 0x12 */ s8         __pad_12[2];
-    /* 0x14 */ DVECTOR_XZ charaMoveOffset;
-} s_CollisionCharaDeltas;
-
 /** @brief Copied collision polygon or cylinder attributes. */
 typedef union _CollisionShapeAttribs
 {
@@ -133,27 +121,9 @@ typedef struct _CollisionShapePoint
     /* 0x5  */ u8                      disableHeight;
     /* 0x6  */ SVECTOR3                offset; // Q7.8 | Probe position inside cell/cell? Wrong struct? Y is maybe Z.
     /* 0xC  */ s_CollisionShapeAttribs shapeAttribs;
-    /* 0x20 */ s_CollisionCharaDeltas  charaDeltas;
+    /* 0x20 */ s_CharaCollisionDeltas  charaDeltas;
 } s_CollisionShapePoint;
 STATIC_ASSERT_SIZEOF(s_CollisionShapePoint, 56);
-
-/** @brief Character collision state. */
-typedef struct _CollisionCharaState
-{
-    /* 0x0  */ s32        collisionState; /** `e_CharaCollisionState` */
-    /* 0x4  */ bool       field_4;        // `allowDefaultCeilHeight`? Set when the character collision being checked is any of the ones in
-                                          // `Collision_CharaCollisionSetup`.
-    /* 0x8  */ q19_12     distance;
-    /* 0xC  */ SVECTOR    offset; /** Q23.8 | Character movement offset. */
-    /* 0x14 */ DVECTOR_XZ direction;
-    /* 0x18 */ q23_8      positionFromX;
-    /* 0x1C */ q23_8      positionFromZ;
-    /* 0x20 */ q23_8      positionToX;
-    /* 0x24 */ q23_8      positionToZ;
-    /* 0x28 */ q7_8       radius;
-    /* 0x2A */ q7_8       top;
-    /* 0x2C */ q7_8       bottom;
-} s_CollisionCharaState;
 
 typedef struct _CollisionState
 {
@@ -362,7 +332,7 @@ s32 func_8006A42C(s_CollisionResult* collResult, const VECTOR3* offset, const s_
 
 // Something for character movement.
 s32 func_8006A4A8(s_CollisionResult* collResult, VECTOR3* moveOffset, const s_CollisionCylinder* cylinder, bool arg3,
-                  s_IpdCollisionData** collDataPtrs, s32 collDataIdx, s_func_8006CF18* arg6, s32 arg7,
+                  s_IpdCollisionData** collDataPtrs, s32 collDataIdx, s_CharaCollisionRecord* charaRecords, s32 charaRecordCount,
                   s_SubCharacter** charas, s32 charaCount);
 
 /** @brief Dampens a character's movement offset according to relational cylinder collisions with other characters.
@@ -414,7 +384,7 @@ bool func_8006B318(s_CollisionState* state, const s_IpdCollisionData* collData, 
 void func_8006B6E8(s_CollisionState* state, s_IpdShapeRange* shapeRangePair);
 
 // Related to polygons.
-bool func_8006B7E0(s_CollisionCachedSurface* cachedSurface, s_CollisionCharaDeltas* charaDeltas);
+bool func_8006B7E0(s_CollisionCachedSurface* cachedSurface, s_CharaCollisionDeltas* charaDeltas);
 
 // Related to polygons.
 void func_8006B8F8(s_CollisionShapePoint* cellPoint);
@@ -468,7 +438,8 @@ q23_8 Ipd_FloorHeightGet(q23_8 posX, q23_8 posZ, const s_CollisionState* state);
 
 void func_8006CC9C(s_CollisionState* state);
 
-void func_8006CF18(s_CollisionState* state, s_func_8006CF18* arg1, s32 idx);
+// Runs through character collision records.
+void func_8006CF18(s_CollisionState* state, s_CharaCollisionRecord* charaRecords, s32 charaRecordCount);
 
 void func_8006D01C(VECTOR3* extraOffset, VECTOR3* offset, q3_12 offsetAlpha, s_CollisionState* state);
 

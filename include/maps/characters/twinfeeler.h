@@ -130,7 +130,7 @@ extern s32 D_800DB2FC[];
 
 extern u8 D_800DB3A0[];
 
-extern s_func_8006CF18 D_800E04A0;
+extern s_CharaCollisionRecord D_800E04A0;
 
 void func_800D078C(void);
 

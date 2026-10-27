@@ -134,17 +134,6 @@ typedef enum _CharaId
     Chara_Hack = NO_VALUE, // @hack Force enum to be treated as `s32`.
 } e_CharaId;
 
-// Collision-related. For active collision query, just like level shapes?
-typedef struct
-{
-    /* 0x0  */ VECTOR3 position;
-    /* 0xC  */ q3_12   field_C;        // Set to character Y position. Name it `height`?
-    /* 0xE  */ s16     field_E;
-    /* 0x10 */ s16     field_10;
-    /* 0x12 */ s8      collisionState; /** `e_CharaCollisionState` */
-    /* 0x13 */ u8      passStamp;      /** Tracks visited characters per query pass. */
-} s_func_8006CF18;
-
 /** @brief Character damage info. */
 typedef struct _CharaDamage
 {
@@ -588,16 +577,28 @@ typedef struct _CharaKeyframe
     /* 0xC */ s_CharaShapeOffsets shapeOffsets;
 } s_CharaKeyframe;
 
-/** @brief Character collision info for the active animation frame. */
+// TODO: Does this track only other characters, or other shapes too?
+/** @brief Recorded character collision. */
+typedef struct _CharaCollisionRecord
+{
+    /* 0x0  */ VECTOR3 position;
+    /* 0xC  */ q3_12   field_C;        // Bottom offset?
+    /* 0xE  */ q3_12   field_E;        // Top offset?
+    /* 0x10 */ q3_12   field_10;       // Radius?
+    /* 0x12 */ s8      collisionState; /** `e_CharaCollisionState` */
+    /* 0x13 */ u8      passStamp;      /** Tracks visited characters per query pass. */
+} s_CharaCollisionRecord;
+
+/** @brief Character collision info for the active tick. */
 typedef struct _CharaCollision
 {
-    /* 0x0    */ s_CharaBox          box;
-    /* 0xC    */ s_CharaCylinder     cylinder;
-    /* 0x10   */ s_CharaShapeOffsets shapeOffsets;   // Translation data?
-    /* 0x18+0 */ u8                  passStamp;      /** Same usage as `s_IpdCollisionData::shapePassStampBuffer`. */
-    /* 0x19+0 */ s8                  state      : 4; /** `e_CharaCollisionState` */
-    /* 0x19+4 */ u8                  field_E1_4 : 4; // Index for array of `s_func_8006CF18`.
-    /* 0x1C   */ s_func_8006CF18*    field_E4;
+    /* 0x0    */ s_CharaBox              box;
+    /* 0xC    */ s_CharaCylinder         cylinder;
+    /* 0x10   */ s_CharaShapeOffsets     shapeOffsets;         // Translation data?
+    /* 0x18+0 */ u8                      passStamp;            /** Same usage as `s_IpdCollisionData::shapePassStampBuffer`. */
+    /* 0x19+0 */ s8                      state            : 4; /** `e_CharaCollisionState` */
+    /* 0x19+4 */ u8                      charaRecordCount : 4; /** `charaRecords` array size. */
+    /* 0x1C   */ s_CharaCollisionRecord* charaRecords;
 } s_CharaCollision;
 
 /** @brief Character info. */

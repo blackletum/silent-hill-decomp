@@ -1151,10 +1151,10 @@ func_8006EEB8                                = 0x8006EAA0; // type:func
 //--------------------------------------------------------------------
 //--- PA: 0x0497A8   VA: 0x8006EE38   subsegment: c, collision/trigger
 //--------------------------------------------------------------------
-Collision_TriggerQuery                                = 0x8006EE38; // type:func
-Collision_TriggerIntersectInit                                = 0x8006EF20; // type:func
-Collision_TriggerIntersectGet                                = 0x8006EFAC; // type:func
-Collision_TriggerCeilingHeightGet                   = 0x8006F208; // type:func
+Collision_TriggerQuery                       = 0x8006EE38; // type:func
+Collision_TriggerIntersectInit               = 0x8006EF20; // type:func
+Collision_TriggerIntersectGet                = 0x8006EFAC; // type:func
+Collision_TriggerCeilingHeightGet            = 0x8006F208; // type:func
 Collision_TriggerOffsetGet                   = 0x8006F4E4; // type:func
 
 //----------------------------------------------------------------

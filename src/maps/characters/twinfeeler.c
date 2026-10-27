@@ -3195,20 +3195,20 @@ void func_800D5DF4(s_SubCharacter* twinfeeler, GsCOORDINATE2* boneCoords) // 0x8
 
 void func_800D5E30(s_SubCharacter* twinfeeler, GsCOORDINATE2* boneCoords) // 0x800D5E30
 {
-    MATRIX           transformMat;
-    s32              i;
-    q19_12           posY;
-    q19_12           newPosX;
-    q19_12           newPosY;
-    q19_12           newPosZ;
-    s_func_8006CF18* ptrs;
+    MATRIX                  transformMat;
+    s32                     i;
+    q19_12                  posY;
+    q19_12                  newPosX;
+    q19_12                  newPosY;
+    q19_12                  newPosZ;
+    s_CharaCollisionRecord* charaRecords;
 
-    ptrs = &D_800E04A0;
+    charaRecords = &D_800E04A0;
 
-    twinfeeler->collision.field_E4   = &D_800E04A0;
-    twinfeeler->collision.field_E1_4 = 4;
+    twinfeeler->collision.charaRecords     = &D_800E04A0;
+    twinfeeler->collision.charaRecordCount = 4;
 
-    for (i = 0; i < 4; i++, ptrs++)
+    for (i = 0; i < 4; i++, charaRecords++)
     {
         Vw_CoordHierarchyMatrixCompute(&boneCoords[D_800DB3A0[i]], &transformMat);
 
@@ -3217,13 +3217,13 @@ void func_800D5E30(s_SubCharacter* twinfeeler, GsCOORDINATE2* boneCoords) // 0x8
         newPosY = Q8_TO_Q12(transformMat.t[1]);
         newPosZ = Q8_TO_Q12(transformMat.t[2]);
 
-        ptrs->field_10       = Q12(0.45f);
-        ptrs->field_E        = newPosY - Q12(0.3f);
-        ptrs->field_C        = posY;
-        ptrs->position.vx    = newPosX;
-        ptrs->position.vy    = newPosY;
-        ptrs->position.vz    = newPosZ;
-        ptrs->collisionState = CharaCollisionState_Npc;
+        charaRecords->field_10       = Q12(0.45f);
+        charaRecords->field_E        = newPosY - Q12(0.3f);
+        charaRecords->field_C        = posY;
+        charaRecords->position.vx    = newPosX;
+        charaRecords->position.vy    = newPosY;
+        charaRecords->position.vz    = newPosZ;
+        charaRecords->collisionState = CharaCollisionState_Npc;
     }
 }
 

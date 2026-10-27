@@ -534,7 +534,7 @@ s32 func_8006A42C(s_CollisionResult* collResult, const VECTOR3* offset, const s_
 }
 
 s32 func_8006A4A8(s_CollisionResult* collResult, VECTOR3* moveOffset, const s_CollisionCylinder* cylinder, bool arg3,
-                  s_IpdCollisionData** collDataPtrs, s32 collDataIdx, s_func_8006CF18* arg6, s32 idx,
+                  s_IpdCollisionData** collDataPtrs, s32 collDataIdx, s_CharaCollisionRecord* charaRecords, s32 charaRecordCount,
                   s_SubCharacter** charas, s32 charaCount) // 0x8006A4A8
 {
     s_CollisionState     state;
@@ -599,7 +599,7 @@ s32 func_8006A4A8(s_CollisionResult* collResult, VECTOR3* moveOffset, const s_Co
             cond |= true;
         }
 
-        func_8006CF18(&state, arg6, idx);
+        func_8006CF18(&state, charaRecords, charaRecordCount);
 
         // Run through characters.
         for (curChara = charas; curChara < &charas[charaCount]; curChara++)
@@ -627,7 +627,7 @@ s32 func_8006A4A8(s_CollisionResult* collResult, VECTOR3* moveOffset, const s_Co
             }
 
             func_8006CC9C(&state);
-            func_8006CF18(&state, chara->collision.field_E4, chara->collision.field_E1_4);
+            func_8006CF18(&state, chara->collision.charaRecords, chara->collision.charaRecordCount);
         }
 
         func_8006D01C(&extraOffset, &moveOffsetCpy1, Collision_OffsetAlphaGet(&state), &state);
@@ -1240,7 +1240,7 @@ void func_8006B6E8(s_CollisionState* state, s_IpdShapeRange* shapeRangePair) // 
     }
 }
 
-bool func_8006B7E0(s_CollisionCachedSurface* cachedSurface, s_CollisionCharaDeltas* charaDeltas) // 0x8006B7E0
+bool func_8006B7E0(s_CollisionCachedSurface* cachedSurface, s_CharaCollisionDeltas* charaDeltas) // 0x8006B7E0
 {
     #define UNK_THRESHOLD Q8(0.025f)
 
@@ -1305,7 +1305,7 @@ bool func_8006B7E0(s_CollisionCachedSurface* cachedSurface, s_CollisionCharaDelt
 
 void func_8006B8F8(s_CollisionShapePoint* cellPoint) // 0x8006B8F8
 {
-    s_CollisionCharaDeltas* ptr;
+    s_CharaCollisionDeltas* ptr;
     s32                     temp_a1;
     s32                     temp_a2;
     s32                     temp;
@@ -2090,31 +2090,32 @@ void func_8006CC9C(s_CollisionState* state) // 0x8006CC9C
     }
 }
 
-void func_8006CF18(s_CollisionState* state, s_func_8006CF18* arg1, s32 idx) // 0x8006CF18
+void func_8006CF18(s_CollisionState* state, s_CharaCollisionRecord* charaRecords, s32 charaRecordCount) // 0x8006CF18
 {
-    q23_8            radius;
-    s_func_8006CF18* curArg1;
+    q23_8                   radius;
+    s_CharaCollisionRecord* curCharaRecord;
 
-    for (curArg1 = arg1; curArg1 < &arg1[idx]; curArg1++)
+    // Run through character collision records.
+    for (curCharaRecord = charaRecords; curCharaRecord < &charaRecords[charaRecordCount]; curCharaRecord++)
     {
-        radius = Q12_TO_Q8(curArg1->field_10) + state->charaState.radius;
-        if (curArg1->collisionState < (u32)state->charaState.collisionState)
+        radius = Q12_TO_Q8(curCharaRecord->field_10) + state->charaState.radius;
+        if (curCharaRecord->collisionState < (u32)state->charaState.collisionState)
         {
             radius -= 15;
         }
 
-        state->charaPositionFrom.vx = Q12_TO_Q8(curArg1->position.vx);
-        state->charaPositionTo.vz   = Q12_TO_Q8(curArg1->position.vz);
+        state->charaPositionFrom.vx = Q12_TO_Q8(curCharaRecord->position.vx);
+        state->charaPositionTo.vz   = Q12_TO_Q8(curCharaRecord->position.vz);
 
-        state->field_A0.chara.bottom         = Q12_TO_Q8(curArg1->field_E + curArg1->position.vy);
-        state->field_A0.chara.top            = Q12_TO_Q8(curArg1->field_C + curArg1->position.vy);
+        state->field_A0.chara.bottom         = Q12_TO_Q8(curCharaRecord->field_E + curCharaRecord->position.vy);
+        state->field_A0.chara.top            = Q12_TO_Q8(curCharaRecord->field_C + curCharaRecord->position.vy);
         state->field_A0.chara.radius         = radius;
-        state->field_A0.chara.collisionState = curArg1->collisionState;
-        state->field_A0.chara.passStamp      = &curArg1->passStamp;
+        state->field_A0.chara.collisionState = curCharaRecord->collisionState;
+        state->field_A0.chara.passStamp      = &curCharaRecord->passStamp;
 
-        if (state->offsetX == false)
+        if (!state->offsetX)
         {
-            curArg1->passStamp = 0;
+            curCharaRecord->passStamp = 0;
         }
 
         func_8006CC9C(state);

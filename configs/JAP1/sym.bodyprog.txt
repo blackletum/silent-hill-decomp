@@ -1284,11 +1284,12 @@ func_8006EEB8                                = 0x800709C8; // type:func
 //--------------------------------------------------------------------
 //--- PA: 0x04C200   VA: 0x80070D60   subsegment: c, collision/trigger
 //--------------------------------------------------------------------
-Collision_TriggerQuery                                = 0x80070D60; // type:func
-Collision_TriggerIntersectInit                                = 0x80070E48; // type:func
-Collision_TriggerIntersectGet                                = 0x80070ED4; // type:func
-Collision_TriggerCeilingHeightGet                   = 0x80071130; // type:func
+Collision_TriggerQuery                       = 0x80070D60; // type:func
+Collision_TriggerIntersectInit               = 0x80070E48; // type:func
+Collision_TriggerIntersectGet                = 0x80070ED4; // type:func
+Collision_TriggerCeilingHeightGet            = 0x80071130; // type:func
 Collision_TriggerOffsetGet                   = 0x8007140C; // type:func
+
 //----------------------------------------------------------------
 //--- PA: 0x04C94C   VA: 0x800714AC   subsegment: c, collision/los
 //----------------------------------------------------------------

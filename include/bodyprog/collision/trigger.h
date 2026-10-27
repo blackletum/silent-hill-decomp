@@ -1,17 +1,7 @@
 #ifndef _BODYPROG_COLLISION_TRIGGER_H
 #define _BODYPROG_COLLISION_TRIGGER_H
 
-// TODO: Probably doesn't belong in this header.
-/** @brief Collision cylinder with a character collision state. */
-typedef struct _CollisionCylinder
-{
-    /* 0x0  */ VECTOR3 position; /** Q19.12 */
-    /* 0xC  */ q3_12   bottom;
-    /* 0xE  */ q3_12   top;
-    /* 0x10 */ q3_12   radius;
-    /* 0x14 */ s8      collisionState; /** `e_CharaCollisionState` */
-} s_CollisionCylinder;
-STATIC_ASSERT_SIZEOF(s_CollisionCylinder, 20);
+#include "bodyprog/collision/chara.h"
 
 /** @brief Collision trigger line intersection. */
 typedef struct _CollisionTriggerIntersect
@@ -29,6 +19,7 @@ typedef struct _CollisionTriggerIntersect
     /* 0x28 */ q19_12 intersectAlpha; /** Intersection alpha along the line with a collided trigger. */
     /* 0x2C */ q19_12 triggerHeight;  /** Collided trigger height. */
 } s_CollisionTriggerIntersect;
+STATIC_ASSERT_SIZEOF(s_CollisionTriggerIntersect, 48);
 
 /** @brief World-space collision trigger used to inform uneven terrain such as walls and stairs. */
 typedef struct _CollisionTrigger
@@ -38,7 +29,7 @@ typedef struct _CollisionTrigger
     /* 0x0+11 */ s32 positionZ    : 10; /** Meter steps. */
     /* 0x0+21 */ u32 sizeX        : 4;  /** Meter steps. */
     /* 0x0+25 */ u32 sizeZ        : 4;  /** Meter steps. */
-    /* 0x0+29 */ u32 height       : 3;  /** Half-meter steps. Used to set `s_CollisionTriggerIntersect::field_2C` which is then copied by `Collision_TriggerQuery`. */
+    /* 0x0+29 */ u32 height       : 3;  /** Half-meter steps. */
 } s_CollisionTrigger;
 STATIC_ASSERT_SIZEOF(s_CollisionTrigger, 4);
 
@@ -52,7 +43,7 @@ typedef struct _ActiveCollisionTriggers
 
 /** @brief Queries a line intersection with the first collided active collision trigger.
  *
- * @param result Output [0]: movement distance from the collided trigger and [1]: trigger height.
+ * @param result Output [0]: movement distance to the collided trigger and [1]: trigger height.
  * @param posX Start line position X.
  * @param posZ Start line position Z.
  * @param offsetX Line end offset from start position X.
@@ -71,17 +62,17 @@ void Collision_TriggerQuery(q19_12* result, q19_12 posX, q19_12 posZ, q19_12 off
 void Collision_TriggerIntersectInit(s_CollisionTriggerIntersect* intersect,
                                     q19_12 posX, q19_12 posZ, q19_12 offsetX, q19_12 offsetZ);
 
-/** @brief Stores a line-trigger intersection, storing the trigger height.
+/** @brief Checks a line-trigger intersection, storing the result in an output.
  *
- * @param intersect Line intersection to check.
+ * @param intersect Output line intersection to check and update.
  * @param trigger Trigger to check for intersection.
- * @return `true` if an intersection was made, `false` otherwise.
+ * @return `true` if the trigger was intersected, `false` otherwise.
  */
 bool Collision_TriggerIntersectGet(s_CollisionTriggerIntersect* intersect, const s_CollisionTrigger* trigger);
 
 /** @brief Gets the ceiling height, derived from active collision triggers.
  *
- * @param moveOffset Movement offset.
+ * @param moveOffset Output movement offset.
  * @param cylinder Collision cylinder.
  * @param cylinderRadius Cylinder radius.
  * @param cylinderHeight Cylinder height.
