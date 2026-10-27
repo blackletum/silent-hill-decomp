@@ -7,8 +7,6 @@ scratchpad                                   = 0x1F800000; // size:0x400 ignore:
 //=== .rodata section
 //================================================
 
-D_800C4454 = 0x800C3A44;
-
 
 //----------------------------------------------------------------------------
 //--- PA: 0x0001E4   VA: 0x80025874   subsegment: .rodata, sys/syswork_globals
@@ -1077,14 +1075,14 @@ PaperMap_DrawScaled                          = 0x80068D64; // type:func
 //--- PA: 0x043D44   VA: 0x800693D4   subsegment: c, collision/collision
 //----------------------------------------------------------------------
 Collision_Init                               = 0x800693D4; // type:func
-Collision_TriggerFlagsGet                           = 0x800693F8; // type:func
-Collision_TriggerFlagsSet                           = 0x80069408; // type:func
-Collision_TriggerFlagBitsSet                        = 0x80069414; // type:func
-Collision_TriggerFlagBitsClear                      = 0x8006942C;
+Collision_TriggerFlagsGet                    = 0x800693F8; // type:func
+Collision_TriggerFlagsSet                    = 0x80069408; // type:func
+Collision_TriggerFlagBitsSet                 = 0x80069414; // type:func
+Collision_TriggerFlagBitsClear               = 0x8006942C;
 Collision_NearbyTriggersGet                  = 0x80069448; // type:func
 Collision_ChunkHeaderPtrsInit                = 0x80069524; // type:func
-Collision_ShapePassReset                    = 0x8006957C;
-Collision_ShapePassUpdate              = 0x800695CC; // type:func
+Collision_ShapePassReset                     = 0x8006957C;
+Collision_ShapePassUpdate                    = 0x800695CC; // type:func
 Collision_SurfaceGet                         = 0x800695E0; // type:func
 Collision_WallDetect                         = 0x8006970C; // type:func
 Collision_WallResponse                       = 0x80069790; // type:func
@@ -1110,7 +1108,7 @@ func_8006B9C8                                = 0x8006B5B0; // type:func
 func_8006BB50                                = 0x8006B738; // type:func
 func_8006BC34                                = 0x8006B81C; // type:func
 func_8006BCC4                                = 0x8006B8AC; // type:func
-Collision_PushConstraintShapeAdd                                = 0x8006B9C4; // type:func
+Collision_PushConstraintShapeAdd             = 0x8006B9C4; // type:func
 func_8006BE40                                = 0x8006BA28; // type:func
 func_8006BF88                                = 0x8006BB70; // type:func
 func_8006C0C8                                = 0x8006BCB0; // type:func
@@ -3719,6 +3717,7 @@ D_800C4418                                   = 0x800C3A08; // size:0x10
 //--- PA: 0x09E3A8   VA: 0x800C3A38   subsegment: .bss, bodyprog_mapscreen_80066D90
 //---------------------------------------------------------------------------------
 D_800C4449                                   = 0x800C3A39; // type:u8
+D_800C4454                                   = 0x800C3A44;
 
 //-------------------------------------------------------------------------
 //--- PA: 0x09E3B8   VA: 0x800C3A48   subsegment: .bss, collision/collision

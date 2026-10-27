@@ -862,14 +862,14 @@ PaperMap_DrawScaled                          = 0x800692A4; // type:func
 //--- PA: 0x044C8C   VA: 0x800697EC   subsegment: c, collision/collision
 //----------------------------------------------------------------------
 Collision_Init                               = 0x800697EC; // type:func
-Collision_TriggerFlagsGet                           = 0x80069810; // type:func
-Collision_TriggerFlagsSet                           = 0x80069820; // type:func
-Collision_TriggerFlagBitsSet                        = 0x8006982C; // type:func
-Collision_TriggerFlagBitsClear                      = 0x80069844;
+Collision_TriggerFlagsGet                    = 0x80069810; // type:func
+Collision_TriggerFlagsSet                    = 0x80069820; // type:func
+Collision_TriggerFlagBitsSet                 = 0x8006982C; // type:func
+Collision_TriggerFlagBitsClear               = 0x80069844;
 Collision_NearbyTriggersGet                  = 0x80069860; // type:func
 Collision_ChunkHeaderPtrsInit                = 0x8006993C; // type:func
-Collision_ShapePassReset                    = 0x80069994;
-Collision_ShapePassUpdate              = 0x800699E4; // type:func
+Collision_ShapePassReset                     = 0x80069994;
+Collision_ShapePassUpdate                    = 0x800699E4; // type:func
 Collision_SurfaceGet                         = 0x800699F8; // type:func
 Collision_WallDetect                         = 0x80069B24; // type:func
 Collision_WallResponse                       = 0x80069BA8; // type:func
@@ -884,6 +884,7 @@ Collision_MoveDirectionCalc                  = 0x8006ABC0; // type:func
 Collision_CharaCollisionHandle               = 0x8006AD44; // type:func
 Collision_CellInit                           = 0x8006AEAC;
 Collision_CellIdxGet                         = 0x8006B004;
+Collision_PushConstraintShapeAdd             = 0x8006BDDC; // type:func
 Collision_OffsetAlphaGet                     = 0x8006CB90;
 Ipd_FloorHeightGet                           = 0x8006CC44; // type:func
 
@@ -968,7 +969,7 @@ Collision_FloorHeightGet                     = 0x80080884; // type:func
 Collision_FloorTypeGet                       = 0x800808AC; // type:func
 Math_MulFixed                                = 0x800808D4; // type:func
 Math_MagnitudeShiftGet                       = 0x800808F8; // type:func
-Collision_PushConstraintShapeAdd = 0x8006BDDC; // type:func
+
 //---------------------------------------------------------------
 //--- PA: 0x05BDE0   VA: 0x80080940   subsegment: c, view/vc_main
 //---------------------------------------------------------------
@@ -3019,6 +3020,13 @@ smf_file_no                                  = 0x800B25BC;
 print_start                                  = 0x800B25C0;
 eof_char                                     = 0x800B25C4; // type:s8 size:3 static?
 chantype                                     = 0x800B25C8; // type:s32 static for readtrack?
+
+
+
+//================================================
+//=== .sdata section
+//================================================
+
 
 //-----------------------------------------------------------------------
 //--- PA: 0x08DAB0   VA: 0x800B2610   subsegment: .sdata, libkpad/libkpad
