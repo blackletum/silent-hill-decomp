@@ -193,27 +193,6 @@ s_800AEDBC D_800AEDBC[] = {
     { &D_800AE8A0[240], &D_800AE8A0[310], 0x0649, 0x066C }
 };
 
-#if VERSION_IS(EUR)
-// @hack Statics of the included function below, remove once decompiled.
-// Declared inside an uncalled function so the compiler emits them here instead of at the end of the file.
-static inline void GameState_PaperMapScreen_Update_Statics(void)
-{
-    static u8     paperMapIdx __asm__("D_800C3A38");
-    static u8     markingIdx __asm__("D_800C4449");
-    static s8     activeMarkingFileIdx __asm__("D_800C3A3A");
-    static s8     __pad_bss_800C3A3B __asm__("__pad_bss_800C3A3B");
-    static q19_12 screenPosX __asm__("D_800C3A3C");
-    static q19_12 screenPosY __asm__("D_800C3A40");
-
-    (void)paperMapIdx;
-    (void)markingIdx;
-    (void)activeMarkingFileIdx;
-    (void)__pad_bss_800C3A3B;
-    (void)screenPosX;
-    (void)screenPosY;
-}
-INCLUDE_ASM("bodyprog/nonmatchings/bodyprog_mapscreen_80066D90", GameState_PaperMapScreen_Update);
-#else
 void GameState_PaperMapScreen_Update(void) // 0x80066EB0
 {
     s32           temp_s0_2;
@@ -306,6 +285,11 @@ void GameState_PaperMapScreen_Update(void) // 0x80066EB0
                     GsDrawOt(&g_OrderingTable0[g_ActiveBufferIdx]);
 
                     func_80066E7C();
+
+#if VERSION_REGION_IS(PAL)
+                    Fs_QueueStartReadTim(FILE_ITEM_HEROPIC2_TIM, FS_BUFFER_1, &g_HealthPortraitImg);
+#endif
+
                     GameFs_MapItemsTextureLoad(g_SavegamePtr->mapIdx);
                     func_80066D90();
                     ScreenFade_ResetTimestep();
@@ -443,7 +427,6 @@ void GameState_PaperMapScreen_Update(void) // 0x80066EB0
             break;
     }
 }
-#endif
 
 static inline s32 MapCoordIdxGet(q19_12 coord, s32 bias, s32 shift, s32 offset)
 {
@@ -1120,11 +1103,6 @@ bool func_80068E0C(s32 arg0, s32 idx, s32 arg2, s32 shade, u16 arg4, u16 arg5, q
     return true;
 }
 
-#if VERSION_IS(EUR)
-INCLUDE_RODATA("bodyprog/nonmatchings/bodyprog_mapscreen_80066D90", tileScreenEdgesX);
-INCLUDE_RODATA("bodyprog/nonmatchings/bodyprog_mapscreen_80066D90", tileScreenEdgesY);
-INCLUDE_ASM("bodyprog/nonmatchings/bodyprog_mapscreen_80066D90", PaperMap_DrawScaled);
-#else
 void PaperMap_DrawScaled(u16 scrollX, u16 scrollY, q4_12 scale) // 0x800692A4
 {
     u16       rightEdge;
@@ -1144,6 +1122,9 @@ void PaperMap_DrawScaled(u16 scrollX, u16 scrollY, q4_12 scale) // 0x800692A4
     s16       hackVar3;
     s16       hackVar4;
     POLY_FT4* poly;
+#if VERSION_REGION_IS(PAL)
+    TILE*     tile;
+#endif
 
     // Accumulated screen-space X edges per tile column (center-relative coords).
     s16 tileScreenEdgesX[] = { -160, -160, -160, -160 };
@@ -1237,7 +1218,29 @@ void PaperMap_DrawScaled(u16 scrollX, u16 scrollY, q4_12 scale) // 0x800692A4
         }
     }
 
+#if VERSION_REGION_IS(PAL)
+    // Black bars covering the PAL screen area above and below the 480-line map image.
+    tile = (TILE*)poly;
+    setTile(tile);
+    setXY0(tile, -(SCREEN_WIDTH / 2), -256);
+    setWH(tile, SCREEN_WIDTH, 16);
+    setRGB0Fast(tile, 0, 0, 0);
+    setSemiTrans(tile, 0);
+    addPrim(&g_OrderingTable0[g_ActiveBufferIdx].org[0], tile);
+    tile++;
+
+    setTile(tile);
+    setXY0(tile, -(SCREEN_WIDTH / 2), 236);
+    setWH(tile, SCREEN_WIDTH, 20);
+    setRGB0Fast(tile, 0, 0, 0);
+    setSemiTrans(tile, 0);
+    addPrim(&g_OrderingTable0[g_ActiveBufferIdx].org[0], tile);
+    tile++;
+
+    g_SysWork.bgmStatusFlags |= BgmStatusFlag_Pause;
+    GsOUT_PACKET_P            = tile;
+#else
     GsOUT_PACKET_P            = poly;
     g_SysWork.bgmStatusFlags |= BgmStatusFlag_Pause;
-}
 #endif
+}

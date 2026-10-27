@@ -188,20 +188,26 @@ void func_800892DC(s32 idx, u8 arg1) // 0x800892DC
     func_800895E4(&g_SysWork.kpad_2514, &g_VibScript_Steps[idx], arg1);
 }
 
-#if VERSION_IS(EUR)
-INCLUDE_ASM("bodyprog/nonmatchings/bodyprog_80089090", func_80089314);
-#else
 void func_80089314(s32 arg0) // 0x80089314
 {
     s32 var0;
     s32 var1;
 
+#if VERSION_REGION_IS(PAL)
+    var0        = 20;
+#else
     var0        = 24;
+#endif
+
     D_800AFD05 += g_VBlanks;
 
     if (arg0 != 0)
     {
+#if VERSION_REGION_IS(PAL)
+        var0 = 5;
+#else
         var0 = 6;
+#endif
     }
 
     if ((s32)D_800AFD05 >= var0)
@@ -221,7 +227,6 @@ void func_80089314(s32 arg0) // 0x80089314
 
     func_800892DC(21, D_800AFD04 + 32);
 }
-#endif
 
 void func_800893D0(q19_12 arg0) // 0x800893D0
 {
@@ -313,16 +318,18 @@ s32 func_800895E4(s_KPadWork* arg0, s_VibScriptStep* arg1, u8 arg2) // 0x800895E
     return g_VibScript_StepHandlers[arg1->data_4.opcode_4](arg0, 0, arg1, &sp10);
 }
 
-#if VERSION_IS(EUR)
-INCLUDE_ASM("bodyprog/nonmatchings/bodyprog_80089090", func_80089644);
-#else
 bool func_80089644(s_KPadWork* arg0, s_KPad_Effect* arg1, s32 arg2, u32 arg3) // 0x80089644
 {
     u32              var1;
     s_KPad_Channel*  ptr0;
     s_VibScriptStep* ptr1;
 
-    arg3                 *= 5;
+#if VERSION_REGION_IS(PAL)
+    arg3 *= 6;
+#else
+    arg3 *= 5;
+#endif
+
     arg1->output_18       = 0;
     arg1->hasOutput_14_31 = 0;
     while (true)
@@ -351,7 +358,6 @@ bool func_80089644(s_KPadWork* arg0, s_KPad_Effect* arg1, s32 arg2, u32 arg3) //
 
     return arg1->step_10 != NULL;
 }
-#endif
 
 bool func_8008973C(s_KPadWork* arg0, s_KPad_Effect* arg1, s_VibScriptStep* ptr, u32* arg3)
 {
