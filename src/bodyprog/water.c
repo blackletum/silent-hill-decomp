@@ -565,8 +565,8 @@ void func_8008D990(s32 arg0, q19_12 arg1, VECTOR3* arg2, s32 arg3, s32 arg4) // 
     poly++;
     GsOUT_PACKET_P = (PACKET*)poly;
 
-#undef CLUT_X
-#undef CLUT_Y
+    #undef CLUT_X
+    #undef CLUT_Y
 }
 
 void func_8008E4EC(s_LmHeader* lmHdr) // 0x8008E4EC

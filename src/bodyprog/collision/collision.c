@@ -169,8 +169,8 @@ void Collision_SurfaceGet(s_CollisionSurface* surface, q19_12 posX, q19_12 posZ)
     {
         surface->floorType   = state.floorType;
         surface->floorHeight = Q8_TO_Q12(Ipd_FloorHeightGet(state.charaState.positionFromX,
-                                                              state.charaState.positionFromZ,
-                                                              &state));
+                                                            state.charaState.positionFromZ,
+                                                            &state));
     }
 
     surface->slopeGradientX = state.slopeGradientX;
@@ -563,7 +563,7 @@ s32 func_8006A4A8(s_CollisionResult* collResult, VECTOR3* moveOffset, const s_Co
     Collision_MoveOffsetDampen(moveOffset, cylinder, charas, charaCount);
 
     moveOffsetCpy0            = *moveOffset;
-    collResult->ceilingHeight = Collision_CeilingHeightGet(&moveOffsetCpy0, cylinder, cylinder->radius, cylinder->top);
+    collResult->ceilingHeight = Collision_TriggerCeilingHeightGet(&moveOffsetCpy0, cylinder, cylinder->radius, cylinder->top);
     Collision_CollStateInit(&state, &moveOffsetCpy0, cylinder, arg3);
 
     // Apply movement offset.

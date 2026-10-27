@@ -18,7 +18,7 @@
 
 #define MAIN_MENU_FOG_COUNT 21
 
-// In PAL some loops that originally counted up to `MAIN_MENU_FOG_COUNT` had their counters expanded.
+// In PAL, some loops that originally counted up to `MAIN_MENU_FOG_COUNT` had their counters expanded,
 // but other non-loop code that uses `MAIN_MENU_FOG_COUNT` was unchanged?
 #if VERSION_REGION_IS(PAL)
     #define MAIN_MENU_FOG_MAX_COUNT 24

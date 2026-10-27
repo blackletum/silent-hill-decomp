@@ -901,7 +901,7 @@ Ray_TraceRun                                 = 0x8006DEB0; // type:func
 //--------------------------------------------------------------------
 //--- PA: 0x04A6F0   VA: 0x8006F250   subsegment: c, collision/trigger
 //--------------------------------------------------------------------
-Collision_CeilingHeightGet                   = 0x8006F620; // type:func
+Collision_TriggerCeilingHeightGet                   = 0x8006F620; // type:func
 Collision_TriggerOffsetGet                   = 0x8006F8FC; // type:func
 
 //----------------------------------------------------------------
@@ -969,6 +969,9 @@ Collision_FloorHeightGet                     = 0x80080884; // type:func
 Collision_FloorTypeGet                       = 0x800808AC; // type:func
 Math_MulFixed                                = 0x800808D4; // type:func
 Math_MagnitudeShiftGet                       = 0x800808F8; // type:func
+Collision_TriggerIntersectInit = 0x8006F338; // type:func
+Collision_TriggerIntersectGet = 0x8006F3C4; // type:func
+Collision_TriggerQuery = 0x8006F250; // type:func
 
 //---------------------------------------------------------------
 //--- PA: 0x05BDE0   VA: 0x80080940   subsegment: c, view/vc_main

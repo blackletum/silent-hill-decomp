@@ -9253,9 +9253,10 @@ bool sharedFunc_800DBF88_2_s00(s_SubCharacter* airScreamer, q19_12 arg1)
 
     charaFieldC8 = airScreamer->collision.box.top;
 
-    func_8006F250(sharedData_800E2370_0_s01, posX, posZ, posDeltaX, posDeltaZ);
+    Collision_TriggerQuery(sharedData_800E2370_0_s01, posX, posZ, posDeltaX, posDeltaZ);
 
-    if (arg1 >= sharedData_800E2370_0_s01[0] && (Collision_FloorHeightGet(posX, posZ) + charaFieldC8) >= sharedData_800E2370_0_s01[1])
+    if (arg1 >= sharedData_800E2370_0_s01[0] &&
+        (Collision_FloorHeightGet(posX, posZ) + charaFieldC8) >= sharedData_800E2370_0_s01[1])
     {
         if (posDeltaY < Q12(0.0f))
         {
@@ -9333,7 +9334,7 @@ bool sharedFunc_800DC200_2_s00(s_SubCharacter* airScreamer)
 
 bool sharedFunc_800DC30C_2_s00(s_SubCharacter* airScreamer)
 {
-    func_8006F250(sharedData_800E2370_0_s01, airScreamer->position.vx, airScreamer->position.vz, Q12(0.0f), Q12(0.0f));
+    Collision_TriggerQuery(sharedData_800E2370_0_s01, airScreamer->position.vx, airScreamer->position.vz, Q12(0.0f), Q12(0.0f));
 
     switch (Collision_FloorTypeGet(airScreamer->position.vx, airScreamer->position.vz))
     {
@@ -9424,7 +9425,7 @@ s32 sharedFunc_800DC598_2_s00(s_SubCharacter* airScreamer)
             }
             else
             {
-                func_8006F250(sharedData_800E2370_0_s01, airScreamer->position.vx, airScreamer->position.vz, 0, 0);
+                Collision_TriggerQuery(sharedData_800E2370_0_s01, airScreamer->position.vx, airScreamer->position.vz, 0, 0);
 
                 if (sharedData_800E2370_0_s01[1] < ((airScreamer->position.vy + airScreamer->collision.box.top) - Q12(2.0f)))
                 {
@@ -9609,7 +9610,7 @@ bool sharedFunc_800D4AEC_0_s01(s_SubCharacter* airScreamer, VECTOR3* arg1, VECTO
     offsetX                                     = sharedData_800E2330_0_s01.target.vx - posX;
     offsetZ                                     = sharedData_800E2330_0_s01.target.vz - posZ;
 
-    func_8006F250(sharedData_800E2370_0_s01, posX, posZ, offsetX, offsetZ);
+    Collision_TriggerQuery(sharedData_800E2370_0_s01, posX, posZ, offsetX, offsetZ);
 
     var_a0    = sharedData_800E2370_0_s01[1];
     temp_v1   = airScreamer->collision.box.top;
@@ -12458,7 +12459,7 @@ void sharedFunc_800D633C_0_s01(s_SubCharacter* airScreamer)
 {
     q19_12 posY;
 
-    func_8006F250(&sharedData_800E2370_0_s01, airScreamer->position.vx, airScreamer->position.vz, Q12(0.0f), Q12(0.0f));
+    Collision_TriggerQuery(&sharedData_800E2370_0_s01, airScreamer->position.vx, airScreamer->position.vz, Q12(0.0f), Q12(0.0f));
 
     posY = sharedData_800E2370_0_s01[1] - airScreamer->collision.box.top;
     if (airScreamer->position.vy < posY)

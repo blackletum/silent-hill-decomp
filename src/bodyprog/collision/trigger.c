@@ -27,165 +27,172 @@
 #define TRIGGER_HEIGHT_GET(steps) \
     ((-Q12(steps) >> 1) - Q12(1.5f))
 
-void func_8006F250(q19_12* arg0, q19_12 posX, q19_12 posZ, q19_12 offsetX, q19_12 offsetZ) // 0x8006F250
+void Collision_TriggerQuery(q19_12* result, q19_12 posX, q19_12 posZ, q19_12 offsetX, q19_12 offsetZ) // 0x8006F250
 {
-    s32              i;
-    s_func_8006F338* ptr;
+    s32                          i;
+    s_CollisionTriggerIntersect* intersect;
 
-    ptr = PSX_SCRATCH;
+    intersect = PSX_SCRATCH;
 
-    func_8006F338(ptr, posX, posZ, offsetX, offsetZ);
+    // Initialize line intersection.
+    Collision_TriggerIntersectInit(intersect, posX, posZ, offsetX, offsetZ);
 
-    // Run through triggers.
+    // Collide active triggers.
     for (i = 0; i < g_ActiveCollisionTriggers.collisionTriggerCount; i++)
     {
-        if (func_8006F3C4(ptr, g_ActiveCollisionTriggers.collisionTriggers[i]))
+        if (Collision_TriggerIntersectGet(intersect, g_ActiveCollisionTriggers.collisionTriggers[i]))
         {
             break;
         }
     }
 
-    // TODO: Does this define trigger size and height in `arg0`?
-    if (ptr->field_28 == Q12(1.0f))
+    // Set result.
+    if (intersect->intersectAlpha == Q12(1.0f))
     {
-        arg0[0] = Q12(32.0f);
-        arg0[1] = Q12(-16.0f);
+        result[0] = Q12(32.0f);
+        result[1] = Q12(DEFAULT_CEILING_HEIGHT);
     }
     else
     {
-        arg0[0] = Math_MulFixed(Vc_VectorMagnitudeCalc(ptr->offsetX, Q12(0.0f), ptr->offsetZ), ptr->field_28, Q12_SHIFT);
-        arg0[1] = ptr->triggerHeight;
+        result[0] = Math_MulFixed(Vc_VectorMagnitudeCalc(intersect->offsetX, Q12(0.0f), intersect->offsetZ),
+                                  intersect->intersectAlpha,
+                                  Q12_SHIFT);
+        result[1] = intersect->triggerHeight;
     }
 }
 
-void func_8006F338(s_func_8006F338* arg0, q19_12 posX, q19_12 posZ, q19_12 offsetX, q19_12 offsetZ) // 0x8006F338
+void Collision_TriggerIntersectInit(s_CollisionTriggerIntersect* intersect,
+                                    q19_12 posX, q19_12 posZ, q19_12 offsetX, q19_12 offsetZ) // 0x8006F338
 {
     q19_12 newPosX;
-    q19_12 field_4;
+    q19_12 startZ;
 
     newPosX = posX + offsetX;
 
-    arg0->positionX     = posX;
-    arg0->positionZ     = posZ;
-    arg0->offsetX       = offsetX;
-    arg0->newPositionX  = posX + offsetX;
-    arg0->field_28      = Q12(1.0f);
-    arg0->triggerHeight = DEFAULT_TRIGGER_HEIGHT;
-    arg0->offsetZ       = offsetZ;
+    intersect->startX         = posX;
+    intersect->startZ         = posZ;
+    intersect->offsetX        = offsetX;
+    intersect->endX           = posX + offsetX;
+    intersect->intersectAlpha = Q12(1.0f);
+    intersect->triggerHeight  = DEFAULT_TRIGGER_HEIGHT;
+    intersect->offsetZ        = offsetZ;
+    intersect->endZ           = posZ + offsetZ;
 
-    arg0->newPositionZ = posZ + offsetZ;
-    if (newPosX >= arg0->positionX)
+    if (newPosX >= intersect->startX)
     {
-        arg0->minX = arg0->positionX;
-        arg0->maxX = arg0->newPositionX;
+        intersect->aabbMinX = intersect->startX;
+        intersect->aabbMaxX = intersect->endX;
     }
     else
     {
-        arg0->minX = posX + offsetX;
-        arg0->maxX = arg0->positionX;
+        intersect->aabbMinX = posX + offsetX;
+        intersect->aabbMaxX = intersect->startX;
     }
 
-    field_4 = arg0->positionZ;
-    if (arg0->newPositionZ >= arg0->positionZ)
+    startZ = intersect->startZ;
+    if (intersect->endZ >= intersect->startZ)
     {
-        arg0->minZ = field_4;
-        arg0->maxZ = arg0->newPositionZ;
+        intersect->aabbMinZ = startZ;
+        intersect->aabbMaxZ = intersect->endZ;
         return;
     }
     else
     {
-        arg0->minZ = arg0->newPositionZ;
-        arg0->maxZ = arg0->positionZ;
+        intersect->aabbMinZ = intersect->endZ;
+        intersect->aabbMaxZ = intersect->startZ;
     }
 }
 
-bool func_8006F3C4(s_func_8006F338* arg0, const s_CollisionTrigger* trigger) // 0x8006F3C4
+bool Collision_TriggerIntersectGet(s_CollisionTriggerIntersect* intersect, const s_CollisionTrigger* trigger) // 0x8006F3C4
 {
-    q19_12 temp_s1;
-    q19_12 var_v1;
-    q19_12 minX;
-    q19_12 maxX;
-    q19_12 minZ;
-    q19_12 maxZ;
+    q19_12 intersectAlphaX;
+    q19_12 intersectAlpha;
+    q19_12 aabbMinX;
+    q19_12 aabbMaxX;
+    q19_12 aabbMinZ;
+    q19_12 aabbMaxZ;
     q19_12 var_s1;
-    q19_12 var_v0;
+    q19_12 intersectAlphaZ;
     q19_12 var_v0_2;
 
     // Define AABB bounds.
-    minX = Q12(trigger->positionX);
-    maxX = Q12(trigger->positionX + trigger->sizeX);
-    minZ = Q12(trigger->positionZ);
-    maxZ = Q12(trigger->positionZ + trigger->sizeZ);
+    aabbMinX = Q12(trigger->positionX);
+    aabbMaxX = Q12(trigger->positionX + trigger->sizeX);
+    aabbMinZ = Q12(trigger->positionZ);
+    aabbMaxZ = Q12(trigger->positionZ + trigger->sizeZ);
 
     // Check for AABB intersection.
-    if ((minX >= arg0->maxX || arg0->minX >= maxX) &&
-        (minZ >= arg0->maxZ || arg0->minZ >= maxZ))
+    if ((aabbMinX >= intersect->aabbMaxX || intersect->aabbMinX >= aabbMaxX) &&
+        (aabbMinZ >= intersect->aabbMaxZ || intersect->aabbMinZ >= aabbMaxZ))
     {
         return false;
     }
 
-    if (arg0->positionX >= minX && maxX >= arg0->positionX &&
-        arg0->positionZ >= minZ && maxZ >= arg0->positionZ)
+    if (intersect->startX >= aabbMinX && aabbMaxX >= intersect->startX &&
+        intersect->startZ >= aabbMinZ && aabbMaxZ >= intersect->startZ)
     {
-        arg0->field_28 = Q12(0.0f);
-        arg0->triggerHeight = TRIGGER_HEIGHT_GET(trigger->height);
+        intersect->intersectAlpha = Q12(0.0f);
+        intersect->triggerHeight  = TRIGGER_HEIGHT_GET(trigger->height);
     }
     else
     {
-        if (arg0->offsetX >= Q12(0.0f))
+        if (intersect->offsetX >= Q12(0.0f))
         {
-            if (arg0->offsetZ >= Q12(0.0f))
+            if (intersect->offsetZ >= Q12(0.0f))
             {
-                var_s1   = minX;
-                var_v0_2 = minZ;
+                var_s1   = aabbMinX;
+                var_v0_2 = aabbMinZ;
             }
             else
             {
-                var_s1   = minX;
-                var_v0_2 = maxZ;
+                var_s1   = aabbMinX;
+                var_v0_2 = aabbMaxZ;
             }
         }
         else
         {
-            if (arg0->offsetZ >= Q12(0.0f))
+            if (intersect->offsetZ >= Q12(0.0f))
             {
-                var_s1   = maxX;
-                var_v0_2 = minZ;
+                var_s1   = aabbMaxX;
+                var_v0_2 = aabbMinZ;
             }
             else
             {
-                var_s1   = maxX;
-                var_v0_2 = maxZ;
+                var_s1   = aabbMaxX;
+                var_v0_2 = aabbMaxZ;
             }
         }
 
-        // TODO: What are these shifts? Converts up to Q24, then down to Q8??
-        temp_s1 = Vw_LineSegmentIntersectionCheck(FP_TO(arg0->offsetX, Q12_SHIFT) >> 16, FP_TO(arg0->offsetZ, Q12_SHIFT) >> 16, FP_TO(var_v0_2 - arg0->positionZ, Q12_SHIFT) >> 16,
-                                FP_TO(minX - arg0->positionX, Q12_SHIFT) >> 16, FP_TO(maxX - arg0->positionX, Q12_SHIFT) >> 16);
-        var_v0  = Vw_LineSegmentIntersectionCheck(FP_TO(arg0->offsetZ, Q12_SHIFT) >> 16, FP_TO(arg0->offsetX, Q12_SHIFT) >> 16, FP_TO(var_s1 - arg0->positionX, Q12_SHIFT) >> 16,
-                                FP_TO(minZ - arg0->positionZ, Q12_SHIFT) >> 16, FP_TO(maxZ - arg0->positionZ, Q12_SHIFT) >> 16);
+        // TODO: What are these shifts? Q12 division (x / Q12(16.0f))?
+        intersectAlphaX = Vw_LineSegmentIntersectionCheck(Q12(intersect->offsetX) >> 16,
+                                                          Q12(intersect->offsetZ) >> 16, Q12(var_v0_2 - intersect->startZ) >> 16,
+                                                          Q12(aabbMinX - intersect->startX) >> 16, Q12(aabbMaxX - intersect->startX) >> 16);
+        intersectAlphaZ = Vw_LineSegmentIntersectionCheck(Q12(intersect->offsetZ) >> 16,
+                                                          Q12(intersect->offsetX) >> 16, Q12(var_s1 - intersect->startX) >> 16,
+                                                          Q12(aabbMinZ - intersect->startZ) >> 16, Q12(aabbMaxZ - intersect->startZ) >> 16);
 
-        if (var_v0 >= temp_s1)
+        if (intersectAlphaX <= intersectAlphaZ)
         {
-            var_v1 = temp_s1;
+            intersectAlpha = intersectAlphaX;
         }
         else
         {
-            var_v1 = var_v0;
+            intersectAlpha = intersectAlphaZ;
         }
 
-        if (var_v1 < arg0->field_28)
+        // Set intersection if new trigger is closer.
+        if (intersectAlpha < intersect->intersectAlpha)
         {
-            arg0->field_28 = var_v1;
-            arg0->triggerHeight = TRIGGER_HEIGHT_GET(trigger->height);
+            intersect->intersectAlpha = intersectAlpha;
+            intersect->triggerHeight  = TRIGGER_HEIGHT_GET(trigger->height);
         }
     }
 
-    return arg0->field_28 == 0;
+    return intersect->intersectAlpha == Q12(0.0f);
 }
 
-q19_12 Collision_CeilingHeightGet(VECTOR3* moveOffset,
-                                  const s_CollisionCylinder* cylinder, q19_12 cylinderRadius, q19_12 cylinderHeight) // 0x8006F620
+q19_12 Collision_TriggerCeilingHeightGet(VECTOR3* moveOffset,
+                                         const s_CollisionCylinder* cylinder, q19_12 cylinderRadius, q19_12 cylinderHeight) // 0x8006F620
 {
     q19_12                    projOffsetToTriggerX;
     q19_12                    projOffsetToTriggerZ;
