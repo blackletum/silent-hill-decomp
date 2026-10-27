@@ -18,6 +18,14 @@
 
 #define MAIN_MENU_FOG_COUNT 21
 
+// In PAL some loops that originally counted up to `MAIN_MENU_FOG_COUNT` had their counters expanded.
+// but other non-loop code that uses `MAIN_MENU_FOG_COUNT` was unchanged?
+#if VERSION_REGION_IS(PAL)
+    #define MAIN_MENU_FOG_MAX_COUNT 24
+#else
+    #define MAIN_MENU_FOG_MAX_COUNT 21
+#endif
+
 #ifndef PAD_HACK_IGNORE
     const s32 __pad_rodata_8002547C = 0;
 #endif
@@ -500,9 +508,6 @@ static void MainMenu_DifficultyTextDraw(s32 selectedEntryIdx) // 0x8003B678
     }
 }
 
-#if VERSION_IS(EUR)
-INCLUDE_ASM("bodyprog/nonmatchings/events/title", MainMenu_BackgroundDraw);
-#else
 static void MainMenu_BackgroundDraw(void) // 0x8003B758
 {
     if (g_SysWork.sysState == SysState_Gameplay)
@@ -511,10 +516,17 @@ static void MainMenu_BackgroundDraw(void) // 0x8003B758
         func_8003BCF4();
     }
 
+#if VERSION_REGION_IS(PAL)
+    func_80030BC4(&g_TitleImg, 0xF, 0, 0, 0x100, 0x50, -0xA0, -0x78);
+    func_80030BC4(&g_TitleImg, 0xF, 0x100, 0, 0x40, 0x50, 0x60, -0x78);
+    func_80030BC4(&g_TitleImg, 0xF, 0, 0x50, 0x100, 0x10, -0xA0, 0xE0);
+    func_80030BC4(&g_TitleImg, 0xF, 0x100, 0x50, 0x40, 0x10, 0x60, 0xE0);
+#else
     Screen_BackgroundImgDraw(&g_TitleImg);
+#endif
+
     MainMenu_FogUpdate();
 }
-#endif
 
 // ========================================
 // FOG
@@ -559,41 +571,53 @@ static u32 D_800A9AAC[256] = {
     0x3ABCAEA9, 0x3ABDAFAA, 0x3ABEB0AB, 0x3ABEB1AC, 0x3ABFB2AD, 0x3AC0B3AE, 0x3AC1B4AF, 0x3AC2B5B0
 };
 
-#if VERSION_IS(EUR)
-INCLUDE_ASM("bodyprog/nonmatchings/events/title", func_8003B7BC);
-#else
 static void func_8003B7BC(void) // 0x8003B7BC
 {
     // Can't be `s32*` since 462 doesn't divide by 4, so guessing `s8`.
+#if VERSION_REGION_IS(PAL)
+    s8* s0 = 0x801E23F3;
+    memset(s0, 0, 0x20D);
+#else
     s8* s0 = 0x801E2432;
-
     memset(s0, 0, 462);
-    D_800BCDE0 = s0;
-}
 #endif
 
-#if VERSION_IS(EUR)
-INCLUDE_ASM("bodyprog/nonmatchings/events/title", func_8003B7FC);
-#else
+    D_800BCDE0 = s0;
+}
+
 static u32 func_8003B7FC(s32 idx) // 0x8003B7FC
 {
+#if VERSION_REGION_IS(PAL)
+    #define UNK_BOUND 231
+#else
+    #define UNK_BOUND 210
+#endif
+
     u8  idx0 = D_800BCDE0[idx];
     u32 val  = D_800A9AAC[idx0];
 
-    if (idx < 210)
+    if (idx < UNK_BOUND)
     {
         return 0x3A000000;
     }
 
     return val;
-}
-#endif
 
-#if VERSION_IS(EUR)
-INCLUDE_ASM("bodyprog/nonmatchings/events/title", MainMenu_FogPacketGet);
-#else
+#undef UNK_BOUND
+}
+
 static PACKET* MainMenu_FogPacketGet(GsOT* ot, PACKET* packet) // 0x8003B838
 {
+#if VERSION_REGION_IS(PAL)
+    #define START_IDX  11
+    #define Y_OFFSET_0 239
+    #define Y_OFFSET_1 215
+#else
+    #define START_IDX  10
+    #define Y_OFFSET_0 208
+    #define Y_OFFSET_1 184
+#endif
+    
     s32      yOffset;
     s32      i;
     s32      j;
@@ -603,7 +627,7 @@ static PACKET* MainMenu_FogPacketGet(GsOT* ot, PACKET* packet) // 0x8003B838
     s32      color1;
     POLY_G4* poly;
 
-    for (i = 10; i < MAIN_MENU_FOG_COUNT; i++)
+    for (i = START_IDX; i < MAIN_MENU_FOG_MAX_COUNT; i++)
     {
         color1 = func_8003B7FC(MAIN_MENU_FOG_COUNT * (i - 1));
         color3 = func_8003B7FC(MAIN_MENU_FOG_COUNT * i);
@@ -622,10 +646,10 @@ static PACKET* MainMenu_FogPacketGet(GsOT* ot, PACKET* packet) // 0x8003B838
             yOffset = (i - 1) * 24;
 
             setXY4(poly,
-                   -176 + (16 * j), yOffset - 208,
-                   -160 + (16 * j), yOffset - 208,
-                   -176 + (16 * j), yOffset - 184,
-                   -160 + (16 * j), yOffset - 184);
+                   -176 + (16 * j), yOffset - Y_OFFSET_0,
+                   -160 + (16 * j), yOffset - Y_OFFSET_0,
+                   -176 + (16 * j), yOffset - Y_OFFSET_1,
+                   -160 + (16 * j), yOffset - Y_OFFSET_1);
 
             setRGBC0Word(poly, color0);
             setRGBC1Word(poly, color1);
@@ -638,8 +662,12 @@ static PACKET* MainMenu_FogPacketGet(GsOT* ot, PACKET* packet) // 0x8003B838
     }
 
     return packet;
+
+    #undef Y_OFFSET_1
+    #undef Y_OFFSET_0
+    #undef MAX_COUNT
+    #undef START_IDX
 }
-#endif
 
 static void MainMenu_FogDraw(void) // 0x8003BA08
 {
@@ -653,13 +681,16 @@ static void MainMenu_FogDraw(void) // 0x8003BA08
     GsOUT_PACKET_P = packet + sizeof(DR_MODE);
 }
 
-#if VERSION_IS(EUR)
-// @hack Statics of the included function below, remove once decompiled.
-q19_12 randAngle __asm__("RAND.67") = Q12_ANGLE(0.0f);
-INCLUDE_ASM("bodyprog/nonmatchings/events/title", MainMenu_FogRandomize);
-#else
 static void MainMenu_FogRandomize(void) // 0x8003BAC4
 {
+#if VERSION_REGION_IS(PAL)
+    #define PTR1_OFFSET 504
+    #define PTR2_OFFSET 524
+#else
+    #define PTR1_OFFSET 441
+    #define PTR2_OFFSET 461
+#endif
+
     s32 idx;
     s32 i;
     s32 val;
@@ -670,10 +701,10 @@ static void MainMenu_FogRandomize(void) // 0x8003BAC4
     static q19_12 randAngle = Q12_ANGLE(0.0f);
 
     ptr   = D_800BCDE0;
-    ptr1  = ptr + 441;
+    ptr1  = ptr + PTR1_OFFSET;
     randAngle += Rng_GenerateInt(4, 11u);
     val   = Q12_MULT(Math_Sin(randAngle), 10) - 122;
-    ptr2  = ptr + 461;
+    ptr2  = ptr + PTR2_OFFSET;
 
     for (i = 20; i >= 0; i--)
     {
@@ -691,12 +722,11 @@ static void MainMenu_FogRandomize(void) // 0x8003BAC4
         idx       = Rng_GenerateInt(0, MAIN_MENU_FOG_COUNT - 1);
         ptr1[idx] = 0;
     }
-}
-#endif
 
-#if VERSION_IS(EUR)
-INCLUDE_ASM("bodyprog/nonmatchings/events/title", MainMenu_FogScatter);
-#else
+    #undef PTR2_OFFSET
+    #undef PTR1_OFFSET
+}
+
 static void MainMenu_FogScatter(void) // 0x8003BBF4
 {
     s32 i;
@@ -706,7 +736,7 @@ static void MainMenu_FogScatter(void) // 0x8003BBF4
 
     MainMenu_FogRandomize();
 
-    for (i = 0; i < MAIN_MENU_FOG_COUNT; i++)
+    for (i = 0; i < MAIN_MENU_FOG_MAX_COUNT; i++)
     {
         ptr = &D_800BCDE0[i * MAIN_MENU_FOG_COUNT];
 
@@ -730,7 +760,6 @@ static void MainMenu_FogScatter(void) // 0x8003BBF4
         }
     }
 }
-#endif
 
 void MainMenu_FogUpdate(void) // 0x8003BC8C
 {

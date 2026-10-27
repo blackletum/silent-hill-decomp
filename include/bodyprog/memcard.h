@@ -299,7 +299,11 @@ typedef struct _Savegame_Container
 typedef struct _Savegame_OptionsConfig
 {
     /* 0x0  */ s_OptionsConfig   config;
+#if !defined(M2CTX)
     /* 0x38 */ u8                __pad[128 - sizeof(s_OptionsConfig) - sizeof(s_Savegame_Footer)];
+#else
+    /* 0x38 */ u8                __pad[0x44];
+#endif
     /* 0x7C */ s_Savegame_Footer footer;
 } s_Savegame_OptionsConfig;
 
@@ -311,7 +315,11 @@ typedef struct _MemCard_SaveHeader
 {
     /* 0x0  */ s32                    field_0;
     /* 0x4  */ s_MemCard_SaveMetadata saveMetadata[MEMCARD_SAVES_COUNT_MAX];
+#if !defined(M2CTX)
     /* 0x88 */ u8                     __pad[256 - sizeof(s32) - (sizeof(s_MemCard_SaveMetadata) * MEMCARD_SAVES_COUNT_MAX) - sizeof(s_Savegame_Footer)];
+#else
+    /* 0x88 */ u8                     __pad[0x74];
+#endif
     /* 0xFC */ s_Savegame_Footer      footer;
 } s_MemCard_SaveHeader;
 
