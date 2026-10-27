@@ -15,6 +15,8 @@
 #include "bodyprog/sound/sound_system.h"
 #include "main/rng.h"
 
+#define PROXIMITY_BUFFER Q8(1.0f / 32.0f)
+
 s_ActiveCollisionTriggers g_ActiveCollisionTriggers;
 
 void Collision_Init(void) // 0x800697EC
@@ -475,10 +477,10 @@ s_SubCharacter** Collision_CollidableCharasGet(s32* collCharaCount, const s_SubC
                  excludedChara->collision.state != CharaCollisionState_4 ||
                  curChara->collision.state >= excludedChara->collision.state))
             {
-                *collCharaCount += 1;
-                *curCollChara    = curChara;
+                *collCharaCount              += 1;
+                *curCollChara                 = curChara;
                 curCollChara++;
-                curChara->collision.field_E0 = 0;
+                curChara->collision.passStamp = 0;
             }
         }
     }
@@ -494,10 +496,10 @@ s_SubCharacter** Collision_CollidableCharasGet(s32* collCharaCount, const s_SubC
              excludedChara->collision.state != CharaCollisionState_4 ||
              curChara->collision.state >= excludedChara->collision.state))
         {
-            *collCharaCount += 1;
-            *curCollChara    = curChara;
+            *collCharaCount              += 1;
+            *curCollChara                 = curChara;
             curCollChara++;
-            curChara->collision.field_E0 = 0;
+            curChara->collision.passStamp = 0;
         }
     }
 
@@ -591,8 +593,8 @@ s32 func_8006A4A8(s_CollisionResult* collResult, VECTOR3* moveOffset, const s_Co
             Collision_CharaCollisionHandle(&state, *curCollData);
         }
 
-        if (state.obstacleContext.pushConstraint0.field_0 &&
-            state.obstacleContext.pushConstraint0.angleMin == state.obstacleContext.pushConstraint0.angleMax)
+        if (state.obstacleContext.hardPushConstraint.shapeCount &&
+            state.obstacleContext.hardPushConstraint.angleMin == state.obstacleContext.hardPushConstraint.angleMax)
         {
             cond |= true;
         }
@@ -613,15 +615,15 @@ s32 func_8006A4A8(s_CollisionResult* collResult, VECTOR3* moveOffset, const s_Co
             state.charaPositionFrom.vx = Q12_TO_Q8(chara->position.vx + chara->collision.shapeOffsets.cylinder.vx);
             state.charaPositionTo.vz   = Q12_TO_Q8(chara->position.vz + chara->collision.shapeOffsets.cylinder.vz);
 
-            state.field_A0.s_1.bottom         = Q12_TO_Q8(chara->collision.box.top    + chara->position.vy);
-            state.field_A0.s_1.top            = Q12_TO_Q8(chara->collision.box.bottom + chara->position.vy);
-            state.field_A0.s_1.radius         = radius;
-            state.field_A0.s_1.collisionState = chara->collision.state;
-            state.field_A0.s_1.field_8        = &chara->collision.field_E0;
+            state.field_A0.chara.bottom         = Q12_TO_Q8(chara->collision.box.top    + chara->position.vy);
+            state.field_A0.chara.top            = Q12_TO_Q8(chara->collision.box.bottom + chara->position.vy);
+            state.field_A0.chara.radius         = radius;
+            state.field_A0.chara.collisionState = chara->collision.state;
+            state.field_A0.chara.passStamp      = &chara->collision.passStamp;
 
             if (!state.offsetX)
             {
-                chara->collision.field_E0 = 0;
+                chara->collision.passStamp = 0;
             }
 
             func_8006CC9C(&state);
@@ -638,12 +640,13 @@ s32 func_8006A4A8(s_CollisionResult* collResult, VECTOR3* moveOffset, const s_Co
             break;
         }
 
-        if (state.obstacleContext.pushConstraint0.field_0 || state.obstacleContext.pushConstraint2.field_0)
+        if (state.obstacleContext.hardPushConstraint.shapeCount  != 0||
+            state.obstacleContext.charaPushConstraint.shapeCount != 0)
         {
             count = ARRAY_SIZE(state.obstacleContext.shapePassStamps);
-            if (state.obstacleContext.pushConstraint1.field_0 < 9)
+            if (state.obstacleContext.softPushConstraint.shapeCount < 9)
             {
-                count = state.obstacleContext.pushConstraint1.field_0;
+                count = state.obstacleContext.softPushConstraint.shapeCount;
             }
 
             for (i = 0; i < count; i++)
@@ -653,7 +656,7 @@ s32 func_8006A4A8(s_CollisionResult* collResult, VECTOR3* moveOffset, const s_Co
         }
         else if (state.field_34)
         {
-            *state.field_40 += 1;
+            *state.passStamp += 1;
         }
         else
         {
@@ -782,11 +785,11 @@ void Collision_CollStateInit(s_CollisionState* state, VECTOR3* moveOffset, const
     state->slopedFloorHeight = Q8(DEFAULT_FLOOR_HEIGHT);
     state->field_34 = 0;
     
-    state->obstacleContext.pushConstraint0.field_0 = 0;
-    state->obstacleContext.radiusOffset            = Q8(0.0f);
-    state->obstacleContext.pushConstraint1.field_0 = 0;
-    state->obstacleContext.field_36                = Q8(0.0f);
-    state->obstacleContext.pushConstraint2.field_0 = 0;
+    state->obstacleContext.hardPushConstraint.shapeCount  = 0;
+    state->obstacleContext.hardIntersectDepth             = Q8(0.0f);
+    state->obstacleContext.softPushConstraint.shapeCount  = 0;
+    state->obstacleContext.charaIntersectDepth            = Q8(0.0f);
+    state->obstacleContext.charaPushConstraint.shapeCount = 0;
     
     state->slopeGradientZ = Q8(0.0f);
     state->slopeGradientX = Q8(0.0f);
@@ -1355,14 +1358,14 @@ void func_8006B9C8(s_CollisionState* state) // 0x8006B9C8
         }
 
         charaRadius = state->charaState.radius;
-        if (state->field_0_9 && state->point.charaDeltas.radiusCollDiffDist < (charaRadius + Q8(1.0f / 32.0f)))
+        if (state->field_0_9 && state->point.charaDeltas.radiusCollDiffDist < (charaRadius + PROXIMITY_BUFFER))
         {
             func_8006BB50(state, CollisionPushType_Soft);
         }
 
         if (state->isCharaMoving)
         {
-            if (!state->obstacleContext.pushConstraint0.field_0 &&
+            if (!state->obstacleContext.hardPushConstraint.shapeCount &&
                 (-charaRadius < state->point.charaDeltas.charaVertDiff.vz ||
                  -charaRadius < state->point.charaDeltas.charaMoveVertDiff.vz) &&
                 (-charaRadius < state->point.charaDeltas.charaVertDiff.vx ||
@@ -1449,8 +1452,8 @@ q23_8 func_8006BC34(s_CollisionState* state)
     return state->charaState.bottom - floorHeight;
 }
 
-void func_8006BCC4(s_CollisionObstacleContext* obstacleContext, u8* shapePassStamp,
-                   u32 pushType, q7_8 distX, q7_8 distZ, q7_8 radiusOffset) // 0x8006BCC4
+void func_8006BCC4(s_CollisionObstacleContext* obstacleContext, u8* passStamp,
+                   u32 pushType, q7_8 distX, q7_8 distZ, q7_8 intersectDepth) // 0x8006BCC4
 {
     q7_8 angleMin;
     q7_8 angleMax;
@@ -1462,49 +1465,48 @@ void func_8006BCC4(s_CollisionObstacleContext* obstacleContext, u8* shapePassSta
     switch (pushType)
     {
         case CollisionPushType_Hard:
-            *shapePassStamp += 1;
+            *passStamp += 1;
+            Collision_PushConstraintShapeAdd(&obstacleContext->hardPushConstraint, angleMin, angleMax);
 
-            func_8006BDDC(&obstacleContext->pushConstraint0, angleMin, angleMax);
-
-            if (obstacleContext->radiusOffset < radiusOffset)
+            if (obstacleContext->hardIntersectDepth < intersectDepth)
             {
-                obstacleContext->radiusOffset = radiusOffset;
+                obstacleContext->hardIntersectDepth = intersectDepth;
             }
             break;
 
         case CollisionPushType_Soft:
-            func_8006BDDC(&obstacleContext->pushConstraint1, angleMin, angleMax);
+            Collision_PushConstraintShapeAdd(&obstacleContext->softPushConstraint, angleMin, angleMax);
 
-            if (obstacleContext->pushConstraint1.field_0 < 9)
+            if (obstacleContext->softPushConstraint.shapeCount < 9)
             {
-                obstacleContext->shapePassStamps[obstacleContext->pushConstraint1.field_0 - 1] = shapePassStamp;
+                obstacleContext->shapePassStamps[obstacleContext->softPushConstraint.shapeCount - 1] = passStamp;
             }
             break;
         
         case CollisionPushType_Chara:
-            *shapePassStamp += 1;
+            *passStamp += 1;
+            Collision_PushConstraintShapeAdd(&obstacleContext->charaPushConstraint, angleMin, angleMax);
 
-            func_8006BDDC(&obstacleContext->pushConstraint2, angleMin, angleMax);
-
-            if (obstacleContext->field_36 < radiusOffset)
+            if (obstacleContext->charaIntersectDepth < intersectDepth)
             {
-                obstacleContext->field_36 = radiusOffset;
+                obstacleContext->charaIntersectDepth = intersectDepth;
             }
             break;
     }
 }
 
-void func_8006BDDC(s_CollisionPushConstraint* pushConstraint, q3_12 angleConstraintMin, q3_12 angleConstraintMax) // 0x8006BDDC
+void Collision_PushConstraintShapeAdd(s_CollisionPushConstraint* pushConstraint,
+                                      q3_12 angleConstraintMin, q3_12 angleConstraintMax) // 0x8006BDDC
 {
-    if (pushConstraint->field_0 == 0)
+    if (pushConstraint->shapeCount == 0)
     {
-        pushConstraint->field_0 = 1;
-        pushConstraint->angleMin = angleConstraintMin;
-        pushConstraint->angleMax = angleConstraintMax;
+        pushConstraint->shapeCount = 1;
+        pushConstraint->angleMin   = angleConstraintMin;
+        pushConstraint->angleMax   = angleConstraintMax;
         return;
     }
 
-    pushConstraint->field_0++;
+    pushConstraint->shapeCount++;
     Vw_ClampAngleRange(&pushConstraint->angleMin, &pushConstraint->angleMax, angleConstraintMin, angleConstraintMax);
 }
 
@@ -1601,14 +1603,14 @@ void func_8006BF88(s_CollisionState* state, const SVECTOR3* splitVert) // 0x8006
                               state->charaState.radius);
     if (distAlpha != NO_VALUE && func_8006C1B8(2, distAlpha, state) && state->charaState.bottom > splitVert->vy)
     {
-        state->field_38 = distAlpha;
-        state->field_34 = 2;
-        temp2               = state->charaPositionFrom.offset.vx + Q12_MULT(state->charaState.offset.vx, distAlpha);
-        state->field_3A = Q12_TO_Q4(state->charaState.distance * distAlpha);
-        state->field_40 = &state->point.ipdCollisionData->shapePassStampBuffer[state->point.shapeIdx];
+        state->field_38  = distAlpha;
+        state->field_34  = 2;
+        temp2            = state->charaPositionFrom.offset.vx + Q12_MULT(state->charaState.offset.vx, distAlpha);
+        state->field_3A  = Q12_TO_Q4(state->charaState.distance * distAlpha);
+        state->passStamp = &state->point.ipdCollisionData->shapePassStampBuffer[state->point.shapeIdx];
 
         state->field_3C = temp2 - splitVert->vx;
-        temp3               = state->charaPositionFrom.offset.vz + Q12_MULT(state->charaState.offset.vz, distAlpha);
+        temp3           = state->charaPositionFrom.offset.vz + Q12_MULT(state->charaState.offset.vz, distAlpha);
         state->field_3E = temp3 - splitVert->vz;
     }
 }
@@ -1626,12 +1628,12 @@ void func_8006C0C8(s_CollisionState* state, q3_12 distAlpha, q7_8 arg2) // 0x800
              state->point.shapeAttribs.polygon.polygonSplitVertex0.vy) * arg2) / state->point.offset.vz;
     if (temp + state->point.shapeAttribs.polygon.polygonSplitVertex0.vy < state->charaState.bottom)
     {
-        state->field_40 = &state->point.ipdCollisionData->shapePassStampBuffer[state->point.shapeIdx];
-        state->field_34 = 1;
-        state->field_38 = distAlpha;
-        state->field_3A = Q12_TO_Q4(state->charaState.distance * distAlpha);
-        state->field_3C =  state->point.offset.vy;
-        state->field_3E = -state->point.offset.vx;
+        state->passStamp = &state->point.ipdCollisionData->shapePassStampBuffer[state->point.shapeIdx];
+        state->field_34  = 1;
+        state->field_38  = distAlpha;
+        state->field_3A  = Q12_TO_Q4(state->charaState.distance * distAlpha);
+        state->field_3C  = state->point.offset.vy;
+        state->field_3E  = -state->point.offset.vx;
     }
 }
 
@@ -1766,7 +1768,7 @@ void func_8006C45C(s_CollisionState* state) // 0x8006C45C
     s32   temp2;
 
     distMax = state->charaState.radius + state->point.shapeAttribs.cylinder.radius;
-    bound   = distMax + Q8(1.0f / 32.0f);
+    bound   = distMax + PROXIMITY_BUFFER;
 
     if (state->charaPositionFrom.offset.vx < (state->point.offset.vx - bound) &&
         state->charaPositionTo.offset.vx   < (state->point.offset.vx - bound))
@@ -1814,12 +1816,12 @@ void func_8006C45C(s_CollisionState* state) // 0x8006C45C
         return;
     }
 
-    if (dist < (distMax + Q8(1.0f / 32.0f)) && state->field_0_9)
+    if (dist < (distMax + PROXIMITY_BUFFER) && state->field_0_9)
     {
         func_8006C794(state, CollisionPushType_Soft, dist);
     }
 
-    if (!state->isCharaMoving || state->obstacleContext.pushConstraint0.field_0)
+    if (!state->isCharaMoving || state->obstacleContext.hardPushConstraint.shapeCount)
     {
         return;
     }
@@ -1841,14 +1843,14 @@ void func_8006C45C(s_CollisionState* state) // 0x8006C45C
 
     if (func_8006C1B8(1, distAlpha, state) && state->charaState.bottom >= state->point.offset.vy)
     {
-        state->field_38 = distAlpha;
-        state->field_34 = 1;
-        temp                = state->charaPositionFrom.offset.vx + Q12_MULT(state->charaState.offset.vx, distAlpha);
-        state->field_3A = Q12_TO_Q4(state->charaState.distance * distAlpha);
-        state->field_40 = &state->point.ipdCollisionData->shapePassStampBuffer[state->point.shapeIdx];
-        state->field_3C = temp - state->point.offset.vx;
-        temp2               = state->charaPositionFrom.offset.vz + Q12_MULT(state->charaState.offset.vz, distAlpha);
-        state->field_3E = temp2 - state->point.offset.vz;
+        state->field_38  = distAlpha;
+        state->field_34  = 1;
+        temp             = state->charaPositionFrom.offset.vx + Q12_MULT(state->charaState.offset.vx, distAlpha);
+        state->field_3A  = Q12_TO_Q4(state->charaState.distance * distAlpha);
+        state->passStamp = &state->point.ipdCollisionData->shapePassStampBuffer[state->point.shapeIdx];
+        state->field_3C  = temp - state->point.offset.vx;
+        temp2            = state->charaPositionFrom.offset.vz + Q12_MULT(state->charaState.offset.vz, distAlpha);
+        state->field_3E  = temp2 - state->point.offset.vz;
     }
 }
 
@@ -2021,28 +2023,28 @@ void func_8006CC9C(s_CollisionState* state) // 0x8006CC9C
     q23_8  temp4;
     q23_8  targetCharaBottom;
 
-    if (state->field_A0.s_1.collisionState < CharaCollisionState_2 ||
-        *state->field_A0.s_1.field_8 != 0)
+    if (state->field_A0.chara.collisionState < CharaCollisionState_2 ||
+        *state->field_A0.chara.passStamp != 0)
     {
         return;
     }
 
-    if (state->charaPositionFrom.vx + (state->field_A0.s_1.radius + state->charaState.distance) < state->charaState.positionFromX ||
-        state->charaState.positionToX < state->charaPositionFrom.vx - (state->field_A0.s_1.radius + state->charaState.distance))
+    if (state->charaPositionFrom.vx + (state->field_A0.chara.radius + state->charaState.distance) < state->charaState.positionFromX ||
+        state->charaState.positionToX < state->charaPositionFrom.vx - (state->field_A0.chara.radius + state->charaState.distance))
     {
         return;
     }
 
-    if (state->charaPositionTo.vz + (state->field_A0.s_1.radius + state->charaState.distance) < state->charaState.positionFromZ ||
-        state->charaState.positionToZ < state->charaPositionTo.vz - (state->field_A0.s_1.radius + state->charaState.distance) ||
-        state->charaState.top > state->field_A0.s_1.top)
+    if (state->charaPositionTo.vz + (state->field_A0.chara.radius + state->charaState.distance) < state->charaState.positionFromZ ||
+        state->charaState.positionToZ < state->charaPositionTo.vz - (state->field_A0.chara.radius + state->charaState.distance) ||
+        state->charaState.top > state->field_A0.chara.top)
     {
         return;
     }
 
     deltaX = (state->charaState.positionFromX - state->charaPositionFrom.vx);
 
-    if (state->charaState.bottom < state->field_A0.s_1.bottom != Q8(0.0f))
+    if (state->charaState.bottom < state->field_A0.chara.bottom != Q8(0.0f))
     {
         return;
     }
@@ -2053,7 +2055,7 @@ void func_8006CC9C(s_CollisionState* state) // 0x8006CC9C
     distAlpha = func_8006C248(*(s32*)&state->charaState.direction, state->charaState.distance,
                               state->charaPositionFrom.vx - state->charaState.positionFromX,
                               state->charaPositionTo.vz   - state->charaState.positionFromZ,
-                              state->field_A0.s_1.radius);
+                              state->field_A0.chara.radius);
     if (distAlpha == NO_VALUE)
     {
         return;
@@ -2063,19 +2065,19 @@ void func_8006CC9C(s_CollisionState* state) // 0x8006CC9C
     {
         if (state->field_0_9)
         {
-            radiusOffset = state->field_A0.s_1.radius - temp_s4;
-            func_8006BCC4(&state->obstacleContext, state->field_A0.s_1.field_8,
+            radiusOffset = state->field_A0.chara.radius - temp_s4;
+            func_8006BCC4(&state->obstacleContext, state->field_A0.chara.passStamp,
                           CollisionPushType_Chara, deltaX, deltaZ, radiusOffset);
         }
     }
-    else if (state->isCharaMoving && state->obstacleContext.pushConstraint0.field_0 == 0 &&
+    else if (state->isCharaMoving && state->obstacleContext.hardPushConstraint.shapeCount == 0 &&
              func_8006C1B8(1, distAlpha, state))
     {
         temp2 = (state->charaState.positionFromZ - state->charaPositionTo.vz);
         targetCharaBottom = Q12_MULT(distAlpha, state->charaState.offset.vz);
 
-        state->field_40 = state->field_A0.s_1.field_8;
-        state->field_38 = distAlpha;
+        state->passStamp = state->field_A0.chara.passStamp;
+        state->field_38  = distAlpha;
 
         state->field_34 = 1;
 
@@ -2104,15 +2106,15 @@ void func_8006CF18(s_CollisionState* state, s_func_8006CF18* arg1, s32 idx) // 0
         state->charaPositionFrom.vx = Q12_TO_Q8(curArg1->position.vx);
         state->charaPositionTo.vz   = Q12_TO_Q8(curArg1->position.vz);
 
-        state->field_A0.s_1.bottom         = Q12_TO_Q8(curArg1->field_E + curArg1->position.vy);
-        state->field_A0.s_1.top            = Q12_TO_Q8(curArg1->field_C + curArg1->position.vy);
-        state->field_A0.s_1.radius         = radius;
-        state->field_A0.s_1.collisionState = curArg1->collisionState;
-        state->field_A0.s_1.field_8        = &curArg1->field_13;
+        state->field_A0.chara.bottom         = Q12_TO_Q8(curArg1->field_E + curArg1->position.vy);
+        state->field_A0.chara.top            = Q12_TO_Q8(curArg1->field_C + curArg1->position.vy);
+        state->field_A0.chara.radius         = radius;
+        state->field_A0.chara.collisionState = curArg1->collisionState;
+        state->field_A0.chara.passStamp      = &curArg1->passStamp;
 
         if (state->offsetX == false)
         {
-            curArg1->field_13 = 0;
+            curArg1->passStamp = 0;
         }
 
         func_8006CC9C(state);
@@ -2130,7 +2132,8 @@ void func_8006D01C(VECTOR3* extraOffset, VECTOR3* offset, q3_12 offsetAlpha, s_C
     adjOffset.vx = Q12_MULT(offset->vx, offsetAlpha);
     adjOffset.vz = Q12_MULT(offset->vz, offsetAlpha);
 
-    if (state->obstacleContext.pushConstraint0.field_0 || state->obstacleContext.pushConstraint2.field_0)
+    if (state->obstacleContext.hardPushConstraint.shapeCount  != 0||
+        state->obstacleContext.charaPushConstraint.shapeCount != 0)
     {
         extraOffset->vx = Q12(0.0f);
         extraOffset->vz = Q12(0.0f);
@@ -2203,6 +2206,8 @@ void func_8006D01C(VECTOR3* extraOffset, VECTOR3* offset, q3_12 offsetAlpha, s_C
 
 void func_8006D2B4(VECTOR3* offset, s_CollisionObstacleContext* obstacleContext) // 0x8006D2B4
 {
+    #define PUSH_BUFFER Q8(1.0f / 128.0f)
+
     q3_12  angleMin1;
     q3_12  angleMax1;
     q3_12  angleMin;
@@ -2214,28 +2219,28 @@ void func_8006D2B4(VECTOR3* offset, s_CollisionObstacleContext* obstacleContext)
     q3_12  angle;
     q19_12 unkAngleMin;
     q7_8   dist;
-    q7_8   radiusOffset;
+    q7_8   intersectDepth;
     q3_12  angle2;
     q3_12  angle3;
 
-    if (obstacleContext->pushConstraint2.field_0 != 0)
+    if (obstacleContext->charaPushConstraint.shapeCount != 0)
     {
         var_s1 = false;
-        if (obstacleContext->pushConstraint0.field_0 != 0)
+        if (obstacleContext->hardPushConstraint.shapeCount != 0)
         {
-            angleMin1 = obstacleContext->pushConstraint0.angleMin;
-            angleMax1 = obstacleContext->pushConstraint0.angleMax;
-            if (obstacleContext->pushConstraint1.field_0 != 0)
+            angleMin1 = obstacleContext->hardPushConstraint.angleMin;
+            angleMax1 = obstacleContext->hardPushConstraint.angleMax;
+            if (obstacleContext->softPushConstraint.shapeCount != 0)
             {
                 Vw_ClampAngleRange(&angleMin1, &angleMax1,
-                                   obstacleContext->pushConstraint1.angleMin,
-                                   obstacleContext->pushConstraint1.angleMax);
+                                   obstacleContext->softPushConstraint.angleMin,
+                                   obstacleContext->softPushConstraint.angleMax);
             }
         }
-        else if (obstacleContext->pushConstraint1.field_0 != 0)
+        else if (obstacleContext->softPushConstraint.shapeCount != 0)
         {
-            angleMin1 = obstacleContext->pushConstraint1.angleMin;
-            angleMax1 = obstacleContext->pushConstraint1.angleMax;
+            angleMin1 = obstacleContext->softPushConstraint.angleMin;
+            angleMax1 = obstacleContext->softPushConstraint.angleMax;
         }
         else
         {
@@ -2264,77 +2269,77 @@ void func_8006D2B4(VECTOR3* offset, s_CollisionObstacleContext* obstacleContext)
 
         if (cond)
         {
-            if (obstacleContext->pushConstraint0.field_0 == 0)
+            if (obstacleContext->hardPushConstraint.shapeCount == 0)
             {
-                obstacleContext->pushConstraint0      = obstacleContext->pushConstraint2;
-                obstacleContext->radiusOffset = obstacleContext->field_36;
+                obstacleContext->hardPushConstraint = obstacleContext->charaPushConstraint;
+                obstacleContext->hardIntersectDepth = obstacleContext->charaIntersectDepth;
             }
             else
             {
-                obstacleContext->pushConstraint0.field_0 += obstacleContext->pushConstraint2.field_0;
+                obstacleContext->hardPushConstraint.shapeCount += obstacleContext->charaPushConstraint.shapeCount;
 
-                Vw_ClampAngleRange(&obstacleContext->pushConstraint0.angleMin, &obstacleContext->pushConstraint0.angleMax,
-                                   obstacleContext->pushConstraint2.angleMin, obstacleContext->pushConstraint2.angleMax);
+                Vw_ClampAngleRange(&obstacleContext->hardPushConstraint.angleMin, &obstacleContext->hardPushConstraint.angleMax,
+                                   obstacleContext->charaPushConstraint.angleMin, obstacleContext->charaPushConstraint.angleMax);
 
-                radiusOffset = obstacleContext->radiusOffset;
-                if (obstacleContext->radiusOffset < obstacleContext->field_36)
+                intersectDepth = obstacleContext->hardIntersectDepth;
+                if (obstacleContext->hardIntersectDepth < obstacleContext->charaIntersectDepth)
                 {
-                    radiusOffset = obstacleContext->field_36;
+                    intersectDepth = obstacleContext->charaIntersectDepth;
                 }
-                obstacleContext->radiusOffset = radiusOffset;
+                obstacleContext->hardIntersectDepth = intersectDepth;
             }
         }
 
-        if (obstacleContext->pushConstraint1.field_0 != 0)
+        if (obstacleContext->softPushConstraint.shapeCount != 0)
         {
-            if (obstacleContext->pushConstraint0.field_0 == 0)
+            if (obstacleContext->hardPushConstraint.shapeCount == 0)
             {
-                obstacleContext->pushConstraint0 = obstacleContext->pushConstraint1;
-                obstacleContext->radiusOffset = Q8(0.0f);
+                obstacleContext->hardPushConstraint = obstacleContext->softPushConstraint;
+                obstacleContext->hardIntersectDepth = Q8(0.0f);
             }
             else
             {
-                obstacleContext->pushConstraint0.field_0 += obstacleContext->pushConstraint1.field_0;
-                Vw_ClampAngleRange(&obstacleContext->pushConstraint0.angleMin, &obstacleContext->pushConstraint0.angleMax,
-                                   obstacleContext->pushConstraint1.angleMin, obstacleContext->pushConstraint1.angleMax);
+                obstacleContext->hardPushConstraint.shapeCount += obstacleContext->softPushConstraint.shapeCount;
+                Vw_ClampAngleRange(&obstacleContext->hardPushConstraint.angleMin, &obstacleContext->hardPushConstraint.angleMax,
+                                   obstacleContext->softPushConstraint.angleMin, obstacleContext->softPushConstraint.angleMax);
             }
         }
     }
 
-    if (obstacleContext->pushConstraint0.field_0 != 0)
+    if (obstacleContext->hardPushConstraint.shapeCount != 0)
     {
-        if (obstacleContext->pushConstraint0.angleMin == obstacleContext->pushConstraint0.angleMax)
+        if (obstacleContext->hardPushConstraint.angleMin == obstacleContext->hardPushConstraint.angleMax)
         {
             offset->vx = Q12(0.0f);
             offset->vz = Q12(0.0f);
             return;
         }
 
-        angle = DIV_FAST(obstacleContext->pushConstraint0.angleMin + obstacleContext->pushConstraint0.angleMax, 2);
-        if (obstacleContext->pushConstraint0.angleMax < obstacleContext->pushConstraint0.angleMin)
+        angle = DIV_FAST(obstacleContext->hardPushConstraint.angleMin + obstacleContext->hardPushConstraint.angleMax, 2);
+        if (obstacleContext->hardPushConstraint.angleMax < obstacleContext->hardPushConstraint.angleMin)
         {
             angle = Q12_FRACT(angle + Q12_ANGLE(180.0f));
         }
 
-        if (obstacleContext->pushConstraint1.field_0 == 0)
+        if (obstacleContext->softPushConstraint.shapeCount == 0)
         {
-            angleMin = obstacleContext->pushConstraint0.angleMin;
-            angleMax = obstacleContext->pushConstraint0.angleMax;
+            angleMin = obstacleContext->hardPushConstraint.angleMin;
+            angleMax = obstacleContext->hardPushConstraint.angleMax;
         }
         else
         {
-            angleMin = obstacleContext->pushConstraint0.angleMin;
-            angleMax = obstacleContext->pushConstraint0.angleMax;
+            angleMin = obstacleContext->hardPushConstraint.angleMin;
+            angleMax = obstacleContext->hardPushConstraint.angleMax;
 
             Vw_ClampAngleRange(&angleMin, &angleMax,
-                               obstacleContext->pushConstraint1.angleMin, obstacleContext->pushConstraint1.angleMax);
+                               obstacleContext->softPushConstraint.angleMin, obstacleContext->softPushConstraint.angleMax);
 
             angleMin = Q12_FRACT(angleMin);
             angleMax = Q12_FRACT(angleMax);
             if (angleMin == angleMax)
             {
-                angleMin = obstacleContext->pushConstraint0.angleMin;
-                angleMax = obstacleContext->pushConstraint0.angleMax;
+                angleMin = obstacleContext->hardPushConstraint.angleMin;
+                angleMax = obstacleContext->hardPushConstraint.angleMax;
             }
 
             if (angleMin != angleMax)
@@ -2355,9 +2360,11 @@ void func_8006D2B4(VECTOR3* offset, s_CollisionObstacleContext* obstacleContext)
             }
         }
 
-        dist = Q8_TO_Q12(MIN(obstacleContext->radiusOffset + 2, 16));
+        dist = Q8_TO_Q12(MIN(obstacleContext->hardIntersectDepth + PUSH_BUFFER, 16));
         func_8006D600(offset, angle, angleMin, angleMax, dist);
     }
+
+    #undef PUSH_BUFFER
 }
 
 void func_8006D600(VECTOR3* pos, q19_12 angle, q19_12 angleMin, q19_12 angleMax, q19_12 dist) // 0x8006D600
@@ -2434,12 +2441,12 @@ void func_8006D774(s_CollisionState* state, const VECTOR3* offset0, const VECTOR
     q8Offset1.vx = Q12_TO_Q8(offset1->vx);
     q8Offset1.vy = Q12_TO_Q8(offset1->vz);
 
-    state->field_34                                = 0;
-    state->obstacleContext.pushConstraint0.field_0 = 0;
-    state->obstacleContext.radiusOffset            = Q8(0.0f);
-    state->obstacleContext.pushConstraint1.field_0 = 0;
-    state->obstacleContext.field_36                = Q8(0.0f);
-    state->obstacleContext.pushConstraint2.field_0 = 0;
+    state->field_34                                       = 0;
+    state->obstacleContext.hardPushConstraint.shapeCount  = 0;
+    state->obstacleContext.hardIntersectDepth             = Q8(0.0f);
+    state->obstacleContext.softPushConstraint.shapeCount  = 0;
+    state->obstacleContext.charaIntersectDepth            = Q8(0.0f);
+    state->obstacleContext.charaPushConstraint.shapeCount = 0;
 
     func_8006D7EC(&state->charaState, &q8Offset0, &q8Offset1);
 }

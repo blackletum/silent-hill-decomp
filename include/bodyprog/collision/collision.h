@@ -73,24 +73,24 @@ typedef struct _CollisionCachedSurface
     /* 0x4 */ q23_8 radiusCollDiffDist;
 } s_CollisionCachedSurface;
 
-// TODO: Rough name.
+/** @brief Collision push constraint. */
 typedef struct _CollisionPushConstraint
 {
-    /* 0x0 */ s8    field_0; // Counter?
+    /* 0x0 */ s8    shapeCount;
     /* 0x2 */ q3_12 angleMin;
     /* 0x4 */ q3_12 angleMax;
 } s_CollisionPushConstraint;
 
-// TODO: Rough name.
+/** @brief CollisionObstacleContext */
 typedef struct _CollisionObstacleContext
 {
-    /* 0x0  */ s_CollisionPushConstraint pushConstraint0;
-    /* 0x6  */ q7_8                      radiusOffset;
-    /* 0x8  */ s_CollisionPushConstraint pushConstraint1;
-    /* 0xE  */ s16                       field_E;
+    /* 0x0  */ s_CollisionPushConstraint hardPushConstraint;
+    /* 0x6  */ q7_8                      hardIntersectDepth;
+    /* 0x8  */ s_CollisionPushConstraint softPushConstraint;
+    /* 0xE  */ s8                        __pad_E[2];
     /* 0x10 */ s8*                       shapePassStamps[8];
-    /* 0x30 */ s_CollisionPushConstraint pushConstraint2;
-    /* 0x36 */ q7_8                      field_36; // Another radius offset for character collision?
+    /* 0x30 */ s_CollisionPushConstraint charaPushConstraint;
+    /* 0x36 */ q7_8                      charaIntersectDepth;
 } s_CollisionObstacleContext;
 
 // TODO: Rough name.
@@ -168,7 +168,7 @@ typedef struct _CollisionState
     /* 0x3A   */ q11_4                      field_3A;
     /* 0x3C   */ q7_8                       field_3C; // X?
     /* 0x3E   */ q7_8                       field_3E; // Z?
-    /* 0x40   */ s8*                        field_40; // Collision shape index?
+    /* 0x40   */ u8*                        passStamp; /** Tracks visited shapes/characters per query pass. */
     /* 0x44   */ s_CollisionObstacleContext obstacleContext;
     /* 0x7C   */ q23_8                      slopedFloorHeight; // TODO: How is `floorHeight` different?
     /* 0x80   */ q23_8                      charaCellOffsetX; // } Character position in cell.
@@ -205,8 +205,8 @@ typedef struct _CollisionState
                          /* 0x2 */ q7_8 top;    // Set to absolute character top height.
                          /* 0x4 */ q7_8 radius;
                          /* 0x6 */ u8   collisionState; /** `e_CharaCollisionState` */
-                         /* 0x8 */ u8*  field_8; // Cell check idx?
-                     } s_1;
+                         /* 0x8 */ u8*  passStamp; /** Tracks visited characters per query pass. */
+                     } chara;
     /* 0xA0   */ } field_A0; // Floor info? Cell info? Cell state?
 
     /* 0xC8   */ u8                    shapeIdx; /** Secondary. Used only if detecting a cell after not finding one. */
@@ -429,10 +429,11 @@ void func_8006BB50(s_CollisionState* state, s32 pushType);
 // Computes floor height, accounting for differences in cell split vertex heights?
 q23_8 func_8006BC34(s_CollisionState* state);
 
-void func_8006BCC4(s_CollisionObstacleContext* obstacleContext, u8* shapePassStamp,
+void func_8006BCC4(s_CollisionObstacleContext* obstacleContext, u8* passStamp,
                    u32 pushType, q7_8 distX, q7_8 distZ, q7_8 radiusOffset);
 
-void func_8006BDDC(s_CollisionPushConstraint* pushConstraint, q3_12 angleConstraintMin, q3_12 angleConstraintMax);
+void Collision_PushConstraintShapeAdd(s_CollisionPushConstraint* pushConstraint,
+                                      q3_12 angleConstraintMin, q3_12 angleConstraintMax);
 
 // Related to polygons.
 void func_8006BE40(s_CollisionState* state);

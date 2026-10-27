@@ -134,15 +134,15 @@ typedef enum _CharaId
     Chara_Hack = NO_VALUE, // @hack Force enum to be treated as `s32`.
 } e_CharaId;
 
-// Collision-related.
+// Collision-related. For active collision query, just like level shapes?
 typedef struct
 {
     /* 0x0  */ VECTOR3 position;
-    /* 0xC  */ q3_12   field_C; // Set to character Y position. Name it `height`?
+    /* 0xC  */ q3_12   field_C;        // Set to character Y position. Name it `height`?
     /* 0xE  */ s16     field_E;
     /* 0x10 */ s16     field_10;
     /* 0x12 */ s8      collisionState; /** `e_CharaCollisionState` */
-    /* 0x13 */ u8      field_13;
+    /* 0x13 */ u8      passStamp;      /** Tracks visited characters per query pass. */
 } s_func_8006CF18;
 
 /** @brief Character damage info. */
@@ -594,7 +594,7 @@ typedef struct _CharaCollision
     /* 0x0    */ s_CharaBox          box;
     /* 0xC    */ s_CharaCylinder     cylinder;
     /* 0x10   */ s_CharaShapeOffsets shapeOffsets;   // Translation data?
-    /* 0x18+0 */ u8                  field_E0;       // Related to collision. If the player collides with the only enemy in memory and the enemy is knocked down, this is set to 1.
+    /* 0x18+0 */ u8                  passStamp;      /** Same usage as `s_IpdCollisionData::shapePassStampBuffer`. */
     /* 0x19+0 */ s8                  state      : 4; /** `e_CharaCollisionState` */
     /* 0x19+4 */ u8                  field_E1_4 : 4; // Index for array of `s_func_8006CF18`.
     /* 0x1C   */ s_func_8006CF18*    field_E4;
