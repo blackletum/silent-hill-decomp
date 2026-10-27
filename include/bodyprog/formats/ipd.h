@@ -9,7 +9,7 @@
  * Chunk:    40x40 meter area. 1 per IPD file, usually contain 20x20 cells.
  * Subchunk: 8x8 meter area. 25 per chunk.
  * Cell:     Variable-size collision grid unit, usually 2x2 meters.
- * Polygon:  Collision shape with up to 2 surfaces divided  by a split.
+ * Polygon:  Collision shape with up to 2 surfaces divided by a split.
  * Surface:  Polygon split containing fine-grained collision attributes.
  * Cylinder: Collision shape.
  */
@@ -26,16 +26,9 @@ typedef enum _CollisionTriggerFlags
     CollisionTriggerFlag_Map     = 1 << 0,
     CollisionTriggerFlag_Objects = 1 << 1,
     CollisionTriggerFlag_Block   = 1 << 2, /** Blocks select passages, e.g. the gate to the Split Head boss elevator. */
-    CollisionTriggerFlag_Unused3 = 1 << 3, /** @unused Secondary block? Only ever set in `MAP6_S05`. */
+    CollisionTriggerFlag_Unused3 = 1 << 3, /** @unused Secondary block? Only set in `MAP6_S05` and never checked. */
     CollisionTriggerFlag_All     = 0xFFFF
 } e_CollisionTriggerFlags;
-
-/** @brief IPD collision shape types. TODO: Theoretical, not certain how shapes are distinguished in certain cases yet. */
-typedef enum _IpdShapeType
-{
-    IpdShapeType_Polygon  = 0,
-    IpdShapeType_Cylinder = 1
-} s_IpdShapeType;
 
 /** @brief Floor material types. TODO: SH2 suggests "material"? */
 typedef enum _FloorType

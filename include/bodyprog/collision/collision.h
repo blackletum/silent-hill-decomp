@@ -9,8 +9,8 @@
 #include "bodyprog/formats/ipd.h"
 #include "bodyprog/map/map.h"
 
-#define DEFAULT_CEILING_HEIGHT -16.0f
 #define DEFAULT_FLOOR_HEIGHT   30.0f
+#define DEFAULT_CEILING_HEIGHT -16.0f
 #define INTERSECTION_BUFFER    Q12(0.1f)
 
 /** @brief Collision types. */
@@ -20,6 +20,14 @@ typedef enum _CollisionType
     CollisionType_Wall  = 1,
     CollisionType_Floor = 2 // TODO: Unsure.
 } e_CollisionType;
+
+/** @brief Collision push types. */
+typedef enum _CollisionPushType
+{
+    CollisionPushType_Hard  = 0, /** Hard inner shape proximity. */
+    CollisionPushType_Soft  = 1, /** Soft outer shape proximity. */
+    CollisionPushType_Chara = 2  /** Character-to-character cylinder. */
+} s_CollisionPushType;
 
 // TODO: "Subchunk" term may be misused here, need to check.
 typedef enum _SubChunkTransitionDirection
@@ -65,25 +73,28 @@ typedef struct _CollisionCachedSurface
     /* 0x4 */ q23_8 radiusCollDiffDist;
 } s_CollisionCachedSurface;
 
-typedef struct
+// TODO: Rough name.
+typedef struct _CollisionPushConstraint
 {
-    /* 0x0 */ s8      field_0;
-    /* 0x2 */ DVECTOR field_2; // Q3.12 | Angle constraint. X is min, Y is max. TODO: Don't use `DVECTOR` for this anymore.
-} s_CollisionState_44_0;
+    /* 0x0 */ s8    field_0; // Counter?
+    /* 0x2 */ q3_12 angleMin;
+    /* 0x4 */ q3_12 angleMax;
+} s_CollisionPushConstraint;
 
-typedef struct
+// TODO: Rough name.
+typedef struct _CollisionObstacleContext
 {
-    /* 0x0  */ s_CollisionState_44_0 field_0;
-    /* 0x6  */ q7_8                  radiusOffset;
-    /* 0x8  */ s_CollisionState_44_0 field_8;
-    /* 0xE  */ s16                   field_E;
-    /* 0x10 */ s8*                   field_10[8];
-    /* 0x30 */ s_CollisionState_44_0 field_30;
-    /* 0x36 */ q7_8                  field_36; // Another radius offset for character collision?
-} s_CollisionState_44;
+    /* 0x0  */ s_CollisionPushConstraint pushConstraint0;
+    /* 0x6  */ q7_8                      radiusOffset;
+    /* 0x8  */ s_CollisionPushConstraint pushConstraint1;
+    /* 0xE  */ s16                       field_E;
+    /* 0x10 */ s8*                       shapePassStamps[8];
+    /* 0x30 */ s_CollisionPushConstraint pushConstraint2;
+    /* 0x36 */ q7_8                      field_36; // Another radius offset for character collision?
+} s_CollisionObstacleContext;
 
-// Character deltas??
-typedef struct
+// TODO: Rough name.
+typedef struct _CollisionCharaDeltas
 {
     /* 0x0  */ DVECTOR_XZ charaVertDiff;
     /* 0x4  */ DVECTOR_XZ charaMoveVertDiff;
@@ -92,7 +103,7 @@ typedef struct
     /* 0x10 */ q7_8       collDiffDist;
     /* 0x12 */ s8         __pad_12[2];
     /* 0x14 */ DVECTOR_XZ charaMoveOffset;
-} s_CollisionState_CC_20;
+} s_CollisionCharaDeltas;
 
 /** @brief Copied collision polygon or cylinder attributes. */
 typedef union _CollisionShapeAttribs
@@ -122,7 +133,7 @@ typedef struct _CollisionShapePoint
     /* 0x5  */ u8                      disableHeight;
     /* 0x6  */ SVECTOR3                offset; // Q7.8 | Probe position inside cell/cell? Wrong struct? Y is maybe Z.
     /* 0xC  */ s_CollisionShapeAttribs shapeAttribs;
-    /* 0x20 */ s_CollisionState_CC_20  field_20;
+    /* 0x20 */ s_CollisionCharaDeltas  charaDeltas;
 } s_CollisionShapePoint;
 STATIC_ASSERT_SIZEOF(s_CollisionShapePoint, 56);
 
@@ -146,26 +157,26 @@ typedef struct _CollisionCharaState
 
 typedef struct _CollisionState
 {
-    /* 0x0+0  */ u8                    offsetX       : 8;  /** `bool` | Related to `Collision_ShapePassReset`. Maybe name `hasCellChecks`? */
-    /* 0x0+8  */ s8                    isCharaMoving : 1;  /** `bool` */
-    /* 0x0+9  */ s8                    field_0_9     : 1;  /** `bool` */
-    /* 0x0+10 */ s8                    field_0_10    : 1;  /** `bool` */
-    /* 0x2    */ u16                   triggerFlags  : 16; /** `e_CollisionTriggerFlags` */
-    /* 0x4    */ s_CollisionCharaState charaState;
-    /* 0x34   */ s32                   field_34;
-    /* 0x38   */ s16                   field_38; // `distanceAlpha` for something.
-    /* 0x3A   */ q11_4                 field_3A;
-    /* 0x3C   */ q7_8                  field_3C; // X?
-    /* 0x3E   */ q7_8                  field_3E; // Z?
-    /* 0x40   */ s8*                   field_40; // Collision shape index?
-    /* 0x44   */ s_CollisionState_44   field_44;
-    /* 0x7C   */ q23_8                 slopedFloorHeight; // TODO: How is `floorHeight` different?
-    /* 0x80   */ q23_8                 charaCellOffsetX; // } Character position in cell.
-    /* 0x84   */ q23_8                 charaCellOffsetZ; // } 
-    /* 0x88   */ q23_8                 slopeGradientX;
-    /* 0x8C   */ q23_8                 slopeGradientZ;
-    /* 0x90   */ bool                  disableHeight; /** `bool` | TODO: Does disabled height indicate a wall or pit? */
-    /* 0x94   */ s32                   floorType;      /** `e_FloorType` */
+    /* 0x0+0  */ u8                         offsetX       : 8;  /** `bool` | Related to `Collision_ShapePassReset`. Maybe name `hasCellChecks`? */
+    /* 0x0+8  */ s8                         isCharaMoving : 1;  /** `bool` */
+    /* 0x0+9  */ s8                         field_0_9     : 1;  /** `bool` */
+    /* 0x0+10 */ s8                         field_0_10    : 1;  /** `bool` */
+    /* 0x2    */ u16                        triggerFlags  : 16; /** `e_CollisionTriggerFlags` */
+    /* 0x4    */ s_CollisionCharaState      charaState;
+    /* 0x34   */ s32                        field_34;
+    /* 0x38   */ s16                        field_38; // `distanceAlpha` for something.
+    /* 0x3A   */ q11_4                      field_3A;
+    /* 0x3C   */ q7_8                       field_3C; // X?
+    /* 0x3E   */ q7_8                       field_3E; // Z?
+    /* 0x40   */ s8*                        field_40; // Collision shape index?
+    /* 0x44   */ s_CollisionObstacleContext obstacleContext;
+    /* 0x7C   */ q23_8                      slopedFloorHeight; // TODO: How is `floorHeight` different?
+    /* 0x80   */ q23_8                      charaCellOffsetX; // } Character position in cell.
+    /* 0x84   */ q23_8                      charaCellOffsetZ; // } 
+    /* 0x88   */ q23_8                      slopeGradientX;
+    /* 0x8C   */ q23_8                      slopeGradientZ;
+    /* 0x90   */ bool                       disableHeight; /** `bool` | TODO: Does disabled height indicate a wall or pit? */
+    /* 0x94   */ s32                        floorType;      /** `e_FloorType` */
 
                  union
                  {
@@ -403,7 +414,7 @@ bool func_8006B318(s_CollisionState* state, const s_IpdCollisionData* collData, 
 void func_8006B6E8(s_CollisionState* state, s_IpdShapeRange* shapeRangePair);
 
 // Related to polygons.
-bool func_8006B7E0(s_CollisionCachedSurface* cachedSurface, s_CollisionState_CC_20* prev);
+bool func_8006B7E0(s_CollisionCachedSurface* cachedSurface, s_CollisionCharaDeltas* charaDeltas);
 
 // Related to polygons.
 void func_8006B8F8(s_CollisionShapePoint* cellPoint);
@@ -412,16 +423,16 @@ void func_8006B8F8(s_CollisionShapePoint* cellPoint);
 void func_8006B9C8(s_CollisionState* state);
 
 // Related to polygons.
-void func_8006BB50(s_CollisionState* state, s32 arg1);
+void func_8006BB50(s_CollisionState* state, s32 pushType);
 
 // Related to polygons.
 // Computes floor height, accounting for differences in cell split vertex heights?
 q23_8 func_8006BC34(s_CollisionState* state);
 
-void func_8006BCC4(s_CollisionState_44* arg0, u8* shapePassStamp,
-                   u32 unkState, q7_8 distX, q7_8 distZ, q7_8 radiusOffset);
+void func_8006BCC4(s_CollisionObstacleContext* obstacleContext, u8* shapePassStamp,
+                   u32 pushType, q7_8 distX, q7_8 distZ, q7_8 radiusOffset);
 
-void func_8006BDDC(s_CollisionState_44_0* arg0, q3_12 rotX, q3_12 rotY);
+void func_8006BDDC(s_CollisionPushConstraint* pushConstraint, q3_12 angleConstraintMin, q3_12 angleConstraintMax);
 
 // Related to polygons.
 void func_8006BE40(s_CollisionState* state);
@@ -441,7 +452,7 @@ bool func_8006C3D4(s_CollisionState* state, s_IpdCollisionData* collData, s32 sh
 void func_8006C45C(s_CollisionState* state);
 
 // Related to cylinders.
-void func_8006C794(s_CollisionState* state, s32 unkState, q23_8 dist);
+void func_8006C794(s_CollisionState* state, s32 pushType, q23_8 dist);
 
 void func_8006C838(s_CollisionState* state, s_IpdCollisionData* collData);
 
@@ -460,7 +471,7 @@ void func_8006CF18(s_CollisionState* state, s_func_8006CF18* arg1, s32 idx);
 
 void func_8006D01C(VECTOR3* extraOffset, VECTOR3* offset, q3_12 offsetAlpha, s_CollisionState* state);
 
-void func_8006D2B4(VECTOR3* offset, s_CollisionState_44* arg1);
+void func_8006D2B4(VECTOR3* offset, s_CollisionObstacleContext* obstacleContext);
 
 void func_8006D600(VECTOR3* pos, q19_12 angle, q19_12 rotX, q19_12 rotY, q19_12 dist);
 

@@ -36,7 +36,7 @@ void func_8006F250(q19_12* arg0, q19_12 posX, q19_12 posZ, q19_12 offsetX, q19_1
 
     func_8006F338(ptr, posX, posZ, offsetX, offsetZ);
 
-    // Run through collision triggers.
+    // Run through triggers.
     for (i = 0; i < g_ActiveCollisionTriggers.collisionTriggerCount; i++)
     {
         if (func_8006F3C4(ptr, g_ActiveCollisionTriggers.collisionTriggers[i]))
@@ -219,7 +219,7 @@ q19_12 Collision_CeilingHeightGet(VECTOR3* moveOffset,
     cylinderTop     = cylinder->position.vy + cylinderHeight;
     projCylinderTop = cylinderTop + moveOffset->vy;
 
-    // Run through collision triggers.
+    // Run through triggers.
     for (i = 0; i < g_ActiveCollisionTriggers.collisionTriggerCount; i++)
     {
         curTrigger = g_ActiveCollisionTriggers.collisionTriggers[i];

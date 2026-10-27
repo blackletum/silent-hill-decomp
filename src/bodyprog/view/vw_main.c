@@ -116,13 +116,13 @@ void vwSetViewInfo(void) // 0x80048D48
     vwMatrixToAngleYXZ(&vwViewPointInfo.worldang, &vwViewPointInfo.vwcoord.workm);
 }
 
-void Vw_ClampAngleRange(q7_8* angleMin, q7_8* angleMax, q7_8 angleConstraintMin, q7_8 angleConstraintMax) // 0x80048DA8
+void Vw_ClampAngleRange(q3_12* angleMin, q3_12* angleMax, q3_12 angleConstraintMin, q3_12 angleConstraintMax) // 0x80048DA8
 {
-    q23_8 prevAngleMax;
-    q23_8 prevAngleMin;
-    q23_8 rotToAngleMax;
-    q7_8  rotToAngleConstraintMin;
-    q7_8  rotToAngleConstraintMax;
+    q19_12 prevAngleMax;
+    q19_12 prevAngleMin;
+    q19_12 rotToAngleMax;
+    q3_12  rotToAngleConstraintMin;
+    q3_12  rotToAngleConstraintMax;
 
     prevAngleMax = *angleMax;
     prevAngleMin = *angleMin;
