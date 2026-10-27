@@ -85,9 +85,6 @@ void func_8008D470(q3_12 lensFlareIntensity, SVECTOR* rot, VECTOR3* pos, s_Water
     }
 }
 
-#if VERSION_IS(EUR)
-INCLUDE_ASM("bodyprog/nonmatchings/water", func_8008D5A0);
-#else
 void func_8008D5A0(VECTOR3* arg0, s16 arg1) // 0x8008D5A0
 {
     RECT      sp10;
@@ -125,6 +122,13 @@ void func_8008D5A0(VECTOR3* arg0, s16 arg1) // 0x8008D5A0
 
         sp10.x = arg0->vx + (g_GameWork.gsScreenWidth / 2);
         sp10.y = arg0->vy + (g_GameWork.gsScreenHeight / 2);
+
+#if VERSION_REGION_IS(PAL) 
+        if (g_ActiveBufferIdx != 1)
+        {
+            sp10.y += 256;
+        }
+#else
         if (g_ActiveBufferIdx == 1)
         {
             sp10.y += 32;
@@ -133,6 +137,7 @@ void func_8008D5A0(VECTOR3* arg0, s16 arg1) // 0x8008D5A0
         {
             sp10.y += 256;
         }
+#endif
     }
     else
     {
@@ -146,7 +151,6 @@ void func_8008D5A0(VECTOR3* arg0, s16 arg1) // 0x8008D5A0
     SetDrawMove(packet, &sp10, (g_ActiveBufferIdx * 8) + 784, 112);
     AddPrim(g_OrderingTable0[g_ActiveBufferIdx].org + 5, packet);
 }
-#endif
 
 void func_8008D78C(void) // 0x8008D78C
 {
@@ -272,12 +276,17 @@ q3_12 D_800AFD7C[] = {
 
 s_FsImageDesc img0 = { .tPage = { 0, 13 } }; // 0x800AFD9C
 
-#if VERSION_IS(EUR)
-INCLUDE_RODATA("bodyprog/nonmatchings/water", D_8002A994);
-INCLUDE_ASM("bodyprog/nonmatchings/water", func_8008D990);
-#else
 void func_8008D990(s32 arg0, q19_12 arg1, VECTOR3* arg2, s32 arg3, s32 arg4) // 0x8008D990
 {
+    // VRAM position of the CLUT rows used below.
+#if VERSION_REGION_IS(PAL)
+    #define CLUT_X 944
+    #define CLUT_Y 496
+#else
+    #define CLUT_X 192
+    #define CLUT_Y 0
+#endif
+
     s32       sp20;
     s32       sp24;
     s32       sp28;
@@ -338,7 +347,7 @@ void func_8008D990(s32 arg0, q19_12 arg1, VECTOR3* arg2, s32 arg3, s32 arg4) // 
     SetPolyFT4(poly);
 
     poly->tpage = 0x2C;
-    poly->clut  = 0x18C;
+    poly->clut  = getClut(CLUT_X, CLUT_Y + 6);
 
     setUV4(poly, 0, 0, 63, 0, 0, 63, 63, 63);
 
@@ -378,7 +387,7 @@ void func_8008D990(s32 arg0, q19_12 arg1, VECTOR3* arg2, s32 arg3, s32 arg4) // 
     SetPolyFT4(poly);
 
     poly->tpage = 44;
-    poly->clut  = 0x18C;
+    poly->clut  = getClut(CLUT_X, CLUT_Y + 6);
 
     setUV4(poly, 0, 0, 63, 0, 0, 63, 63, 63);
     setRGB0(poly, 0x10, 0x10, 0x10);
@@ -418,7 +427,7 @@ void func_8008D990(s32 arg0, q19_12 arg1, VECTOR3* arg2, s32 arg3, s32 arg4) // 
     setRGB0(poly, temp_v0_5, temp_v0_5, temp_v0_5);
 
     poly->tpage = 44;
-    poly->clut  = 0x18C;
+    poly->clut  = getClut(CLUT_X, CLUT_Y + 6);
 
     setUV4(poly, 0, 0, 63, 0, 0, 63, 63, 63);
 
@@ -457,7 +466,7 @@ void func_8008D990(s32 arg0, q19_12 arg1, VECTOR3* arg2, s32 arg3, s32 arg4) // 
         SetPolyFT4(poly);
 
         poly->tpage = 0x2C;
-        poly->clut  = 0x14C;
+        poly->clut  = getClut(CLUT_X, CLUT_Y + 5);
 
         setUV4(poly, 0x20, 0x40, 0x3F, 0x40, 0x20, 0x5F, 0x3F, 0x5F);
         setSemiTrans(poly, 1);
@@ -490,7 +499,7 @@ void func_8008D990(s32 arg0, q19_12 arg1, VECTOR3* arg2, s32 arg3, s32 arg4) // 
     setRGB0(poly, Q12_MULT(arg1, 32), Q12_MULT(arg1, 0x30), Q12_MULT(arg1, 32));
 
     poly->tpage = 44;
-    poly->clut  = 0x1CC;
+    poly->clut  = getClut(CLUT_X, CLUT_Y + 7);
 
     setUV4(poly, 0x40, 0, 0x7F, 0, 0x40, 0x3F, 0x7F, 0x3F);
     setSemiTrans(poly, 1);
@@ -516,7 +525,7 @@ void func_8008D990(s32 arg0, q19_12 arg1, VECTOR3* arg2, s32 arg3, s32 arg4) // 
     setRGB0(poly, ((u32)arg1 * 7) >> 9, ((u32)arg1 * 0x13) >> 0xB, temp_s0_6);
 
     poly->tpage = 44;
-    poly->clut  = 0x1CC;
+    poly->clut  = getClut(CLUT_X, CLUT_Y + 7);
 
     setUV4(poly, 0x40, 0, 0x7F, 0, 0x40, 0x3F, 0x7F, 0x3F);
     setSemiTrans(poly, 1);
@@ -538,7 +547,7 @@ void func_8008D990(s32 arg0, q19_12 arg1, VECTOR3* arg2, s32 arg3, s32 arg4) // 
     setRGB0(poly, (u32)arg1 >> 6, temp_s0_6, ((u32)arg1 * 0x2F) >> 11);
 
     poly->tpage = 76;
-    poly->clut  = 0x18C;
+    poly->clut  = getClut(CLUT_X, CLUT_Y + 6);
 
     setUV4(poly, 0, 0, 0x3F, 0, 0, 0x3F, 0x3F, 0x3F);
     setSemiTrans(poly, 1);
@@ -555,8 +564,10 @@ void func_8008D990(s32 arg0, q19_12 arg1, VECTOR3* arg2, s32 arg3, s32 arg4) // 
     addPrim(temp_s7, poly);
     poly++;
     GsOUT_PACKET_P = (PACKET*)poly;
+
+#undef CLUT_X
+#undef CLUT_Y
 }
-#endif
 
 void func_8008E4EC(s_LmHeader* lmHdr) // 0x8008E4EC
 {
@@ -584,12 +595,15 @@ s_WaterZone* Map_WaterZoneGet(q27_4 posX, q27_4 posZ, s_WaterZone* waterZones)
     return NULL;
 }
 
-#if VERSION_IS(EUR)
-// @hack Statics of the included function below, remove once decompiled.
-RECT D_800AF39C = { 832, 224, 32, 32 };
-s32  D_800AF3A4 = 0;
-INCLUDE_ASM("bodyprog/nonmatchings/water", func_8008E5B4);
+// VRAM position of the CLUT rows used by `func_8008E5B4` and `func_8008E794`.
+#if VERSION_REGION_IS(PAL)
+    #define WATER_CLUT_X 928
+    #define WATER_CLUT_Y 432
 #else
+    #define WATER_CLUT_X 224
+    #define WATER_CLUT_Y 0
+#endif
+
 void func_8008E5B4(void) // 0x8008E5B4
 {
     typedef struct
@@ -643,8 +657,8 @@ void func_8008E5B4(void) // 0x8008E5B4
     setXY3Fast(&packet->poly_1C[1], 32, 32);
     setXY3Fast(&packet->poly_1C[0], 32, 32);
 
-    packet->poly_1C[1].clut = 14;
-    packet->poly_1C[0].clut = 14;
+    packet->poly_1C[1].clut = getClut(WATER_CLUT_X, WATER_CLUT_Y);
+    packet->poly_1C[0].clut = getClut(WATER_CLUT_X, WATER_CLUT_Y);
 
     temp_v0               = (D_800AFDAC >> 1) & 0x1F;
     packet->poly_1C[0].u0 = 0;
@@ -674,13 +688,7 @@ void func_8008E5B4(void) // 0x8008E5B4
 
     DrawOTag((u32*)packet);
 }
-#endif
 
-#if VERSION_IS(EUR)
-// @hack Statics of the included function below, remove once decompiled.
-SVECTOR svec0 __asm__("svec0.264") = {};
-INCLUDE_ASM("bodyprog/nonmatchings/water", func_8008E794);
-#else
 void func_8008E794(VECTOR3* posXz, q3_12 angle, q19_12 posY) // 0x8008E794
 {
     VECTOR    sp10;
@@ -731,7 +739,7 @@ void func_8008E794(VECTOR3* posXz, q3_12 angle, q19_12 posY) // 0x8008E794
         poly->g0    = (sinAngle0 * 7) >> 9;
         poly->b0    = (sinAngle0 * 5) >> 9;
         poly->tpage = 45;
-        poly->clut  = 78;
+        poly->clut  = getClut(WATER_CLUT_X, WATER_CLUT_Y + 1);
         poly->u0    = 64;
         poly->u1    = 64;
         poly->v0    = 31;
@@ -753,7 +761,9 @@ void func_8008E794(VECTOR3* posXz, q3_12 angle, q19_12 posY) // 0x8008E794
         GsOUT_PACKET_P = poly + 1;
     }
 }
-#endif
+
+#undef WATER_CLUT_X
+#undef WATER_CLUT_Y
 
 void func_8008EA68(SVECTOR* arg0, VECTOR3* posXz, q19_12 posY) // 0x8008EA68
 {
