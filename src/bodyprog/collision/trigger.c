@@ -64,10 +64,10 @@ void Collision_TriggerQuery(q19_12* result, q19_12 posX, q19_12 posZ, q19_12 off
 void Collision_TriggerIntersectInit(s_CollisionTriggerIntersect* intersect,
                                     q19_12 posX, q19_12 posZ, q19_12 offsetX, q19_12 offsetZ) // 0x8006F338
 {
-    q19_12 newPosX;
+    q19_12 endX;
     q19_12 startZ;
 
-    newPosX = posX + offsetX;
+    endX = posX + offsetX;
 
     intersect->startX         = posX;
     intersect->startZ         = posZ;
@@ -78,7 +78,7 @@ void Collision_TriggerIntersectInit(s_CollisionTriggerIntersect* intersect,
     intersect->offsetZ        = offsetZ;
     intersect->endZ           = posZ + offsetZ;
 
-    if (newPosX >= intersect->startX)
+    if (endX >= intersect->startX)
     {
         intersect->aabbMinX = intersect->startX;
         intersect->aabbMaxX = intersect->endX;
@@ -111,9 +111,9 @@ bool Collision_TriggerIntersectGet(s_CollisionTriggerIntersect* intersect, const
     q19_12 aabbMaxX;
     q19_12 aabbMinZ;
     q19_12 aabbMaxZ;
-    q19_12 var_s1;
+    q19_12 edgeX;
     q19_12 intersectAlphaZ;
-    q19_12 var_v0_2;
+    q19_12 edgeZ;
 
     // Define AABB bounds.
     aabbMinX = Q12(trigger->positionX);
@@ -140,35 +140,35 @@ bool Collision_TriggerIntersectGet(s_CollisionTriggerIntersect* intersect, const
         {
             if (intersect->offsetZ >= Q12(0.0f))
             {
-                var_s1   = aabbMinX;
-                var_v0_2 = aabbMinZ;
+                edgeX = aabbMinX;
+                edgeZ = aabbMinZ;
             }
             else
             {
-                var_s1   = aabbMinX;
-                var_v0_2 = aabbMaxZ;
+                edgeX = aabbMinX;
+                edgeZ = aabbMaxZ;
             }
         }
         else
         {
             if (intersect->offsetZ >= Q12(0.0f))
             {
-                var_s1   = aabbMaxX;
-                var_v0_2 = aabbMinZ;
+                edgeX = aabbMaxX;
+                edgeZ = aabbMinZ;
             }
             else
             {
-                var_s1   = aabbMaxX;
-                var_v0_2 = aabbMaxZ;
+                edgeX = aabbMaxX;
+                edgeZ = aabbMaxZ;
             }
         }
 
         // TODO: What are these shifts? Q12 division (x / Q12(16.0f))?
         intersectAlphaX = Vw_LineSegmentIntersectionCheck(Q12(intersect->offsetX) >> 16,
-                                                          Q12(intersect->offsetZ) >> 16, Q12(var_v0_2 - intersect->startZ) >> 16,
+                                                          Q12(intersect->offsetZ) >> 16, Q12(edgeZ - intersect->startZ) >> 16,
                                                           Q12(aabbMinX - intersect->startX) >> 16, Q12(aabbMaxX - intersect->startX) >> 16);
         intersectAlphaZ = Vw_LineSegmentIntersectionCheck(Q12(intersect->offsetZ) >> 16,
-                                                          Q12(intersect->offsetX) >> 16, Q12(var_s1 - intersect->startX) >> 16,
+                                                          Q12(intersect->offsetX) >> 16, Q12(edgeX - intersect->startX) >> 16,
                                                           Q12(aabbMinZ - intersect->startZ) >> 16, Q12(aabbMaxZ - intersect->startZ) >> 16);
 
         if (intersectAlphaX <= intersectAlphaZ)
@@ -226,7 +226,7 @@ q19_12 Collision_TriggerCeilingHeightGet(VECTOR3* moveOffset,
     cylinderTop     = cylinder->position.vy + cylinderHeight;
     projCylinderTop = cylinderTop + moveOffset->vy;
 
-    // Run through triggers.
+    // Run through active triggers.
     for (i = 0; i < g_ActiveCollisionTriggers.collisionTriggerCount; i++)
     {
         curTrigger = g_ActiveCollisionTriggers.collisionTriggers[i];

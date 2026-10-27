@@ -3,6 +3,17 @@
 
 #include "bodyprog/collision/chara.h"
 
+/** @brief Collision trigger flags. Applied per IPD collision shape, unrelated to volume triggers. */
+typedef enum _CollisionTriggerFlags
+{
+    CollisionTriggerFlag_None    = 0,
+    CollisionTriggerFlag_Map     = 1 << 0,
+    CollisionTriggerFlag_Objects = 1 << 1,
+    CollisionTriggerFlag_Block   = 1 << 2, /** Blocks select passages, e.g. the gate to the Split Head boss elevator. */
+    CollisionTriggerFlag_Unused3 = 1 << 3, /** @unused Secondary block? Only set in `MAP6_S05` and never checked. */
+    CollisionTriggerFlag_All     = 0xFFFF
+} e_CollisionTriggerFlags;
+
 /** @brief Collision trigger line intersection. */
 typedef struct _CollisionTriggerIntersect
 {
@@ -21,7 +32,7 @@ typedef struct _CollisionTriggerIntersect
 } s_CollisionTriggerIntersect;
 STATIC_ASSERT_SIZEOF(s_CollisionTriggerIntersect, 48);
 
-/** @brief World-space collision trigger used to inform uneven terrain such as walls and stairs. */
+/** @brief World-space collision trigger used to inform uneven terrain such as walls, ceilings, and stairs. */
 typedef struct _CollisionTrigger
 {
     /* 0x0+0  */ u8  isEndOfArray : 1;  /** `bool` | Marks last entry. */
@@ -38,7 +49,7 @@ typedef struct _ActiveCollisionTriggers
 {
     /* 0x0 */ u16                       flags;                 /** `e_CollisionTriggerFlags` */
     /* 0x2 */ u8                        collisionTriggerCount; /** `collisionTrigger` array size. */
-    /* 0x4 */ const s_CollisionTrigger* collisionTriggers[20]; // TODO: Guessed size.
+    /* 0x4 */ const s_CollisionTrigger* collisionTriggers[20]; // TODO: Guessed size, would have to be very large?
 } s_ActiveCollisionTriggers;
 
 /** @brief Queries a line intersection with the first collided active collision trigger.

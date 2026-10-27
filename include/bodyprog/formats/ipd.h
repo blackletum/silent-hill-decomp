@@ -19,17 +19,6 @@
 #define CHUNK_SIZE    40.0f /** 40x40 meters. */
 #define SUBCHUNK_SIZE 8.0f  /** 8x8 meters. */
 
-/** @brief Collision trigger flags. Pplied per cell. */
-typedef enum _CollisionTriggerFlags
-{
-    CollisionTriggerFlag_None    = 0,
-    CollisionTriggerFlag_Map     = 1 << 0,
-    CollisionTriggerFlag_Objects = 1 << 1,
-    CollisionTriggerFlag_Block   = 1 << 2, /** Blocks select passages, e.g. the gate to the Split Head boss elevator. */
-    CollisionTriggerFlag_Unused3 = 1 << 3, /** @unused Secondary block? Only set in `MAP6_S05` and never checked. */
-    CollisionTriggerFlag_All     = 0xFFFF
-} e_CollisionTriggerFlags;
-
 /** @brief Floor material types. TODO: SH2 suggests "material"? */
 typedef enum _FloorType
 {
