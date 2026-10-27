@@ -133,7 +133,7 @@ typedef struct _OptionsConfig
     /* 0x2D */ s8                 extraBulletAdjust;   /** x1-x6: Range [0, 5], default: x1. */
     /* 0x2E */ u16                seenGameOverTips[1]; /** Bitfield tracking seen game-over tips. Each bit corresponds to a tip index (0–14), set bits indicate seen tips. Resets after picking all 15. */
     /* 0x30 */ s8                 unk_30[4];
-    /* 0x34 */ u32                palLanguageId;
+    /* 0x34 */ u32                palLanguageId;       /** TODO: Gets read as `s8` in `SysState_GameOver_Update`, but that breaks matches in other functions if changed (alignment of whole struct changes if not u32..) */
 } s_OptionsConfig;
 STATIC_ASSERT_SIZEOF(s_OptionsConfig, 56);
 

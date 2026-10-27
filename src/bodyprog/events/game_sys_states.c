@@ -25,9 +25,7 @@
 #include "main/rng.h"
 
 #ifndef PAD_HACK_IGNORE
-#if !VERSION_IS(EUR) // The EUR `D_800BC370` include already covers this padding.
     s8  __pad_bss_800BCD81[3];
-#endif
     s32 __pad_bss_800BCD88[2];
     s32 __pad_bss_800BCD94[5];
     s32 __pad_bss_800BCDD0;
@@ -859,23 +857,16 @@ static inline s32 Flags16b_IsSet(const u16* flags, s32 flagIdx)
     return (flags[flagIdx >> 5] >> (flagIdx & 0x1F)) & (1 << 0);
 }
 
-#if VERSION_IS(EUR)
-INCLUDE_RODATA("bodyprog/nonmatchings/events/game_sys_states", D_80025F78);
-// @hack Statics of the included function below, remove once decompiled.
-// Declared inside an uncalled function so the compiler emits them here instead of at the end of the file.
-static inline void SysState_GameOver_Update_Statics(void)
-{
-    static u8 prevTipIdx __asm__("D_800BC370");
-    static u8 __pad_bss_800BC371[3] __asm__("__pad_bss_800BC371");
-
-    (void)prevTipIdx;
-    (void)__pad_bss_800BC371;
-}
-INCLUDE_ASM("bodyprog/nonmatchings/events/game_sys_states", SysState_GameOver_Update);
-#else
 void SysState_GameOver_Update(void) // 0x8003A52C
 {
     #define TIP_COUNT 15
+
+// PAL loads the tip into the loading screen image instead of a dedicated one.
+#if VERSION_REGION_IS(PAL)
+    #define TIP_IMG g_LoadingScreenImg
+#else
+    #define TIP_IMG g_DeathTipImg
+#endif
 
     static u8 prevTipIdx;
     u16       seenTipIdxs[1];
@@ -955,9 +946,11 @@ void SysState_GameOver_Update(void) // 0x8003A52C
             prevTipIdx = tipIdx;
 
 #if VERSION_REGION_IS(NTSC)
-            Fs_QueueStartReadTim(FILE_TIM_TIPS_E01_TIM + tipIdx, FS_BUFFER_1, &g_DeathTipImg);
+            Fs_QueueStartReadTim(FILE_TIM_TIPS_E01_TIM + tipIdx, FS_BUFFER_1, &TIP_IMG);
 #elif VERSION_REGION_IS(NTSCJ)
-            Fs_QueueStartReadTim(FILE_TIM_TIPS_J01_TIM + tipIdx, FS_BUFFER_1, &g_DeathTipImg);
+            Fs_QueueStartReadTim(FILE_TIM_TIPS_J01_TIM + tipIdx, FS_BUFFER_1, &TIP_IMG);
+#elif VERSION_REGION_IS(PAL)
+            Fs_QueueStartReadTim(((s8)g_GameWorkConst->config.palLanguageId * TIP_COUNT) + FILE_TIM_TIPS_E01_TIM + tipIdx, FS_BUFFER_1, &TIP_IMG);
 #endif
             SysWork_StateStepIncrement(0);
 
@@ -976,7 +969,7 @@ void SysState_GameOver_Update(void) // 0x8003A52C
 
             if ((g_Controller0->buttonFlags.clicked & (g_GameWorkPtr->config.controllerConfig.enter |
                                                        g_GameWorkPtr->config.controllerConfig.cancel)) ||
-                g_SysWork.sysStateStepData[0] > SECONDS_60_FPS(4))
+                g_SysWork.sysStateStepData[0] > SECONDS_TO_FRAMES(4))
             {
                 SysWork_StateStepIncrement(0);
             }
@@ -1004,17 +997,17 @@ void SysState_GameOver_Update(void) // 0x8003A52C
         case 6:
             Event_ScreenFadeCmd(ScreenFadeCmd_Auto, false, 0, Q12(2.0f), false);
             g_SysWork.sysStateStepData[0] = 0;
-            Screen_BackgroundImgDraw(&g_DeathTipImg);
+            Screen_BackgroundImgDraw(&TIP_IMG);
             break;
 
         case 7:
             g_SysWork.sysStateStepData[0]++;
-            Screen_BackgroundImgDraw(&g_DeathTipImg);
+            Screen_BackgroundImgDraw(&TIP_IMG);
 
             if (!(g_Controller0->buttonFlags.clicked & (g_GameWorkPtr->config.controllerConfig.enter |
                                                         g_GameWorkPtr->config.controllerConfig.cancel)))
             {
-                if (g_SysWork.sysStateStepData[0] <= SECONDS_60_FPS(8))
+                if (g_SysWork.sysStateStepData[0] <= SECONDS_TO_FRAMES(8))
                 {
                     break;
                 }
@@ -1029,7 +1022,7 @@ void SysState_GameOver_Update(void) // 0x8003A52C
             break;
 
         case 8:
-            Screen_BackgroundImgDraw(&g_DeathTipImg);
+            Screen_BackgroundImgDraw(&TIP_IMG);
             Event_ScreenFadeCmd(ScreenFadeCmd_Auto, true, 0, Q12(2.0f), false);
             break;
 
@@ -1046,8 +1039,8 @@ void SysState_GameOver_Update(void) // 0x8003A52C
     }
 
     #undef TIP_COUNT
+    #undef TIP_IMG
 }
-#endif
 
 void GameState_MapEvent_Update(void) // 0x8003AA4C
 {
