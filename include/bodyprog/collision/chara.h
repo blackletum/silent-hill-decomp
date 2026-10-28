@@ -17,11 +17,11 @@ STATIC_ASSERT_SIZEOF(s_CharaCollisionCylinder, 20);
 /** @brief Character collision state. TODO: Name clash with `e_CharaCollisionState`. */
 typedef struct _CollisionCharaState
 {
-    /* 0x0  */ s32        state;   /** `e_CharaCollisionState` */
-    /* 0x4  */ bool       field_4; // `allowDefaultCeilHeight`? Set when the character collision being checked is any of the ones in `Collision_CharaCollisionSetup`.
-    /* 0x8  */ q19_12     distance;
-    /* 0xC  */ SVECTOR    offset; /** Q23.8 | Character movement offset. */
-    /* 0x14 */ DVECTOR_XZ direction;
+    /* 0x0  */ s32        state;             /** `e_CharaCollisionState` */
+    /* 0x4  */ bool       blockInvalidFloor;
+    /* 0x8  */ q19_12     moveDistance;
+    /* 0xC  */ SVECTOR    moveOffset;        /** Q23.8 */
+    /* 0x14 */ DVECTOR_XZ moveDirection;     /** Q3_12 | Unit vector. */
     /* 0x18 */ q23_8      positionFromX;
     /* 0x1C */ q23_8      positionFromZ;
     /* 0x20 */ q23_8      positionToX;

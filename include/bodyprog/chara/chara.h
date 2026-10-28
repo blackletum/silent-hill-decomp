@@ -550,12 +550,12 @@ typedef struct _CharaBox
     /* 0x4 */ q3_12 height;
     /* 0x6 */ q3_12 offsetY;
     // TODO: Maybe nested inner and outer XZ extents. See `s_CharaCylinder`.
-    /* 0x8 */ q3_12 field_8; // X extent?? Always negative, but why? `s_CharaCylinder::radius` is set to this.
-    /* 0xA */ q3_12 field_A; // Z extent?? `s_CharaCylinder::field_2` is set to this.
+    /* 0x8 */ q3_12 field_8; // Outer XZ extent? Always nagative, might be unsigned? `s_CharaCylinder::outerRadius` is set to this.
+    /* 0xA */ q3_12 field_A; // Innter XZ extent? `s_CharaCylinder::innerRadius` is set to this.
 } s_CharaBox;
 STATIC_ASSERT_SIZEOF(s_CharaBox, 12);
 
-// TODO: Too similar to `s_CharaCollisionCylinder`. Maybe more like character-character interaction radii?
+// TODO: Too similar to `s_CharaCollisionCylinder`. Maybe more like character detection ranges?
 /** @brief Character collision cylinder. */
 typedef struct _CharaCylinder
 {

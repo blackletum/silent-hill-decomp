@@ -21,6 +21,14 @@ typedef enum _CollisionType
     CollisionType_Floor = 2 // TODO: Unsure.
 } e_CollisionType;
 
+// TODO: Unsure about what these actually are.
+typedef enum _CollisionContactType
+{
+    CollisionContactType_None = 0,
+    CollisionContactType_1    = 1,
+    CollisionContactType_2    = 2
+} s_CollisionContactType;
+
 /** @brief Collision push types. */
 typedef enum _CollisionPushType
 {
@@ -125,24 +133,25 @@ typedef struct _CollisionShapePoint
 } s_CollisionShapePoint;
 STATIC_ASSERT_SIZEOF(s_CollisionShapePoint, 56);
 
+// TODO: Rename to `s_CollisionQuery`? This stores in-progress data.
 typedef struct _CollisionState
 {
     /* 0x0+0  */ u8                         offsetX       : 8;  /** `bool` | Related to `Collision_ShapePassReset`. Maybe name `hasCellChecks`? */
     /* 0x0+8  */ s8                         isCharaMoving : 1;  /** `bool` */
-    /* 0x0+9  */ s8                         field_0_9     : 1;  /** `bool` */
-    /* 0x0+10 */ s8                         field_0_10    : 1;  /** `bool` */
+    /* 0x0+9  */ s8                         enablePush    : 1;  /** `bool` | Push away from obstacles. */
+    /* 0x0+10 */ s8                         field_0_10    : 1;  /** `bool` | Enable floor check? */
     /* 0x2    */ u16                        triggerFlags  : 16; /** `e_CollisionTriggerFlags` */
     /* 0x4    */ s_CollisionCharaState      charaState;
-    /* 0x34   */ s32                        field_34;
-    /* 0x38   */ s16                        field_38; // `distanceAlpha` for something.
-    /* 0x3A   */ q11_4                      field_3A;
-    /* 0x3C   */ q7_8                       field_3C; // X?
-    /* 0x3E   */ q7_8                       field_3E; // Z?
-    /* 0x40   */ u8*                        passStamp; /** Tracks visited shapes/characters per query pass. */
+    /* 0x34   */ s32                        field_34;    // `s_CollisionContactType`
+    /* 0x38   */ s16                        hitAlpha;    /** Closest hit alpha for a given movement distance. */
+    /* 0x3A   */ q11_4                      hitDistance; /** Closest hit distance. */
+    /* 0x3C   */ q7_8                       field_3C;    // X. } Shape center to hit position's offset?
+    /* 0x3E   */ q7_8                       field_3E;    // Z. }
+    /* 0x40   */ u8*                        passStamp;   /** Tracks visited shapes/characters per query pass. */
     /* 0x44   */ s_CollisionObstacleContext obstacleContext;
     /* 0x7C   */ q23_8                      slopedFloorHeight; // TODO: How is `floorHeight` different?
-    /* 0x80   */ q23_8                      charaCellOffsetX; // } Character position in cell.
-    /* 0x84   */ q23_8                      charaCellOffsetZ; // } 
+    /* 0x80   */ q23_8                      positionX;         /** Set to `chunkOffsetFrom.offset.vx + s_IpdCollisioNData::positionX`. */
+    /* 0x84   */ q23_8                      positionZ;         /** Set to `chunkOffsetFrom.offset.vz + s_IpdCollisioNData::positionZ`. */
     /* 0x88   */ q23_8                      slopeGradientX;
     /* 0x8C   */ q23_8                      slopeGradientZ;
     /* 0x90   */ bool                       disableHeight; /** `bool` | TODO: Does disabled height indicate a wall or pit? */
@@ -152,32 +161,33 @@ typedef struct _CollisionState
                  {
                      DVECTOR_XZ offset; /** Q23.8 */
                      q23_8      vx;
-    /* 0x98   */ } charaPositionFrom;
+    /* 0x98   */ } chunkOffsetFrom; /** Offset from chunk position. */
                  union
                  {
                      DVECTOR_XZ offset; /** Q23.8 */
                      q23_8      vz;
-    /* 0x9C   */ } charaPositionTo;
+    /* 0x9C   */ } chunkOffsetTo; /** Offset from chunk position. */
+
                  union
                  {
                      struct
                      {
-                         /* 0x0 */ u8                       closestXCellIdx;
-                         /* 0x1 */ u8                       closestZCellIdx;
+                         /* 0x0 */ u8                       cellX;
+                         /* 0x1 */ u8                       cellZ;
                          /* 0x2 */ u8                       cellSpanX;
                          /* 0x3 */ u8                       cellSpanZ;
                          /* 0x4 */ s_IpdShapeRange*         shapeRangePair;
                          /* 0x8 */ s_CollisionCachedSurface surfaceCache[4];
-                     } s_0;
+                     } shape;
                      struct
                      {
-                         /* 0x0 */ q7_8 bottom; // Set to absolute character bottom height.
-                         /* 0x2 */ q7_8 top;    // Set to absolute character top height.
+                         /* 0x0 */ q7_8 bottom;
+                         /* 0x2 */ q7_8 top;
                          /* 0x4 */ q7_8 radius;
                          /* 0x6 */ u8   state;     /** `e_CharaCollisionState` */
                          /* 0x8 */ u8*  passStamp; /** Tracks visited characters per query pass. */
                      } chara;
-    /* 0xA0   */ } field_A0; // Floor info? Cell info? Cell state?
+    /* 0xA0   */ } context; /** Query context (cell lookup or character to check??) */
 
     /* 0xC8   */ u8                    shapeIdx; /** Secondary. Used only if detecting a cell after not finding one. */
     /* 0xCA   */ q7_8                  floorHeight; // TODO: Base floor height with slope unaccounted for?
@@ -350,9 +360,10 @@ void Collision_MoveOffsetDampen(VECTOR3* moveOffset, const s_CharaCollisionCylin
  * @param state Collision state to initialize.
  * @param moveOffset Movement offset.
  * @param cylinder Collision cylinder.
- * @param arg3 Configuration flag. TODO: What is it?
+ * @param blockInvalidFloor `true` to treat invalid floors as walls, `false` otherwise.
  */
-void Collision_CollStateInit(s_CollisionState* state, VECTOR3* moveOffset, const s_CharaCollisionCylinder* cylinder, bool arg3);
+void Collision_CollStateInit(s_CollisionState* state, VECTOR3* moveOffset,
+                             const s_CharaCollisionCylinder* cylinder, bool blockInvalidFloor);
 
 // ========================================
 // @split? Collision state fill.
@@ -410,11 +421,12 @@ void func_8006BE40(s_CollisionState* state);
 
 void func_8006BF88(s_CollisionState* state, const SVECTOR3* splitVert);
 
-void func_8006C0C8(s_CollisionState* state, q3_12 arg1, q7_8 arg2);
+void func_8006C0C8(s_CollisionState* state, q3_12 hitAlpha, q7_8 arg2);
 
-bool func_8006C1B8(u32 arg0, q3_12 distAlpha, s_CollisionState* state);
+bool func_8006C1B8(u32 contactType, q3_12 hitAlpha, s_CollisionState* state);
 
-q3_12 func_8006C248(s32 packedDir, q3_12 arg1, q3_12 deltaX, q7_8 deltaZ, q7_8 radius);
+// Computes obstacle hit distance alpha along the move distance.
+q3_12 func_8006C248(s32 packedDir, q3_12 moveDist, q3_12 deltaX, q7_8 deltaZ, q7_8 radius);
 
 // Related to cylinders.
 bool func_8006C3D4(s_CollisionState* state, s_IpdCollisionData* collData, s32 shapeIdx);
