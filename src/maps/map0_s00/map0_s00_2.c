@@ -64,60 +64,7 @@ void GameBoot_LoadScreen_StageString(void) // 0x800D95D4
 }
 
 const char* MAP_MESSAGES[] = {
-    #include "maps/shared/map_msg_common.h"
-#if VERSION_REGION_IS(NTSC)
-    /* 15 */ "~J0(2.5)\tCheryl.__Where_could_you_be? ~E ",
-    /* 16 */ "~J0(1.5)\tIt's_strange... ",
-    /* 17 */ "~J0(2.0)\tIt's_quiet.__Too_quiet. ",
-    /* 18 */ "~J0(3.0)\tThis_place_is ~N\n\t\t\tlike_a_ghost_town. ~E ",
-    /* 19 */ "~J0(3.0)\tCheryl. ~E ",
-    /* 20 */ "~J0(1.5)\tFootsteps? ~E ",
-    /* 21 */ "~J0(2.8)\tCheryl? ~N\n\t\t\tIs_that_Cheryl!? ~E ",
-    /* 22 */ "~J0(1.2)\tWhere_are_you_going? ~E ",
-    /* 23 */ "~J0(1.8)\tHey_wait...stop! ~E ",
-    /* 24 */ "\tI'd_better_follow_Cheryl... ~E ",
-    /* 25 */ "\tThat's_strange, ~N\n\tit's_getting_darker. ~E ",
-    /* 26 */ "\tA_dead_end? ~N\n\tWhat_the_hell!? ~E ",
-    /* 27 */ "~J0(1.6)\tWhat_is_this? ",
-    /* 28 */ "~J0(2.5)\tWhat's_going_on_here!? ~E ",
-    /* 29 */ "\tWhat's_this? ~E ",
-    /* 30 */ "\t......better_than_nothing, ~N\n\tI_guess. ~E ",
-    /* 31 */ "\tWhat? ~N\n\tWhat's_this_doing_here? ~E ",
-    /* 32 */ "\tBlocked_by_a_fence? ~E ",
-    /* 33 */ "\tA_broken_wheelchair? ~N\n\tWhat's_this_doing_here? ~E ",
-    /* 34 */ "\tWhat_the..? ~N\n\tWhat_is_it? ~E ",
-    /* 35 */ "\tThe_street_is_blocked.",
-    /* 36 */ "\tCan't_get_out_of_town ~N\n\tthrough_here. ~E ",
-    /* 37 */ "\tMy_car... ~N\n\ttoo_banged_up_to_drive. ",
-    /* 38 */ "\tWhere's_Cheryl? ~N\n\tHope_she's_safe. ~E "
-#elif VERSION_REGION_IS(NTSCJ)
-    /* 15 */ "~J0(2.5)\tシェリル……どこへ行ったんだ？ ~E ",
-    /* 16 */ "~J0(1.5)\tおかしい…… ",
-    /* 17 */ "~J0(2.0)\t……静かだ　静かすぎる ",
-    /* 18 */ "~J0(3.0)\tまるで人のいない町のようだ…… ~E ",
-    /* 19 */ "~J0(3.0)\tシェリル…… ~E ",
-    /* 20 */ "~J0(1.5) \t……足音？ ~E ",
-    /* 21 */ "~J0(2.8)\tシェリル……？ ~N\n\t\t\tシェリルなのか！？ ~E ",
-    /* 22 */ "~J0(1.2)\tどこへ行くんだ？ ~E ",
-    /* 23 */ "~J0(1.8)\t待つんだ……待ってくれ！ ~E ",
-    /* 24 */ "\tシェリルを追わなくては…… ~E ",
-    /* 25 */ "\tおかしい……暗くなってきたな ~E ",
-    /* 26 */ "\t行き止まり……？ ~N\n\tそんな馬鹿な！ ~E ",
-    /* 27 */ "~J0(1.6)\tこれは何だ？ ",
-    /* 28 */ "~J0(2.5)\tさっきからいったい ~N\n\t\t\tどうなってるんだ！？ ~E ",
-    /* 29 */ "\tこれは……？ ~E ",
-    /* 30 */ "\t……ないよりは　ましか ~E ",
-    /* 31 */ "\t何で……こんなものが…… ~E ",
-    /* 32 */ "\t金網で道がふさがれている！ ~E ",
-    /* 33 */ "\t壊れた車椅子だ　なぜこんなところに？ ~E ",
-    /* 34 */ "\t何だ……？　これは…… ~E ",
-    /* 35 */ "\t道がふさがれている ~N\n\tここから町を出ることはできないな ~E ",
-    /* 36 */ // TODO: JAP versions concatenate 35+36 into single string? Code would need adjustment too with `#ifdef`.
-    /* 37 */ "\t乗ってきた車だ ~N\n\t壊れて動かなくなっている ",
-    /* 38 */ "\t……シェリルはどこに行ったのだろう？ ~N\n\t無事ならいいのだが…… ~E "
-#elif VERSION_REGION_IS(PAL)
-    #include "map_msg_pal.h"
-#endif
+    #include "map_msgs.h"
 };
 
 void func_800D9610(void) // 0x800D9610
