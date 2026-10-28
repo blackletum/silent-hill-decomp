@@ -94,16 +94,16 @@ void PuppetNurse_Init(s_SubCharacter* nurse, bool isDoctor)
 
     localNurse = nurse; // TODO: Not sure why this is needed, possibly an inline here somewhere?
 
-    nurse->moveSpeed                 = Q12(0.0f);
-    nurse->collision.state           = CharaCollisionState_Npc;
-    nurse->headingAngle              = nurse->rotation.vy;
-    nurseProps.position_E8           = nurse->position;
-    nurse->collision.cylinder.radius = Q12(0.3f);
-    nurseProps.damage.position.vx    = Q12(0.0f);
-    nurseProps.damage.position.vy    = Q12(0.0f);
-    nurseProps.damage.position.vz    = Q12(0.0f);
-    nurseProps.field_114             = Q12(0.0f);
-    nurseProps.field_118             = 0;
+    nurse->moveSpeed                      = Q12(0.0f);
+    nurse->collision.state                = CharaCollisionState_Npc;
+    nurse->headingAngle                   = nurse->rotation.vy;
+    nurseProps.position_E8                = nurse->position;
+    nurse->collision.cylinder.outerRadius = Q12(0.3f);
+    nurseProps.damage.position.vx         = Q12(0.0f);
+    nurseProps.damage.position.vy         = Q12(0.0f);
+    nurseProps.damage.position.vz         = Q12(0.0f);
+    nurseProps.field_114                  = Q12(0.0f);
+    nurseProps.field_118                  = 0;
 
     Chara_DamageClear(nurse);
 
@@ -1457,11 +1457,11 @@ void sharedFunc_800D0828_3_s03(s_SubCharacter* nurse, GsCOORDINATE2* boneCoords)
     boxOffsetX     = unkPos.vx - nurse->position.vx;
     boxOffsetZ     = unkPos.vz - nurse->position.vz;
 
-    cylinderRadius                       = sharedFunc_800CD940_3_s03(cylinderRadius + Q12(0.05f), nurse->collision.cylinder.radius);
-    nurse->collision.cylinder.field_2    = cylinderRadius - Q12(0.05f);
-    nurse->collision.cylinder.radius     = cylinderRadius;
-    nurse->collision.shapeOffsets.box.vx = boxOffsetX;
-    nurse->collision.shapeOffsets.box.vz = boxOffsetZ;
+    cylinderRadius                        = sharedFunc_800CD940_3_s03(cylinderRadius + Q12(0.05f), nurse->collision.cylinder.outerRadius);
+    nurse->collision.cylinder.innerRadius = cylinderRadius - Q12(0.05f);
+    nurse->collision.cylinder.outerRadius = cylinderRadius;
+    nurse->collision.shapeOffsets.box.vx  = boxOffsetX;
+    nurse->collision.shapeOffsets.box.vz  = boxOffsetZ;
 
     sharedFunc_800CD920_3_s03(nurse, boxOffsetX, boxOffsetZ);
 

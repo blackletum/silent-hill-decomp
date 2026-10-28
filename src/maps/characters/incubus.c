@@ -82,7 +82,7 @@ bool Incubus_Init(s_SubCharacter* incubus, GsCOORDINATE2* boneCoords) // 0x800DD
 
     incubus->moveSpeed                          = Q12(0.0f);
     incubus->headingAngle                       = incubus->rotation.vy;
-    incubus->collision.cylinder.radius          = Q12(0.3f);
+    incubus->collision.cylinder.outerRadius     = Q12(0.3f);
     incubus->collision.state                    = CharaCollisionState_4;
     incubus->collision.shapeOffsets.cylinder.vx = Q12(0.0f);
     incubus->collision.shapeOffsets.cylinder.vz = Q12(0.0f);
@@ -994,12 +994,12 @@ void func_800DEF50(s_SubCharacter* incubus, GsCOORDINATE2* boneCoords) // 0x800D
     offsetY = Q8_TO_Q12(transformMat.t[1]) - incubus->position.vy;
     offsetZ = Q8_TO_Q12(transformMat.t[2]) - incubus->position.vz;
 
-    incubus->collision.cylinder.radius  = Q12(0.5f);
-    incubus->collision.cylinder.field_2 = Q12(0.5f);
-    incubus->collision.box.topExtent          = offsetY - Q12(0.25f);
-    incubus->collision.box.bottomExtent       = offsetY;
-    incubus->collision.box.height       = offsetY + Q12(0.25f);
-    incubus->collision.box.offsetY      = offsetY;
+    incubus->collision.cylinder.outerRadius = Q12(0.5f);
+    incubus->collision.cylinder.innerRadius = Q12(0.5f);
+    incubus->collision.box.topExtent        = offsetY - Q12(0.25f);
+    incubus->collision.box.bottomExtent     = offsetY;
+    incubus->collision.box.height           = offsetY + Q12(0.25f);
+    incubus->collision.box.offsetY          = offsetY;
 
     sharedFunc_800CD920_3_s03(incubus, offsetX, offsetZ);
 

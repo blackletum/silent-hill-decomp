@@ -1029,11 +1029,11 @@ void SplitHead_MovementUpdate(s_SubCharacter* splitHead)
     if (ANIM_STATUS_IDX_GET(splitHead->model.anim.status) == SplitHeadAnim_BiteAttack ||
         ANIM_STATUS_IDX_GET(splitHead->model.anim.status) == SplitHeadAnim_14)
     {
-        splitHead->collision.cylinder.radius = Q12(1.3f);
+        splitHead->collision.cylinder.outerRadius = Q12(1.3f);
     }
     else
     {
-        splitHead->collision.cylinder.radius = Q12(1.7f);
+        splitHead->collision.cylinder.outerRadius = Q12(1.7f);
     }
 
     splitHead->collision.state = CharaCollisionState_4;
@@ -1280,9 +1280,9 @@ void sharedFunc_800D2D74_1_s05(s_SubCharacter* splitHead)
             if (ABS(sp98[1] - sp98[2]) >= 114)
             {
                 splitHeadProps.flags                 |= SplitHeadFlag_0;
-                splitHead->collision.box.topExtent          = sp20[0].vy;
+                splitHead->collision.box.topExtent    = sp20[0].vy;
                 splitHead->collision.box.height       = sp50[0].vy;
-                splitHead->collision.cylinder.field_2 = Q12(0.6f);
+                splitHead->collision.cylinder.innerRadius = Q12(0.6f);
 
                 offsetX = (sp20[0].vx - splitHead->position.vx) * 3;
                 if (offsetX < Q12(0.0f))
@@ -1362,11 +1362,11 @@ void sharedFunc_800D2D74_1_s05(s_SubCharacter* splitHead)
 
     if (unkIdx == 3)
     {
-        splitHead->collision.cylinder.field_2 = Q12(0.6f);
+        splitHead->collision.cylinder.innerRadius = Q12(0.6f);
     }
     else
     {
-        splitHead->collision.cylinder.field_2 = FP_FROM(((Q12(1.0f) - sp90[unkIdx]) * Q12(0.6f)) + (sp90[unkIdx] * Q12(0.35f)), Q12_SHIFT);
+        splitHead->collision.cylinder.innerRadius = FP_FROM(((Q12(1.0f) - sp90[unkIdx]) * Q12(0.6f)) + (sp90[unkIdx] * Q12(0.35f)), Q12_SHIFT);
     }
 
     splitHead->collision.shapeOffsets.box.vx = FP_FROM((sp20[0].vx * (Q12(1.0f) - sp90[unkIdx])) + (sp20[unkIdx].vx * sp90[unkIdx]), Q12_SHIFT) - splitHead->position.vx;
@@ -1411,7 +1411,7 @@ void sharedFunc_800D3388_1_s05(s_SubCharacter* splitHead, q19_12* offsetX, q19_1
         sp28[i]         = sp38[k].field_D;
         sp38[k].field_E = i;
 
-        if (g_SysWork.playerWork.player.collision.cylinder.radius >= sp38[k].field_0)
+        if (g_SysWork.playerWork.player.collision.cylinder.outerRadius >= sp38[k].field_0)
         {
             k++;
         }
@@ -1442,7 +1442,7 @@ void sharedFunc_800D3388_1_s05(s_SubCharacter* splitHead, q19_12* offsetX, q19_1
                         ptr1->field_D = ptr0->field_D;
                         ptr1->field_E = ptr0->field_E;
 
-                        sp38[k].field_0 = g_SysWork.playerWork.player.collision.cylinder.radius - sp38[k].field_0;
+                        sp38[k].field_0 = g_SysWork.playerWork.player.collision.cylinder.outerRadius - sp38[k].field_0;
                         spC8[k]         = ratan2(newPosX - sp38[i].field_4, newPosZ - sp38[i].field_8);
 
                         k++;
@@ -1522,7 +1522,7 @@ void sharedFunc_800D3388_1_s05(s_SubCharacter* splitHead, q19_12* offsetX, q19_1
                         ptr1->field_D = ptr0->field_D;
                         ptr1->field_E = ptr0->field_E;
 
-                        sp38[k].field_0 = g_SysWork.playerWork.player.collision.cylinder.radius + sp38[k].field_0;
+                        sp38[k].field_0 = g_SysWork.playerWork.player.collision.cylinder.outerRadius + sp38[k].field_0;
                         spC8[k]         = ratan2(sp38[i].field_4 - newPosX, sp38[i].field_8 - newPosZ);
 
                         k++;
@@ -1538,7 +1538,7 @@ void sharedFunc_800D3388_1_s05(s_SubCharacter* splitHead, q19_12* offsetX, q19_1
         {
             for (i = 0; i < temp_s7; i++)
             {
-                sp38[i].field_0 = g_SysWork.playerWork.player.collision.cylinder.radius + sp38[i].field_0;
+                sp38[i].field_0 = g_SysWork.playerWork.player.collision.cylinder.outerRadius + sp38[i].field_0;
                 spC8[i]         = ratan2(sp38[i].field_4 - newPosX, sp38[i].field_8 - newPosZ);
             }
 
@@ -1585,11 +1585,11 @@ void sharedFunc_800D3B30_1_s05(s_SubCharacter* splitHead)
     s32                         offsetZ;
     s32                         temp_v0;
     s32                         var_v1;
-    q3_12                       var_v1_3;
+    q3_12                       radius;
 
     // Reset collision shapes.
-    splitHead->collision.box.bottomExtent               = Q12(0.0f);
-    splitHead->collision.cylinder.radius          = Q12(0.0f);
+    splitHead->collision.box.bottomExtent         = Q12(0.0f);
+    splitHead->collision.cylinder.outerRadius     = Q12(0.0f);
     splitHead->collision.shapeOffsets.cylinder.vx = Q12(0.0f);
     splitHead->collision.shapeOffsets.cylinder.vz = Q12(0.0f);
     splitHead->collision.state                    = CharaCollisionState_Ignore;
@@ -1661,24 +1661,24 @@ void sharedFunc_800D3B30_1_s05(s_SubCharacter* splitHead)
 
             if (splitHead->model.anim.time < Q12(31.0f))
             {
-                var_v1_3 = Q12(0.0f);
+                radius = Q12(0.0f);
             }
             else if (splitHead->model.anim.time < Q12(33.0f))
             {
-                var_v1_3 = Q12_MULT_PRECISE(g_SysWork.playerWork.player.collision.cylinder.radius,
-                                               splitHead->model.anim.time + Q12(-31.0f)) >> 1;
+                radius = DIV_FAST(Q12_MULT_PRECISE(g_SysWork.playerWork.player.collision.cylinder.outerRadius,
+                                               splitHead->model.anim.time + Q12(-31.0f)), 2);
             }
             else
             {
-                var_v1_3 = Q12(0.0f);
+                radius = Q12(0.0f);
                 if (splitHead->model.anim.time < Q12(37.0f))
                 {
-                    var_v1_3 = g_SysWork.playerWork.player.collision.cylinder.radius;
+                    radius = g_SysWork.playerWork.player.collision.cylinder.outerRadius;
                 }
             }
 
-            if (sp18.field_0 < var_v1_3 &&
-                sp28.field_0 < var_v1_3 &&
+            if (sp18.field_0 < radius &&
+                sp28.field_0 < radius &&
                 !(splitHeadProps.flags & SplitHeadFlag_9))
             {
                 Chara_AttackReceivedSet(&g_SysWork.playerWork.player, WEAPON_ATTACK(EquippedWeaponId_Unk37, AttackInputType_Hold));

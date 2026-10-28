@@ -75,16 +75,16 @@ void Collision_CharaCollisionSet(s_SubCharacter* chara, s_CharaKeyframe* keyfram
     invAlpha = Q12(1.0f) - alpha;
 
     // Set interpolated collision shapes for active frame.
-    chara->collision.box.topExtent                  = FP_FROM((keyframe0->box.topExtent                  * invAlpha) + (keyframe1->box.topExtent                  * alpha), Q12_SHIFT);
-    chara->collision.box.bottomExtent               = FP_FROM((keyframe0->box.bottomExtent               * invAlpha) + (keyframe1->box.bottomExtent               * alpha), Q12_SHIFT);
+    chara->collision.box.topExtent            = FP_FROM((keyframe0->box.topExtent            * invAlpha) + (keyframe1->box.topExtent            * alpha), Q12_SHIFT);
+    chara->collision.box.bottomExtent         = FP_FROM((keyframe0->box.bottomExtent         * invAlpha) + (keyframe1->box.bottomExtent         * alpha), Q12_SHIFT);
     chara->collision.box.height               = FP_FROM((keyframe0->box.height               * invAlpha) + (keyframe1->box.height               * alpha), Q12_SHIFT);
     chara->collision.box.offsetY              = FP_FROM((keyframe0->box.offsetY              * invAlpha) + (keyframe1->box.offsetY              * alpha), Q12_SHIFT);
     chara->collision.shapeOffsets.cylinder.vx = FP_FROM((keyframe0->shapeOffsets.cylinder.vx * invAlpha) + (keyframe1->shapeOffsets.cylinder.vx * alpha), Q12_SHIFT);
     chara->collision.shapeOffsets.cylinder.vz = FP_FROM((keyframe0->shapeOffsets.cylinder.vz * invAlpha) + (keyframe1->shapeOffsets.cylinder.vz * alpha), Q12_SHIFT);
-    chara->collision.cylinder.radius          = FP_FROM((keyframe0->box.field_8              * invAlpha) + (keyframe1->box.field_8              * alpha), Q12_SHIFT);
+    chara->collision.cylinder.outerRadius     = FP_FROM((keyframe0->box.field_8              * invAlpha) + (keyframe1->box.field_8              * alpha), Q12_SHIFT);
     chara->collision.shapeOffsets.box.vx      = FP_FROM((keyframe0->shapeOffsets.box.vx      * invAlpha) + (keyframe1->shapeOffsets.box.vx      * alpha), Q12_SHIFT);
     chara->collision.shapeOffsets.box.vz      = FP_FROM((keyframe0->shapeOffsets.box.vz      * invAlpha) + (keyframe1->shapeOffsets.box.vz      * alpha), Q12_SHIFT);
-    chara->collision.cylinder.field_2         = FP_FROM((keyframe0->box.field_A              * invAlpha) + (keyframe1->box.field_A              * alpha), Q12_SHIFT);
+    chara->collision.cylinder.innerRadius     = FP_FROM((keyframe0->box.field_A              * invAlpha) + (keyframe1->box.field_A              * alpha), Q12_SHIFT);
 }
 
 void Chara_ModelBoneScaleSet(GsCOORDINATE2* boneCoords, s32 boneIdx, q19_12 scaleX, q19_12 scaleY, q19_12 scaleZ) // 0x800705E4

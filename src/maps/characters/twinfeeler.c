@@ -1707,10 +1707,10 @@ void func_800D3694(s_SubCharacter* twinfeeler, s_AnmHeader* anmHdr, GsCOORDINATE
     Chara_ModelBoneScaleSet(boneCoords, 0, scale, scale, scale);
 
     twinfeeler->collision.box.height               = Q12(0.0f);
-    twinfeeler->collision.box.bottomExtent               = Q12(0.0f);
+    twinfeeler->collision.box.bottomExtent         = Q12(0.0f);
     twinfeeler->collision.shapeOffsets.cylinder.vz = Q12(0.0f);
     twinfeeler->collision.shapeOffsets.cylinder.vx = Q12(0.0f);
-    twinfeeler->collision.cylinder.radius          = Q12(0.0f);
+    twinfeeler->collision.cylinder.outerRadius     = Q12(0.0f);
 
     ptr = PSX_SCRATCH;
 
@@ -1724,11 +1724,11 @@ void func_800D3694(s_SubCharacter* twinfeeler, s_AnmHeader* anmHdr, GsCOORDINATE
     gte_rt();
     gte_stlvnl(&ptr->field_28);
 
-    twinfeeler->collision.box.topExtent             = Q12_MULT_PRECISE(Q8_TO_Q12(ptr->field_28.vy), scale);
+    twinfeeler->collision.box.topExtent       = Q12_MULT_PRECISE(Q8_TO_Q12(ptr->field_28.vy), scale);
     twinfeeler->collision.box.offsetY         = twinfeeler->collision.box.topExtent + Q12(0.03f);
     twinfeeler->collision.shapeOffsets.box.vx = Q12_MULT_PRECISE(twinfeeler->position.vx - Q8_TO_Q12(ptr->field_28.vx), scale);
     twinfeeler->collision.shapeOffsets.box.vz = Q12_MULT_PRECISE(twinfeeler->position.vz - Q8_TO_Q12(ptr->field_28.vz), scale);
-    twinfeeler->collision.cylinder.field_2    = Q12(0.05f);
+    twinfeeler->collision.cylinder.innerRadius    = Q12(0.05f);
 }
 
 void func_800D3AE0(s_SubCharacter* chara, s32 soundIdx)
@@ -1828,11 +1828,11 @@ bool Twinfeeler_Init(s_SubCharacter* twinfeeler) // 0x800D3CD4
 
     localTwinfeeler->properties.twinfeeler.prevHealth = NO_VALUE;
 
-    twinfeeler->collision.cylinder.radius = Q12(0.3f);
-    twinfeeler->model.anim.alpha          = Q12(0.0f);
-    twinfeeler->moveSpeed                 = Q12(0.0f);
-    twinfeeler->headingAngle              = twinfeeler->rotation.vy;
-    twinfeeler->collision.state           = CharaCollisionState_4;
+    twinfeeler->collision.cylinder.outerRadius = Q12(0.3f);
+    twinfeeler->model.anim.alpha               = Q12(0.0f);
+    twinfeeler->moveSpeed                      = Q12(0.0f);
+    twinfeeler->headingAngle                   = twinfeeler->rotation.vy;
+    twinfeeler->collision.state                = CharaCollisionState_4;
 
     localTwinfeeler->properties.twinfeeler.damage.position.vx = Q12(0.0f);
     localTwinfeeler->properties.twinfeeler.damage.position.vy = Q12(0.0f);
@@ -2989,10 +2989,10 @@ void func_800D5904(s_SubCharacter* twinfeeler, GsCOORDINATE2* boneCoords) // 0x8
         twinfeeler->collision.box.bottomExtent = unkPosY;
     }
 
-    twinfeeler->collision.box.height       = unkBasePosY + Q12(0.25f);
-    twinfeeler->collision.cylinder.radius  = Q12(0.5f);
-    twinfeeler->collision.box.offsetY      = unkBasePosY;
-    twinfeeler->collision.cylinder.field_2 = Q12(0.4f);
+    twinfeeler->collision.box.height           = unkBasePosY + Q12(0.25f);
+    twinfeeler->collision.cylinder.outerRadius = Q12(0.5f);
+    twinfeeler->collision.box.offsetY          = unkBasePosY;
+    twinfeeler->collision.cylinder.innerRadius = Q12(0.4f);
     sharedFunc_800CD920_3_s03(twinfeeler, posX, posZ);
 
     twinfeeler->collision.shapeOffsets.box.vx = twinfeeler->collision.shapeOffsets.cylinder.vx;

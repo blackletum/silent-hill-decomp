@@ -1440,8 +1440,8 @@ void Player_LogicUpdate(s_SubCharacter* player, s_PlayerExtra* extra, GsCOORDINA
 
             playerProps.moveSpeed = Q12(0.0f);
             func_8007FB94(player, extra, animStatus);
-            player->collision.cylinder.radius = Q12(0.25f);
-            player->collision.cylinder.field_2 = Q12(0.0f);
+            player->collision.cylinder.outerRadius = Q12(0.25f);
+            player->collision.cylinder.innerRadius = Q12(0.0f);
 
             if (ANIM_STATUS_IS_ACTIVE(player->model.anim.status))
             {
@@ -1588,10 +1588,10 @@ void Player_LogicUpdate(s_SubCharacter* player, s_PlayerExtra* extra, GsCOORDINA
                             break;
                     }
 
-                    player->collision.cylinder.field_2 += Q12_MULT_PRECISE(g_DeltaTime, Q12(0.27f));
+                    player->collision.cylinder.innerRadius += Q12_MULT_PRECISE(g_DeltaTime, Q12(0.27f));
                     player->collision.box.topExtent    += Q12_MULT_PRECISE(g_DeltaTime, Q12(1.2f));
                     player->collision.box.offsetY      += Q12_MULT_PRECISE(g_DeltaTime, Q12(0.9f));
-                    player->collision.cylinder.field_2  = CLAMP(player->collision.cylinder.field_2, DEFAULT_PLAYER_CYLINDER_FIELD_2, Q12(0.5f));
+                    player->collision.cylinder.innerRadius  = CLAMP(player->collision.cylinder.innerRadius, DEFAULT_PLAYER_CYLINDER_INNER_RADIUS, Q12(0.5f));
                     player->collision.box.topExtent     = CLAMP(player->collision.box.topExtent, DEFAULT_PLAYER_BOX_TOP, Q12(-0.4));
                     player->collision.box.offsetY       = CLAMP(player->collision.box.offsetY, DEFAULT_PLAYER_BOX_OFFSET_Y, Q12(-0.2f));
 
@@ -1649,7 +1649,7 @@ void Player_LogicUpdate(s_SubCharacter* player, s_PlayerExtra* extra, GsCOORDINA
                             break;
                     }
 
-                    player->collision.cylinder.radius              = Q12(0.0f);
+                    player->collision.cylinder.outerRadius         = Q12(0.0f);
                     playerChara.collision.shapeOffsets.cylinder.vz = Q12(0.0f);
                     playerChara.collision.shapeOffsets.cylinder.vx = Q12(0.0f);
                     playerChara.collision.shapeOffsets.box.vz      = Q12(0.0f);
@@ -2034,8 +2034,8 @@ void Player_LogicUpdate(s_SubCharacter* player, s_PlayerExtra* extra, GsCOORDINA
 
                         Player_ExtraStateSet(player, extra, PlayerState_None);
 
-                        playerChara.collision.cylinder.radius          = Q12(0.3f);
-                        playerChara.collision.cylinder.field_2         = DEFAULT_PLAYER_CYLINDER_FIELD_2;
+                        playerChara.collision.cylinder.outerRadius     = Q12(0.3f);
+                        playerChara.collision.cylinder.innerRadius     = DEFAULT_PLAYER_CYLINDER_INNER_RADIUS;
                         playerChara.collision.box.topExtent            = DEFAULT_PLAYER_BOX_TOP;
                         playerChara.collision.shapeOffsets.cylinder.vz = Q12(0.0f);
                         playerChara.collision.shapeOffsets.cylinder.vx = Q12(0.0f);
@@ -2060,11 +2060,11 @@ void Player_LogicUpdate(s_SubCharacter* player, s_PlayerExtra* extra, GsCOORDINA
 
                     if (ANIM_STATUS_IS_ACTIVE(player->model.anim.status))
                     {
-                        player->collision.cylinder.radius = ((player->model.anim.keyframeIdx - g_MapOverlayHdr.field_38[D_800AF220].time) * Q12(0.3f)) / 21;
+                        player->collision.cylinder.outerRadius = ((player->model.anim.keyframeIdx - g_MapOverlayHdr.field_38[D_800AF220].time) * Q12(0.3f)) / 21;
                     }
                     else
                     {
-                        player->collision.cylinder.radius = Q12(0.0f);
+                        player->collision.cylinder.outerRadius = Q12(0.0f);
                     }
 
                     if (player->model.anim.keyframeIdx == g_MapOverlayHdr.field_38[D_800AF220].keyframeIdx_6)
@@ -2081,11 +2081,11 @@ void Player_LogicUpdate(s_SubCharacter* player, s_PlayerExtra* extra, GsCOORDINA
                                 break;
                         }
 
-                        playerChara.collision.cylinder.radius  = Q12(0.3f);
+                        playerChara.collision.cylinder.outerRadius     = Q12(0.3f);
                         playerChara.collision.shapeOffsets.cylinder.vz = Q12(0.0f);
                         playerChara.collision.shapeOffsets.cylinder.vx = Q12(0.0f);
-                        playerChara.collision.shapeOffsets.box.vz = Q12(0.0f);
-                        playerChara.collision.shapeOffsets.box.vx = Q12(0.0f);
+                        playerChara.collision.shapeOffsets.box.vz      = Q12(0.0f);
+                        playerChara.collision.shapeOffsets.box.vx      = Q12(0.0f);
 
                         player->attackReceived = NO_VALUE;
                     }
@@ -2109,12 +2109,12 @@ void Player_LogicUpdate(s_SubCharacter* player, s_PlayerExtra* extra, GsCOORDINA
 
                         Player_ExtraStateSet(player, extra, PlayerState_None);
 
-                        player->collision.cylinder.radius = Q12(0.3f);
+                        player->collision.cylinder.outerRadius = Q12(0.3f);
 
                         playerChara.collision.shapeOffsets.cylinder.vz = Q12(0.0f);
                         playerChara.collision.shapeOffsets.cylinder.vx = Q12(0.0f);
-                        playerChara.collision.shapeOffsets.box.vz = Q12(0.0f);
-                        playerChara.collision.shapeOffsets.box.vx = Q12(0.0f);
+                        playerChara.collision.shapeOffsets.box.vz      = Q12(0.0f);
+                        playerChara.collision.shapeOffsets.box.vx      = Q12(0.0f);
                     }
                     break;
 
@@ -2163,7 +2163,7 @@ void Player_LogicUpdate(s_SubCharacter* player, s_PlayerExtra* extra, GsCOORDINA
                             playerChara.collision.box.topExtent    = DEFAULT_PLAYER_BOX_TOP;
                             playerChara.collision.box.bottomExtent = Q12(0.0f);
                             playerChara.collision.box.offsetY      = DEFAULT_PLAYER_BOX_OFFSET_Y;
-                            player->collision.cylinder.radius      = Q12(0.3f);
+                            player->collision.cylinder.outerRadius = Q12(0.3f);
                         }
                     }
                     else
@@ -2190,7 +2190,7 @@ void Player_LogicUpdate(s_SubCharacter* player, s_PlayerExtra* extra, GsCOORDINA
                             playerChara.collision.box.topExtent    = DEFAULT_PLAYER_BOX_TOP;
                             playerChara.collision.box.bottomExtent = Q12(0.0f);
                             playerChara.collision.box.offsetY      = DEFAULT_PLAYER_BOX_OFFSET_Y;
-                            player->collision.cylinder.radius      = Q12(0.3f);
+                            player->collision.cylinder.outerRadius = Q12(0.3f);
                         }
                     }
                     break;
@@ -2205,7 +2205,7 @@ void Player_LogicUpdate(s_SubCharacter* player, s_PlayerExtra* extra, GsCOORDINA
             if (player->model.anim.keyframeIdx == g_MapOverlayHdr.field_38[D_800AF220].keyframeIdx_6)
             {
                 Player_ExtraStateSet(player, extra, PlayerState_None);
-                player->collision.cylinder.field_2 = DEFAULT_PLAYER_CYLINDER_FIELD_2;
+                player->collision.cylinder.innerRadius = DEFAULT_PLAYER_CYLINDER_INNER_RADIUS;
             }
             break;
 
@@ -2215,7 +2215,7 @@ void Player_LogicUpdate(s_SubCharacter* player, s_PlayerExtra* extra, GsCOORDINA
             if (player->model.anim.keyframeIdx == g_MapOverlayHdr.field_38[D_800AF220].keyframeIdx_6)
             {
                 Player_ExtraStateSet(player, extra, PlayerState_None);
-                player->collision.cylinder.field_2 = DEFAULT_PLAYER_CYLINDER_FIELD_2;
+                player->collision.cylinder.innerRadius = DEFAULT_PLAYER_CYLINDER_INNER_RADIUS;
             }
             break;
 
@@ -2253,7 +2253,7 @@ void Player_LogicUpdate(s_SubCharacter* player, s_PlayerExtra* extra, GsCOORDINA
         case PlayerState_Death:
             player->attackReceived = NO_VALUE;
             func_8007FB94(player, extra, ANIM_STATUS(101, false));
-            player->collision.cylinder.field_2 = Q12(0.0f);
+            player->collision.cylinder.innerRadius = Q12(0.0f);
 
             if (ANIM_STATUS_IS_ACTIVE(player->model.anim.status))
             {
@@ -2282,7 +2282,7 @@ void Player_LogicUpdate(s_SubCharacter* player, s_PlayerExtra* extra, GsCOORDINA
                 playerChara.collision.shapeOffsets.box.vz      = Q12(0.0f);
                 playerChara.collision.shapeOffsets.cylinder.vx = Q12_MULT(cylinderOffsetDist1, Math_Sin(player->rotation.vy));
                 playerChara.collision.shapeOffsets.cylinder.vz = Q12_MULT(cylinderOffsetDist1, Math_Cos(player->rotation.vy));
-                player->collision.cylinder.radius              = Q12(0.3f);
+                player->collision.cylinder.outerRadius         = Q12(0.3f);
             }
 
             if (player->model.anim.keyframeIdx == g_MapOverlayHdr.field_38[D_800AF220].keyframeIdx_6)
@@ -2322,7 +2322,7 @@ void Player_LogicUpdate(s_SubCharacter* player, s_PlayerExtra* extra, GsCOORDINA
             }
 
             func_8007FB94(player, extra, ANIM_STATUS(101, true));
-            player->collision.cylinder.field_2 = Q12(0.0f);
+            player->collision.cylinder.innerRadius = Q12(0.0f);
 
             if (player->model.anim.keyframeIdx == (g_MapOverlayHdr.field_38[D_800AF220].keyframeIdx_6 - 25))
             {
@@ -7063,7 +7063,7 @@ void Player_ReceiveDamage(s_SubCharacter* player, s_PlayerExtra* extra) // 0x800
 
             if (player->attackReceived == 47)
             {
-                g_SysWork.playerWork.player.collision.cylinder.field_2 = Q12(0.0f);
+                g_SysWork.playerWork.player.collision.cylinder.innerRadius = Q12(0.0f);
                 Player_ExtraStateSet(player, extra, PlayerState_InstantDeath);
                 return;
             }
@@ -7214,7 +7214,7 @@ void Player_ReceiveDamage(s_SubCharacter* player, s_PlayerExtra* extra) // 0x800
 
                 case 47:
                     player->health                     = NO_VALUE;
-                    player->collision.cylinder.field_2 = Q12(0.0f);
+                    player->collision.cylinder.innerRadius = Q12(0.0f);
                     Player_ExtraStateSet(player, extra, PlayerState_InstantDeath);
                     return;
 
@@ -8040,10 +8040,10 @@ void Game_PlayerInfoInit(void) // 0x8007E5AC
 
     SysWork_SavegameReadPlayer();
 
-    g_SysWork.playerWork.player.model.charaId              = Chara_Harry;
-    playerExtra.model.charaId               = Chara_Harry;
-    g_SysWork.playerWork.player.collision.cylinder.radius  = Q12(0.3f);
-    g_SysWork.playerWork.player.collision.cylinder.field_2 = DEFAULT_PLAYER_CYLINDER_FIELD_2;
+    g_SysWork.playerWork.player.model.charaId                  = Chara_Harry;
+    playerExtra.model.charaId                                  = Chara_Harry;
+    g_SysWork.playerWork.player.collision.cylinder.outerRadius = Q12(0.3f);
+    g_SysWork.playerWork.player.collision.cylinder.innerRadius = DEFAULT_PLAYER_CYLINDER_INNER_RADIUS;
 
     extraModel = &g_SysWork.playerWork.player.model;
     model      = &playerExtra.model;
@@ -8157,9 +8157,9 @@ void func_8007E8C0(void) // 0x8007E8C0
     player->properties.player.exhaustionTimer = Q12(0.0f);
 
     Player_CollisionReset();
-    player->collision.cylinder.radius  = Q12(0.3f);
-    player->collision.cylinder.field_2 = DEFAULT_PLAYER_CYLINDER_FIELD_2;
-    g_GameWork.mapAnimIdx              = NO_VALUE;
+    player->collision.cylinder.outerRadius = Q12(0.3f);
+    player->collision.cylinder.innerRadius = DEFAULT_PLAYER_CYLINDER_INNER_RADIUS;
+    g_GameWork.mapAnimIdx                  = NO_VALUE;
 
     func_8007E9C4();
 }
@@ -8218,7 +8218,7 @@ void func_8007E9C4(void) // 0x8007E9C4
     g_SysWork.npcIdxs[2]               = NO_VALUE;
     g_SysWork.npcIdxs[1]               = NO_VALUE;
     g_SysWork.npcIdxs[0]               = NO_VALUE;
-    player->collision.cylinder.field_2 = DEFAULT_PLAYER_CYLINDER_FIELD_2;
+    player->collision.cylinder.innerRadius = DEFAULT_PLAYER_CYLINDER_INNER_RADIUS;
 
     g_Player_IsAiming            = false;
     g_Player_IsRunning           = false;
@@ -8859,8 +8859,8 @@ void func_8007FD4C(bool resetColl) // 0x8007FD4C
 
     if (resetColl)
     {
-        g_SysWork.playerWork.player.collision.cylinder.radius  = Q12(0.3f);
-        g_SysWork.playerWork.player.collision.cylinder.field_2 = DEFAULT_PLAYER_CYLINDER_FIELD_2;
+        g_SysWork.playerWork.player.collision.cylinder.outerRadius = Q12(0.3f);
+        g_SysWork.playerWork.player.collision.cylinder.innerRadius = DEFAULT_PLAYER_CYLINDER_INNER_RADIUS;
 
         // TODO: Doesn't match?
         //Player_CollisionReset();

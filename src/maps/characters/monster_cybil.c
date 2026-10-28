@@ -360,15 +360,15 @@ void MonsterCybil_Init(s_SubCharacter* monsterCybil, s_Model* modelUpper) // 0x8
 
 void func_800D8A90(s_SubCharacter* monsterCybil) // 0x800D8A90
 {
-    monsterCybil->collision.cylinder.radius  = Q12(0.3f);
-    monsterCybil->collision.cylinder.field_2 = DEFAULT_PLAYER_CYLINDER_FIELD_2;
-    monsterCybil->collision.box.topExtent          = DEFAULT_PLAYER_BOX_TOP;
-    monsterCybil->collision.box.offsetY      = Q12(-1.05f);
-    monsterCybil->collision.box.field_8      = Q12(-1.45f);
+    monsterCybil->collision.cylinder.outerRadius = Q12(0.3f);
+    monsterCybil->collision.cylinder.innerRadius = DEFAULT_PLAYER_CYLINDER_INNER_RADIUS;
+    monsterCybil->collision.box.topExtent        = DEFAULT_PLAYER_BOX_TOP;
+    monsterCybil->collision.box.offsetY          = Q12(-1.05f);
+    monsterCybil->collision.box.field_8          = Q12(-1.45f);
 
     monsterCybil->health = Q12(4000.0f);
 
-    monsterCybil->collision.box.bottomExtent               = Q12(0.0f);
+    monsterCybil->collision.box.bottomExtent         = Q12(0.0f);
     monsterCybil->collision.box.height               = Q12(0.0f);
     monsterCybil->collision.shapeOffsets.cylinder.vz = Q12(0.0f);
     monsterCybil->collision.shapeOffsets.cylinder.vx = Q12(0.0f);
@@ -767,7 +767,7 @@ void func_800D9790(s_SubCharacter* monsterCybil, s_Model* modelUpper) // 0x800D9
         case 11:
             if (ANIM_STATUS_IS_ACTIVE(monsterCybil->model.anim.status))
             {
-                monsterCybil->collision.cylinder.radius = Q12(0.3f) - (((monsterCybil->model.anim.keyframeIdx - 216) * Q12(3.0f)) / 100);
+                monsterCybil->collision.cylinder.outerRadius = Q12(0.3f) - (((monsterCybil->model.anim.keyframeIdx - 216) * Q12(3.0f)) / 100);
             }
 
             Collision_WallDetect(&collResult, &offset, monsterCybil);
@@ -778,14 +778,14 @@ void func_800D9790(s_SubCharacter* monsterCybil, s_Model* modelUpper) // 0x800D9
             break;
 
         case 12:
-            monsterCybil->collision.cylinder.radius = Q12(0.0f);
-            monsterCybil->position.vx              += offset.vx;
-            monsterCybil->position.vz              += offset.vz;
-            monsterCybil->fallSpeed                 = Q12(0.0f);
+            monsterCybil->collision.cylinder.outerRadius = Q12(0.0f);
+            monsterCybil->position.vx                   += offset.vx;
+            monsterCybil->position.vz                   += offset.vz;
+            monsterCybil->fallSpeed                      = Q12(0.0f);
             break;
 
         default:
-            monsterCybil->collision.cylinder.radius          = Q12(0.3f);
+            monsterCybil->collision.cylinder.outerRadius     = Q12(0.3f);
             monsterCybil->collision.shapeOffsets.cylinder.vz = Q12(0.0f);
             monsterCybil->collision.shapeOffsets.cylinder.vx = Q12(0.0f);
             monsterCybil->collision.shapeOffsets.box.vz      = Q12(0.0f);

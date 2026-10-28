@@ -679,14 +679,14 @@ void func_8006EE0C(s_RayState_6C* arg0, bool useCylinder, const s_SubCharacter* 
 
     if (useCylinder == true)
     {
-        arg0->field_C = Q12_TO_Q8(chara->collision.cylinder.radius);
+        arg0->field_C = Q12_TO_Q8(chara->collision.cylinder.outerRadius);
         offsetX       = chara->collision.shapeOffsets.cylinder.vx;
         offsetZ       = chara->collision.shapeOffsets.cylinder.vz;
         topHeight     = chara->position.vy + chara->collision.box.bottomExtent;
     }
     else
     {
-        arg0->field_C = Q12_TO_Q8(chara->collision.cylinder.field_2);
+        arg0->field_C = Q12_TO_Q8(chara->collision.cylinder.innerRadius);
         offsetX       = chara->collision.shapeOffsets.box.vx;
         offsetZ       = chara->collision.shapeOffsets.box.vz;
         topHeight     = chara->position.vy + chara->collision.box.height;

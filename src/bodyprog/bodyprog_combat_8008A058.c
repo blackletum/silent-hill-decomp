@@ -1609,7 +1609,7 @@ s32 func_8008BF84(s_SubCharacter* chara, q19_12 angle, s_800AD4C8* arg2, s32 arg
     s32               temp_s0;
     s32               temp_s1;
     q19_12            unkX;
-    q19_12            temp_s3;
+    q19_12            innerRadius;
     q19_12            temp_t2;
     s32               j;
     q19_12            temp_t4;
@@ -1780,26 +1780,26 @@ s32 func_8008BF84(s_SubCharacter* chara, q19_12 angle, s_800AD4C8* arg2, s32 arg
         unkX = chara1->position.vz;
 
         temp_s0 = chara1->collision.shapeOffsets.box.vx;
-        temp_s3 = chara1->collision.shapeOffsets.box.vz;
+        innerRadius = chara1->collision.shapeOffsets.box.vz;
 
         temp_s1 += temp_s0;
 
         var_v1  += chara1->collision.box.topExtent;
-        unkX += temp_s3;
+        unkX += innerRadius;
 
         D_800C47C8[1].vy = var_v1;
-        temp_s3          = chara1->collision.cylinder.field_2;
+        innerRadius          = chara1->collision.cylinder.innerRadius;
 
         angle1 = ratan2(temp_s1 - posX, unkX - posZ);
         temp_v0_6 = Math_Sin(angle1);
-        temp_s0   = Q12_MULT_PRECISE(temp_s3, temp_v0_6);
+        temp_s0   = Q12_MULT_PRECISE(innerRadius, temp_v0_6);
 
         unkZ = Math_Cos(angle1);
 
         posX = temp_s1 - temp_s0;
 
         D_800C47C8[1].vx = posX;
-        posZ             = unkX - Q12_MULT_PRECISE(temp_s3, unkZ);
+        posZ             = unkX - Q12_MULT_PRECISE(innerRadius, unkZ);
 
         D_800C47C8[1].vz = posZ;
         var_v1           = Ray_TraceQuery(&D_800C47F8, &D_800C47C8[0], &D_800C47C8[1]);
@@ -1836,7 +1836,7 @@ s32 func_8008BF84(s_SubCharacter* chara, q19_12 angle, s_800AD4C8* arg2, s32 arg
             continue;
         }
 
-        temp_s3  = chara1->collision.cylinder.field_2;
+        innerRadius  = chara1->collision.cylinder.innerRadius;
         var_a1_2 = Q12(0.0f);
 
         if (temp_t2 < sp44)
@@ -1863,7 +1863,7 @@ s32 func_8008BF84(s_SubCharacter* chara, q19_12 angle, s_800AD4C8* arg2, s32 arg
         {
             if (var_a1_2 == Q12(0.0f))
             {
-                if (temp_s3 < var_v1)
+                if (innerRadius < var_v1)
                 {
                     continue;
                 }
@@ -1872,7 +1872,7 @@ s32 func_8008BF84(s_SubCharacter* chara, q19_12 angle, s_800AD4C8* arg2, s32 arg
             {
                 if (var_v1 == Q12(0.0f))
                 {
-                    if (temp_s3 < var_a1_2)
+                    if (innerRadius < var_a1_2)
                     {
                         continue;
                     }
@@ -1880,7 +1880,7 @@ s32 func_8008BF84(s_SubCharacter* chara, q19_12 angle, s_800AD4C8* arg2, s32 arg
                 else
                 {
                     var_v0_3 = Q12_MULT_PRECISE(var_a1_2, var_a1_2) + Q12_MULT_PRECISE(var_v1, var_v1);
-                    if (Q12_MULT_PRECISE(temp_s3, temp_s3) < var_v0_3)
+                    if (Q12_MULT_PRECISE(innerRadius, innerRadius) < var_v0_3)
                     {
                         continue;
                     }
@@ -1927,12 +1927,12 @@ s32 func_8008BF84(s_SubCharacter* chara, q19_12 angle, s_800AD4C8* arg2, s32 arg
             var_t2 = 0;
         }
 
-        for (j = 2; (var_t2 < temp_s0 || temp_s0 < -var_t2 || temp_s3 < var_t1) && j > 0; j--)
+        for (j = 2; (var_t2 < temp_s0 || temp_s0 < -var_t2 || innerRadius < var_t1) && j > 0; j--)
         {
-            if (temp_s3 < var_t1)
+            if (innerRadius < var_t1)
             {
-                temp_lo_5 = Q12(temp_s3) / var_t1;
-                var_t1    = temp_s3;
+                temp_lo_5 = Q12(innerRadius) / var_t1;
+                var_t1    = innerRadius;
                 unkX   = Q12_MULT_PRECISE(temp_lo_5, unkX);
                 temp_s0   = Q12_MULT_PRECISE(temp_lo_5, temp_s0);
                 unkZ    = Q12_MULT_PRECISE(temp_lo_5, unkZ);

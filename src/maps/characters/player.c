@@ -270,7 +270,7 @@ void Player_ControlFreeze(void)
 
     sharedData_800E39D8_0_s00 = 0;
 
-    playerChara->collision.cylinder.field_2                  = Q12(0.0f);
+    playerChara->collision.cylinder.innerRadius                  = Q12(0.0f);
     g_SysWork.playerWork.player.properties.player.flags |= PlayerFlag_Unk4 | PlayerFlag_Unk5;
     playerChara->flags                                      |= CharaFlag_Unk4;
     playerChara->collision.state                             = CharaCollisionState_4;
@@ -337,7 +337,7 @@ void Player_ControlUnfreeze(bool setIdle)
 
     g_SysWork.playerCombat.isAiming = false;
 
-    player->collision.cylinder.field_2 = DEFAULT_PLAYER_CYLINDER_FIELD_2;
+    player->collision.cylinder.innerRadius = DEFAULT_PLAYER_CYLINDER_INNER_RADIUS;
     Player_CollisionReset();
     g_SysWork.playerWork.player.properties.player.flags &= ~(PlayerFlag_Unk2 |
                                                              PlayerFlag_SfxActive |
@@ -890,8 +890,8 @@ bool sharedFunc_800D2E94_0_s00(void)
             npc->model.controlState++;
             npc->collision.box.topExtent            = Q12(-0.2f);
             npc->collision.box.bottomExtent         = Q12(0.2f);
-            npc->collision.cylinder.radius          = Q12(0.05f);
-            npc->collision.cylinder.field_2         = Q12(0.5f);
+            npc->collision.cylinder.outerRadius     = Q12(0.05f);
+            npc->collision.cylinder.innerRadius     = Q12(0.5f);
             npc->field_40                           = 0;
             npc->collision.box.offsetY              = Q12(0.0f);
             npc->collision.box.field_8              = Q12(0.0f);

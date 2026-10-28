@@ -681,21 +681,21 @@ void Chara_CollisionReset(s_SubCharacter* chara)
 {
     chara->model.stateStep = 0;
 
-    chara->collision.box.topExtent                  = Q12(0.0f);
-    chara->collision.box.bottomExtent               = Q12(0.0f);
+    chara->collision.box.topExtent            = Q12(0.0f);
+    chara->collision.box.bottomExtent         = Q12(0.0f);
     chara->collision.box.offsetY              = Q12(0.0f);
-    chara->collision.cylinder.radius          = Q12(0.0f);
-    chara->collision.cylinder.field_2         = Q12(0.0f);
+    chara->collision.cylinder.outerRadius     = Q12(0.0f);
+    chara->collision.cylinder.innerRadius     = Q12(0.0f);
     chara->collision.shapeOffsets.cylinder.vz = Q12(0.0f);
     chara->collision.shapeOffsets.cylinder.vx = Q12(0.0f);
     chara->collision.shapeOffsets.box.vz      = Q12(0.0f);
     chara->collision.shapeOffsets.box.vx      = Q12(0.0f);
 
     chara->properties.player.floorHeight = Q12(0.0f);
-    chara->properties.player.afkTimer  = Q12(0.0f);
+    chara->properties.player.afkTimer    = Q12(0.0f);
     chara->properties.player.floorHeight = Q12(0.0f);
-    chara->properties.player.field_F0     = 0;
-    chara->properties.player.field_F4     = Q12_ANGLE(0.0f);
+    chara->properties.player.field_F0    = 0;
+    chara->properties.player.field_F4    = Q12_ANGLE(0.0f);
 
     chara->model.controlState++;
     chara->collision.state = CharaCollisionState_Npc;

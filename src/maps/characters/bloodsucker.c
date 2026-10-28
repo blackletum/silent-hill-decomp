@@ -271,16 +271,16 @@ void sharedFunc_800D0F28_3_s03(s_SubCharacter* bloodsucker, s_AnmHeader* anmHdr,
     scratchData->field_28.vy = Q8_TO_Q12(scratchData->field_28.vy);
     scratchData->field_28.vz = Q8_TO_Q12(scratchData->field_28.vz);
 
-    bloodsucker->collision.box.topExtent   = scratchData->field_28.vy - Q12(0.05f);
-    bloodsucker->collision.box.bottomExtent      = scratchData->field_28.vy + Q12(0.05f);
-    bloodsucker->collision.box.height   = scratchData->field_28.vy + Q12(0.05f);
-    bloodsucker->collision.box.offsetY   = scratchData->field_28.vy;
-    bloodsucker->collision.shapeOffsets.box.vx = scratchData->field_28.vx - bloodsucker->position.vx;
-    bloodsucker->collision.shapeOffsets.box.vz = scratchData->field_28.vz - bloodsucker->position.vz;
-    bloodsucker->collision.cylinder.field_2   = Q12(0.05f);
+    bloodsucker->collision.box.topExtent            = scratchData->field_28.vy - Q12(0.05f);
+    bloodsucker->collision.box.bottomExtent         = scratchData->field_28.vy + Q12(0.05f);
+    bloodsucker->collision.box.height               = scratchData->field_28.vy + Q12(0.05f);
+    bloodsucker->collision.box.offsetY              = scratchData->field_28.vy;
+    bloodsucker->collision.shapeOffsets.box.vx      = scratchData->field_28.vx - bloodsucker->position.vx;
+    bloodsucker->collision.shapeOffsets.box.vz      = scratchData->field_28.vz - bloodsucker->position.vz;
+    bloodsucker->collision.cylinder.innerRadius     = Q12(0.05f);
     bloodsucker->collision.shapeOffsets.cylinder.vx = scratchData->field_28.vx - bloodsucker->position.vx;
     bloodsucker->collision.shapeOffsets.cylinder.vz = scratchData->field_28.vz - bloodsucker->position.vz;
-    bloodsucker->collision.cylinder.radius   = Q12(0.05f);
+    bloodsucker->collision.cylinder.outerRadius     = Q12(0.05f);
     Math_SetSVectorFast(&scratchData->field_20, 0, -22, 0);
 
     gte_ldv0(&scratchData->field_20);

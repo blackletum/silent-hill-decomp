@@ -406,7 +406,7 @@ bool Collision_CharaCollisionSetup(s_CollisionResult* collResult, const VECTOR3*
     // Set collision cylinder state.
     cylinder.topExtent    = chara->collision.box.topExtent;
     cylinder.bottomExtent = chara->collision.box.bottomExtent;
-    cylinder.radius       = chara->collision.cylinder.radius;
+    cylinder.radius       = chara->collision.cylinder.outerRadius;
     cylinder.state        = chara->collision.state;
 
     offsetCpy = *moveOffset;
@@ -606,7 +606,7 @@ s32 func_8006A4A8(s_CollisionResult* collResult, VECTOR3* moveOffset, const s_Ch
         {
             chara  = *curChara;
 
-            radius = Q12_TO_Q8(chara->collision.cylinder.radius) + state.charaState.radius;
+            radius = Q12_TO_Q8(chara->collision.cylinder.outerRadius) + state.charaState.radius;
             if (chara->collision.state < (u32)state.charaState.state)
             {
                 radius -= Q8(0.06f);
@@ -742,7 +742,7 @@ void Collision_MoveOffsetDampen(VECTOR3* moveOffset, const s_CharaCollisionCylin
         
         // Check if cylinders collide on XZ plane.
         dist = Vc_VectorMagnitudeCalc(cylinderOffsetX, Q12(0.0f), cylinderOffsetZ);
-        if (((curChara->collision.cylinder.radius + cylinder->radius) + INTERSECTION_BUFFER) < dist)
+        if (((curChara->collision.cylinder.outerRadius + cylinder->radius) + INTERSECTION_BUFFER) < dist)
         {
             continue;
         }

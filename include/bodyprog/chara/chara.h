@@ -555,13 +555,12 @@ typedef struct _CharaBox
 } s_CharaBox;
 STATIC_ASSERT_SIZEOF(s_CharaBox, 12);
 
-/** @brief Character collision cylinder. TODO: Too similar to `s_CharaCollisionCylinder`. */
+// TODO: Too similar to `s_CharaCollisionCylinder`. Maybe more like character-character interaction radii?
+/** @brief Character collision cylinder. */
 typedef struct _CharaCylinder
 {
-    // TODO: These seem to be inner and outer radii used for proximity checks,
-    // e.g. outer region allows stalking and inner region allows attacking.
-    /* 0x0 */ q3_12 radius;  // Map geometry collision radius?
-    /* 0x2 */ q3_12 field_2; // Character-to-character collision radius? Sometimes used as box extent?
+    /* 0x0 */ q3_12 outerRadius;
+    /* 0x2 */ q3_12 innerRadius;
 } s_CharaCylinder;
 STATIC_ASSERT_SIZEOF(s_CharaCylinder, 4);
 
@@ -682,11 +681,11 @@ extern s_CharaFileInfo CHARA_FILE_INFOS[Chara_Count]; // 0x800A90FC
     s32 __temp;                                                                    \
     s32 __temp2;                                                                   \
                                                                                    \
-    chara->collision.box.topExtent = keyframe.box.topExtent;                                   \
+    chara->collision.box.topExtent = keyframe.box.topExtent;                       \
                                                                                    \
-    __temp                      = keyframe.box.bottomExtent;                             \
-    chara->collision.box.bottomExtent = __temp;                                          \
-    chara->collision.box.height = keyframe.box.height;                             \
+    __temp                            = keyframe.box.bottomExtent;                 \
+    chara->collision.box.bottomExtent = __temp;                                    \
+    chara->collision.box.height       = keyframe.box.height;                       \
                                                                                    \
     __temp                                    = keyframe.box.offsetY;              \
     chara->collision.box.offsetY              = __temp;                            \
@@ -694,14 +693,14 @@ extern s_CharaFileInfo CHARA_FILE_INFOS[Chara_Count]; // 0x800A90FC
                                                                                    \
     __temp                                    = keyframe.shapeOffsets.cylinder.vz; \
     chara->collision.shapeOffsets.cylinder.vz = __temp;                            \
-    chara->collision.cylinder.radius          = keyframe.box.field_8;              \
+    chara->collision.cylinder.outerRadius     = keyframe.box.field_8;              \
     chara->collision.shapeOffsets.box.vx      = keyframe.shapeOffsets.box.vx;      \
                                                                                    \
     __temp                               = keyframe.shapeOffsets.box.vz;           \
     chara->collision.shapeOffsets.box.vz = __temp;                                 \
                                                                                    \
-    __temp2                           = keyframe.box.field_A;                      \
-    chara->collision.cylinder.field_2 = __temp2;                                   \
+    __temp2                               = keyframe.box.field_A;                  \
+    chara->collision.cylinder.innerRadius = __temp2;                               \
 }
 
 /** @brief Checks if the `s_SubCharacter*` has the given `flags` value set. */

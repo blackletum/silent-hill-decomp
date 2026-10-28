@@ -239,7 +239,8 @@ void LarvalStalker_ControlUpdate(s_SubCharacter* larvalStalker)
                 g_SysWork.playerWork.player.moveSpeed <= ((larvalStalkerProps.field_EA * Q12(1.5f) )+ Q12(0.5f)))
             {
                 if (Q12_ANGLE(45.0f) > ABS(angleDeltaToPlayer) &&
-                    (distToTarget < ((larvalStalker->collision.cylinder.radius + Q12(0.05f)) + g_SysWork.playerWork.player.collision.cylinder.radius)))
+                    (distToTarget < ((larvalStalker->collision.cylinder.outerRadius + Q12(0.05f)) +
+                                     g_SysWork.playerWork.player.collision.cylinder.outerRadius)))
                 {
                     if (!Rng_GenerateInt(0, 7)) // 1 in 8 chance.
                     {
@@ -387,7 +388,8 @@ void LarvalStalker_ControlUpdate(s_SubCharacter* larvalStalker)
             }
             else
             {
-                if (distToTarget < ((larvalStalker->collision.cylinder.radius + Q12(0.02f)) + g_SysWork.playerWork.player.collision.cylinder.radius))
+                if (distToTarget < ((larvalStalker->collision.cylinder.outerRadius + Q12(0.02f)) +
+                                    g_SysWork.playerWork.player.collision.cylinder.outerRadius))
                 {
                     Chara_MoveSpeedUpdate(larvalStalker, Q12(1.5f));
                 }
@@ -1387,13 +1389,13 @@ void LarvalStalker_CollisionUpdate(s_SubCharacter* larvalStalker)
 
         case ANIM_STATUS(LarvalStalkerAnim_GrabAttack, false):
         case ANIM_STATUS(LarvalStalkerAnim_GrabAttack, true):
-            larvalStalker->collision.box.topExtent                  = Q12(-0.72f);
+            larvalStalker->collision.box.topExtent            = Q12(-0.72f);
             larvalStalker->collision.box.height               = Q12(-0.2f);
             larvalStalker->collision.box.offsetY              = Q12(-0.66f);
-            larvalStalker->collision.cylinder.radius          = Q12(0.12f);
+            larvalStalker->collision.cylinder.outerRadius     = Q12(0.12f);
             larvalStalker->collision.shapeOffsets.box.vz      = Q12(0.02f);
-            larvalStalker->collision.cylinder.field_2         = Q12(0.11f);
-            larvalStalker->collision.box.bottomExtent               = Q12(0.0f);
+            larvalStalker->collision.cylinder.innerRadius     = Q12(0.11f);
+            larvalStalker->collision.box.bottomExtent         = Q12(0.0f);
             larvalStalker->collision.shapeOffsets.cylinder.vx = Q12(0.0f);
             larvalStalker->collision.shapeOffsets.cylinder.vz = Q12(0.0f);
             larvalStalker->collision.shapeOffsets.box.vx      = Q12(0.0f);

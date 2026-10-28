@@ -1529,7 +1529,7 @@ void Romper_CollisionUpdate(s_SubCharacter* romper)
 
         case ANIM_STATUS(RomperAnim_9, true):
             Chara_CollisionSet(romper, sharedData_800ECD34_2_s02);
-            romper->collision.cylinder.radius = (romper->model.anim.time - Q12(61.0f)) / 100;
+            romper->collision.cylinder.outerRadius = (romper->model.anim.time - Q12(61.0f)) / 100;
             break;
 
         default:

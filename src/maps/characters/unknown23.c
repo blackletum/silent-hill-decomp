@@ -438,7 +438,7 @@ bool Unknown23_Init(s_SubCharacter* chara, GsCOORDINATE2* boneCoords) // 0x800DF
     }
 
     chara->moveSpeed                          = Q12(0.0f);
-    chara->collision.cylinder.radius          = Q12(0.3f);
+    chara->collision.cylinder.outerRadius     = Q12(0.3f);
     chara->collision.shapeOffsets.cylinder.vx = Q12(0.0f);
     chara->collision.shapeOffsets.cylinder.vz = Q12(0.0f);
     chara->collision.state                    = CharaCollisionState_4;
@@ -920,12 +920,12 @@ void func_800E07F0(s_SubCharacter* chara, GsCOORDINATE2* boneCoords) // 0x800E07
     posY = Q8_TO_Q12(transformMat.t[1]) - chara->position.vy;
     posZ = Q8_TO_Q12(transformMat.t[2]) - chara->position.vz;
 
-    chara->collision.cylinder.radius = Q12(0.5f);
-    chara->collision.cylinder.field_2  = Q12(0.5f);
-    chara->collision.box.topExtent  = posY - Q12(0.25f);
-    chara->collision.box.bottomExtent  = posY;
-    chara->collision.box.height  = posY + Q12(0.25f);
-    chara->collision.box.offsetY  = posY;
+    chara->collision.cylinder.outerRadius = Q12(0.5f);
+    chara->collision.cylinder.innerRadius = Q12(0.5f);
+    chara->collision.box.topExtent        = posY - Q12(0.25f);
+    chara->collision.box.bottomExtent     = posY;
+    chara->collision.box.height           = posY + Q12(0.25f);
+    chara->collision.box.offsetY          = posY;
 
     sharedFunc_800CD920_3_s03(chara, posX, posZ);
 

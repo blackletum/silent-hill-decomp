@@ -43,16 +43,16 @@ void LockerDeadBody_Update(s_SubCharacter* deadBody, s_AnmHeader* anmHdr, GsCOOR
     animInfo = &LOCKER_DEAD_BODY_ANIM_INFOS[deadBody->model.anim.status];
     animInfo->playbackFunc(&deadBody->model, anmHdr, boneCoords, animInfo);
 
-    deadBody->collision.box.topExtent                  = Q12(-0.3f);
+    deadBody->collision.box.topExtent            = Q12(-0.3f);
     deadBody->collision.shapeOffsets.cylinder.vx = Q12(0.06f);
     deadBody->collision.shapeOffsets.cylinder.vz = Q12(0.93f);
-    deadBody->collision.box.bottomExtent               = Q12(0.0f);
+    deadBody->collision.box.bottomExtent         = Q12(0.0f);
     deadBody->collision.box.height               = Q12(0.0f);
     deadBody->collision.box.offsetY              = Q12(0.0f);
     deadBody->collision.shapeOffsets.box.vx      = Q12(0.0f);
     deadBody->collision.shapeOffsets.box.vz      = Q12(0.0f);
-    deadBody->collision.cylinder.field_2         = Q12(0.0f);
-    deadBody->collision.cylinder.radius          = Q12(0.33f);
+    deadBody->collision.cylinder.innerRadius     = Q12(0.0f);
+    deadBody->collision.cylinder.outerRadius     = Q12(0.33f);
 
     Chara_CollisionShapeOffsetsUpdate(&deadBody->collision.shapeOffsets, deadBody);
 }

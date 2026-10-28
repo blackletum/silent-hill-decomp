@@ -856,7 +856,7 @@ void func_800D72AC(void) // 0x800D72AC
             SysWork_StateStepIncrement(0);
 
         case 6:
-            tmp0 = Q12_MULT_PRECISE(g_DeltaTime, DEFAULT_PLAYER_CYLINDER_FIELD_2);
+            tmp0 = Q12_MULT_PRECISE(g_DeltaTime, DEFAULT_PLAYER_CYLINDER_INNER_RADIUS);
             distAdd = tmp0;
             g_SysWork.playerWork.player.position.vx += distAdd;
             g_WorldObject0.position.vx += distAdd;
@@ -877,7 +877,7 @@ void func_800D72AC(void) // 0x800D72AC
             break;
 
         case 7:
-            tmp0 = Q12_MULT_PRECISE(g_DeltaTime, DEFAULT_PLAYER_CYLINDER_FIELD_2);
+            tmp0 = Q12_MULT_PRECISE(g_DeltaTime, DEFAULT_PLAYER_CYLINDER_INNER_RADIUS);
             distAdd = tmp0;
             g_SysWork.playerWork.player.position.vx += distAdd;
             g_WorldObject0.position.vx += distAdd;

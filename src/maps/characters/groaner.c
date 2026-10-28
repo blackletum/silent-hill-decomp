@@ -699,7 +699,7 @@ void Groaner_ControlJumpAttack(s_SubCharacter* groaner)
         if (!(groanerProps.flags.val16[0] & GroanerFlag_Jumping))
         {
             groanerProps.flags.val16[0] |= GroanerFlag_Jumping;
-            var_v0                       = g_SysWork.playerWork.player.collision.cylinder.field_2 + Q12(0.14f);
+            var_v0                       = g_SysWork.playerWork.player.collision.cylinder.innerRadius + Q12(0.14f);
             var_v0                       = (distToPlayer - var_v0) << 1;
             groaner->moveSpeed           = MIN(var_v0, Q12(4.5f));
 

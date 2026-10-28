@@ -845,10 +845,10 @@ void func_800D3AD4(s_SubCharacter* floatstinger) // 0x800D3AD4
 
     if ((g_SysWork.playerWork.player.position.vy - Q12(1.35f)) < ptr->field_50[0].vy)
     {
-        floatstinger->collision.box.topExtent                  = ptr->field_50[1].vy - floatstinger->position.vy;
+        floatstinger->collision.box.topExtent            = ptr->field_50[1].vy - floatstinger->position.vy;
         floatstinger->collision.box.height               = ptr->field_50[0].vy - floatstinger->position.vy;
-        floatstinger->collision.cylinder.radius          = Q12(0.4f);
-        floatstinger->collision.cylinder.field_2         = Q12(0.4f);
+        floatstinger->collision.cylinder.outerRadius     = Q12(0.4f);
+        floatstinger->collision.cylinder.innerRadius     = Q12(0.4f);
         floatstinger->collision.shapeOffsets.box.vx      = ((ptr->field_50[0].vx + ptr->field_50[1].vx) >> 1) - floatstinger->position.vx;
         floatstinger->collision.shapeOffsets.cylinder.vx = floatstinger->collision.shapeOffsets.box.vx;
         floatstinger->collision.shapeOffsets.box.vz      = (ptr->field_50[0].vz + ptr->field_50[1].vz >> 1) - floatstinger->position.vz;
@@ -856,10 +856,10 @@ void func_800D3AD4(s_SubCharacter* floatstinger) // 0x800D3AD4
     }
     else
     {
-        floatstinger->collision.box.topExtent                  = ptr->field_50[0].vy - floatstinger->position.vy;
+        floatstinger->collision.box.topExtent            = ptr->field_50[0].vy - floatstinger->position.vy;
         floatstinger->collision.box.height               = ptr->field_50[2].vy - floatstinger->position.vy;
-        floatstinger->collision.cylinder.radius          = Q12(0.5f);
-        floatstinger->collision.cylinder.field_2         = Q12(0.5f);
+        floatstinger->collision.cylinder.outerRadius     = Q12(0.5f);
+        floatstinger->collision.cylinder.innerRadius     = Q12(0.5f);
         floatstinger->collision.shapeOffsets.box.vx      = ((ptr->field_50[0].vx + ptr->field_50[2].vx) >> 1) - floatstinger->position.vx;
         floatstinger->collision.shapeOffsets.cylinder.vx = floatstinger->collision.shapeOffsets.box.vx;
         floatstinger->collision.shapeOffsets.box.vz      = (ptr->field_50[0].vz + ptr->field_50[2].vz >> 1) - floatstinger->position.vz;
@@ -885,17 +885,17 @@ void func_800D3AD4(s_SubCharacter* floatstinger) // 0x800D3AD4
         if (FP_FROM(floatstinger->model.anim.time, Q12_SHIFT) > 15 &&
             FP_FROM(floatstinger->model.anim.time, Q12_SHIFT) < 27)
         {
-            floatstinger->collision.cylinder.radius = Q12_MULT_PRECISE(floatstinger->collision.cylinder.radius, Q12(0.3f));
+            floatstinger->collision.cylinder.outerRadius = Q12_MULT_PRECISE(floatstinger->collision.cylinder.outerRadius, Q12(0.3f));
         }
         else if (FP_FROM(floatstinger->model.anim.time, Q12_SHIFT) > 11 &&
                  FP_FROM(floatstinger->model.anim.time, Q12_SHIFT) < 16)
         {
-            floatstinger->collision.cylinder.radius = Q12_MULT_PRECISE(floatstinger->collision.cylinder.radius, Q12(1.0f) - Q12_MULT_PRECISE((floatstinger->model.anim.time - Q12(12.0f)) >> 2, Q12(0.7f)));
+            floatstinger->collision.cylinder.outerRadius = Q12_MULT_PRECISE(floatstinger->collision.cylinder.outerRadius, Q12(1.0f) - Q12_MULT_PRECISE((floatstinger->model.anim.time - Q12(12.0f)) >> 2, Q12(0.7f)));
         }
         else if (FP_FROM(floatstinger->model.anim.time, Q12_SHIFT) > 26 &&
                  FP_FROM(floatstinger->model.anim.time, Q12_SHIFT) < 31)
         {
-            floatstinger->collision.cylinder.radius = Q12_MULT_PRECISE(floatstinger->collision.cylinder.radius, Q12_MULT_PRECISE((Q12(31.0f) - floatstinger->model.anim.time) >> 2, Q12(0.7f)) + Q12(0.3f));
+            floatstinger->collision.cylinder.outerRadius = Q12_MULT_PRECISE(floatstinger->collision.cylinder.outerRadius, Q12_MULT_PRECISE((Q12(31.0f) - floatstinger->model.anim.time) >> 2, Q12(0.7f)) + Q12(0.3f));
         }
     }
 
