@@ -136,25 +136,25 @@ typedef enum _SpeedZoneType
     SpeedZoneType_Fast   = 2
 } e_SpeedZoneType;
 
-/** @brief Event trigger activation types. */
-typedef enum _TriggerActivationType
+/** @brief Event activation types. */
+typedef enum _EventActivationType
 {
-    TriggerActivationType_None      = 0, /** No activation conditions other than event flag/trigger checks. */
-    TriggerActivationType_Exclusive = 1, /** Prevents other events from being triggered while the event is active. */
-    TriggerActivationType_Button    = 2, /** Requires a button press. */
-    TriggerActivationType_Item      = 3  /** Requires an inventory item. */
-} e_TriggerActivationType;
+    EventActivationType_None      = 0, /** No activation conditions other than event flag/trigger checks. */
+    EventActivationType_Exclusive = 1, /** Prevents other events from being triggered while the event is active. */
+    EventActivationType_Button    = 2, /** Requires a button press. */
+    EventActivationType_Item      = 3  /** Requires an inventory item. */
+} e_EventActivationType;
 
 /** @brief Event trigger types. */
-typedef enum _TriggerType
+typedef enum _EventTriggerType
 {
-    TriggerType_EndOfArray     = NO_VALUE,
-    TriggerType_Tick           = 0, /** Skips trigger/activation type checks. Always activates if required event flags are set. Skips processing later events until flags deactivate it. */
-    TriggerType_TouchAabb      = 1, /** Player has collided with an AABB. */
-    TriggerType_TouchFacing    = 2, /** Player collided with a trigger is facing toward it. */
-    TriggerType_TouchObbFacing = 3, /** Player collided with an OBB and is facing toward it. */
-    TriggerType_TouchObb       = 4  /** Player collided with an OBB. No facing requirement. */
-} e_TriggerType;
+    EventTriggerType_EndOfArray     = NO_VALUE,
+    EventTriggerType_Tick           = 0, /** Skips trigger/activation type checks. Always activates if required event flags are set. Skips processing later events until flags deactivate it. */
+    EventTriggerType_TouchAabb      = 1, /** Player has collided with an AABB. */
+    EventTriggerType_TouchFacing    = 2, /** Player collided with a trigger is facing toward it. */
+    EventTriggerType_TouchObbFacing = 3, /** Player collided with an OBB and is facing toward it. */
+    EventTriggerType_TouchObb       = 4  /** Player collided with an OBB. No facing requirement. */
+} e_EventTriggerType;
 
 /** @brief Area transition flags. Used by some events to indicate specific cutscene behavior. */
 typedef enum _AreaTransitionFlags
@@ -165,6 +165,7 @@ typedef enum _AreaTransitionFlags
     AreaTransitionFlag_SkipAmbientSfxInit = 1 << 2  /** TODO: Skips the `Sd_AmbientSfxInit` call in `GameBoot_WorldStartup`? */
 } e_AreaTransitionFlags;
 
+/** @brief World map model data locations. */
 typedef enum _WorldModelLocation
 {
     WorldModelLocation_None   = 0,
@@ -368,23 +369,22 @@ typedef struct _MapPoint2d
 } s_MapPoint2d;
 STATIC_ASSERT_SIZEOF(s_MapPoint2d, 12);
 
-/** TODO: Known as `Trigger` in SilentHillMapExaminer: https://github.com/ItEndsWithTens/SilentHillMapExaminer/blob/master/src/SHME.ExternalTool.Guts/Trigger.cs */
+/** @brief Event data. TODO: Known as `Trigger` in SilentHillMapExaminer: https://github.com/ItEndsWithTens/SilentHillMapExaminer/blob/master/src/SHME.ExternalTool.Guts/Trigger.cs */
 typedef struct _EventData
 {
-    /* 0x0    */ s16 requiredEventFlag;  /** `e_EventFlag` | Must be set for an event to trigger (or `EventFlag_None`). */
-    /* 0x2    */ s16 completeEventFlag;  /** `e_EventFlag` | Set on event completion. The event is skipped if this flag is already set. */
-    /* 0x4+0  */ s8  triggerType    : 4; /** `e_TriggerType` */
-    /* 0x4+4  */ u8  activationType : 4; /** `e_TriggerActivationType` */
-    /* 0x5    */ u8  mapPointIdx;        /** Index into `g_MapOverlayHdr.mapPoints`. */
-    /* 0x6    */ u8  requiredItemId;     /** `e_InvItemId` that player must use from item screen. */
+    /* 0x0    */ s16 requiredFlag;        /** `e_EventFlag` | Must be set for an event to trigger (or `EventFlag_None`). */
+    /* 0x2    */ s16 completeFlag;        /** `e_EventFlag` | Set on event completion. The event is skipped if this flag is already set. */
+    /* 0x4+0  */ s8  triggerType    : 4;  /** `e_EventTriggerType` */
+    /* 0x4+4  */ u8  activationType : 4;  /** `e_EventActivationType` */
+    /* 0x5    */ u8  mapPointIdx;         /** Index into `g_MapOverlayHdr.mapPoints`. */
+    /* 0x6    */ u8  requiredItemId;      /** `e_InvItemId` | ID of the item the player must use from the item screen. */
     /* 0x7    */ u8  __pad_7;
-    /* 0x8+0  */ u32 sysState        : 5; /** `e_SysState` used by the event. */
+    /* 0x8+0  */ u32 sysState        : 5; /** `e_SysState` | System state used by the event. */
     /* 0x8+5  */ u32 eventParam      : 8; /** Can be an ID of a `MapMsg`, sound effect, index into `mapEventFuncs`, or index into `mapPoints` for `areaLoad` events. */
     /* 0x8+8  */ u32 transitionFlags : 6; /** `e_AreaTransitionFlags` */
-    /* 0x8+13 */ u32 sfxPairIdx_8_19 : 5; /** `e_SfxPairIdx` | Index into `SFX_PAIRS`. */
-    /* 0x8+19 */ u32 field_8_24      : 1; // `bool` | "Is on camera rail?"
+    /* 0x8+13 */ u32 sfxPairIdx      : 5; /** `e_SfxPairIdx` | Index into `SFX_PAIRS`. */
+    /* 0x8+19 */ u32 setCameraRail   : 1; /** `bool` | Always `true`. */
     /* 0x8+24 */ u32 mapIdx          : 6;
-    /* 0x8+25 */ u32 field_8_31      : 1;
 } s_EventData;
 STATIC_ASSERT_SIZEOF(s_EventData, 12);
 

@@ -784,7 +784,7 @@ extern q19_12 g_DeltaTimeCpy;
 
 extern s32 __pad_bss_800BCD88[2];
 
-extern s_EventData* g_ItemTriggerEvents[];
+extern s_EventData* g_ItemEvents[];
 
 extern s32 __pad_bss_800BCD94[5];
 

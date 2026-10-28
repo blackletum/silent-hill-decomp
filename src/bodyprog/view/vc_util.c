@@ -52,8 +52,8 @@ void vcSetCameraUseWarp(const VECTOR3* chr_pos, q3_12 chr_ang_y) // 0x800400D4
     cam_pos.vy = chr_pos->vy - HEIGHT;
     cam_pos.vz = chr_pos->vz - Q12_MULT(Math_Cos(chr_ang_y), RADIUS);
 
-    vcSetFirstCamWork(&cam_pos, chr_ang_y, g_SysWork.sysFlags & SysFlag_OnCameraRail);
-    g_SysWork.sysFlags &= ~SysFlag_OnCameraRail;
+    vcSetFirstCamWork(&cam_pos, chr_ang_y, g_SysWork.sysFlags & SysFlag_SetCameraRail);
+    g_SysWork.sysFlags &= ~SysFlag_SetCameraRail;
 
     #undef RADIUS
     #undef HEIGHT

@@ -3564,12 +3564,12 @@ g_MapMsg_AudioType                           = 0x800BF3D2; // type:u8
 //----------------------------------------------------------------------------
 D_800BCD80                                   = 0x800BF3D8;
 g_DeltaTimeCpy                               = 0x800BF3DC; // type:s32
-g_ItemTriggerEvents                          = 0x800BF3E8; // type:s32 size:0x14
+g_ItemEvents                          = 0x800BF3E8; // type:s32 size:0x14
 g_RadioNoise                                 = 0x800BF400;
 g_MapPoint                                   = 0x800BF408;
 g_ItemTriggerItemIds                         = 0x800BF418; // type:s32 size:0x14
 g_MapAreaLoadCounter                         = 0x800BF42C;
-g_MapEventData                               = 0x800BF430; // type:u32 - pointer to `s_EventData`.
+g_MapEventData                               = 0x800BF430; // type:u32
 
 //------------------------------------------------------------------
 //--- PA: 0x09A8D8   VA: 0x800BF438   subsegment: .bss, events/title

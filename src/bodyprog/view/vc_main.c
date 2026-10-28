@@ -831,8 +831,8 @@ void vcPreSetDataInVC_WORK(VC_WORK* w_p, VC_ROAD_DATA* vc_road_ary_list) // 0x80
     {
         vcSetTHROUGH_DOOR_CAM_PARAM_in_VC_WORK(&vcWork, VC_TDSC_START);
     }
-
     vcSetTHROUGH_DOOR_CAM_PARAM_in_VC_WORK(&vcWork, VC_TDSC_MAIN);
+
     vcSetNearestEnemyDataInVC_WORK(w_p);
     vcSetNearRoadAryByCharaPos(w_p, vc_road_ary_list, Q12(20.0f), 0, w_p->nearest_enemy != NULL);
 }

@@ -103,7 +103,7 @@ typedef struct _VC_WORK
     /* 0x0   */ u8                        view_cam_active_f;                         /** `bool` */
     /* 0x4   */ VC_ROAD_DATA*             vc_road_ary_list;                          /** Camera paths for the active map. */
     /* 0x8   */ u32                       flags;                                     /** `VC_FLAGS` */
-    /* 0xC   */ u8                        through_door_activate_init_f;              /** `bool` */
+    /* 0xC   */ u8                        through_door_activate_init_f;              /** `bool` | Camera rail activation flag? */
                 // 3 bytes of padding.
     /* 0x10  */ VC_THROUGH_DOOR_CAM_PARAM through_door;                              /** Active rail camera data? */
     /* 0x1C  */ q3_12                     scr_half_ang_wy;

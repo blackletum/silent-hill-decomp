@@ -64,12 +64,12 @@ static q19_12 g_DeltaTimeCpy;
 // GLOBAL VARIABLES
 // ========================================
 
-s_EventData* g_ItemTriggerEvents[];
+s_EventData* g_ItemEvents[];
 s_RadioNoise g_RadioNoise[2];
 s_MapPoint2d g_MapPoint;
 s32          g_ItemTriggerItemIds[5];
 u8           g_MapAreaLoadCounter;
-s_EventData* g_MapEventData;
+s_EventData*  g_MapEventData;
 
 void GameState_InGame_Update(void) // 0x80038BD4
 {
@@ -599,8 +599,8 @@ void SysState_Fmv_Update(void) // 0x80039A58
     LoadImage(&D_800A9A6C, (u32*)IMAGE_BUFFER_0);
     DrawSync(SyncMode_Wait);
 
-    // Set savegame flag based on `g_MapEventData->completeEventFlag` flag ID.
-    Savegame_EventFlagSetAlt(g_MapEventData->completeEventFlag);
+    // Set savegame flag based on `g_MapEventData->completeFlag` flag ID.
+    Savegame_EventFlagSetAlt(g_MapEventData->completeFlag);
 
     // Return to gameplay.
     Game_StateSetNext(GameState_InGame);
@@ -619,7 +619,7 @@ void SysState_LoadArea_Update(void) // 0x80039C40
 
     g_SysWork.unused_229C         = 0;
     g_SysWork.loadingScreenIdx    = g_MapPoint.loadingScreenId;
-    g_SysWork.sfxPairIdx          = g_MapEventData->sfxPairIdx_8_19;
+    g_SysWork.sfxPairIdx          = g_MapEventData->sfxPairIdx;
     g_SysWork.areaTransitionFlags = g_MapEventData->transitionFlags;
 
     SD_Call(SFX_PAIRS[g_SysWork.sfxPairIdx].sfx_0);
@@ -656,15 +656,15 @@ void SysState_LoadArea_Update(void) // 0x80039C40
         }
     }
 
-    Savegame_EventFlagSetAlt(g_MapEventData->completeEventFlag);
+    Savegame_EventFlagSetAlt(g_MapEventData->completeFlag);
 
-    if (g_MapEventData->field_8_24)
+    if (g_MapEventData->setCameraRail)
     {
-        g_SysWork.sysFlags |= SysFlag_OnCameraRail;
+        g_SysWork.sysFlags |= SysFlag_SetCameraRail;
     }
     else
     {
-        g_SysWork.sysFlags &= ~SysFlag_OnCameraRail;
+        g_SysWork.sysFlags &= ~SysFlag_SetCameraRail;
     }
 
     g_SysWork.bgmStatusFlags |= BgmStatusFlag_Pause;
@@ -739,7 +739,7 @@ void SysState_ReadMessage_Update(void) // 0x80039FB8
             break;
 
         case MapMsgState_SelectEntry0:
-            Savegame_EventFlagSetAlt(g_MapEventData->completeEventFlag);
+            Savegame_EventFlagSetAlt(g_MapEventData->completeFlag);
 
             unfreezePlayerFunc = &g_MapOverlayHdr.playerControlUnfreeze;
             SysWork_StateSetNext(SysState_Gameplay);
@@ -821,7 +821,7 @@ void SysState_EventCallback_Update(void) // 0x8003A3C8
 {
     if (g_MapEventData->transitionFlags != AreaTransitionFlag_None)
     {
-        Savegame_EventFlagSetAlt(g_MapEventData->completeEventFlag);
+        Savegame_EventFlagSetAlt(g_MapEventData->completeFlag);
     }
 
     g_DeltaTime = g_DeltaTimeCpy;
@@ -831,7 +831,7 @@ void SysState_EventCallback_Update(void) // 0x8003A3C8
 void SysState_EventSetFlag_Update(void) // 0x8003A460
 {
     g_DeltaTime = g_DeltaTimeCpy;
-    Savegame_EventFlagSetAlt(g_MapEventData->completeEventFlag);
+    Savegame_EventFlagSetAlt(g_MapEventData->completeFlag);
     g_SysWork.sysState = SysState_Gameplay;
 }
 
@@ -841,7 +841,7 @@ void SysState_EventPlaySound_Update(void) // 0x8003A4B4
 
     SD_Call(((u16)g_MapEventParam + Sfx_Base) & 0xFFFF);
 
-    Savegame_EventFlagSetAlt(g_MapEventData->completeEventFlag);
+    Savegame_EventFlagSetAlt(g_MapEventData->completeFlag);
     g_SysWork.sysState = SysState_Gameplay;
 }
 
@@ -1053,7 +1053,7 @@ void GameState_MapEvent_Update(void) // 0x8003AA4C
 
     g_IsLoadingFinished = ScreenFade_IsFinished() && Fs_QueueChunksLoad();
 
-    Savegame_EventFlagSetAlt(g_MapEventData->completeEventFlag);
+    Savegame_EventFlagSetAlt(g_MapEventData->completeFlag);
     g_MapOverlayHdr.mapEventFuncs[g_MapEventParam]();
     Screen_BackgroundImgDraw(&g_ItemInspectionImg);
 }

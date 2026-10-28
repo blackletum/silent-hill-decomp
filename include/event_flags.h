@@ -796,7 +796,7 @@ typedef enum _EventFlag
 
     EventFlag_MapMark_Begin = 867, // Used in `Event_Update` check. TODO: Does anything ever set this?
 
-    // TODO: Formerly `MapMarkFlag_` values. It seems a many events make use of these as `requiredEventFlags`/`disableEventFlags`.
+    // TODO: Formerly `MapMarkFlag_` values. It seems a many events make use of these as `requiredFlags`/`disableEventFlags`.
     // Maybe these are actually tied to progression instead of strictly being map marker related?
 
     EventFlag_MapMark_OldTown_BachmanRdTopCross = 868,

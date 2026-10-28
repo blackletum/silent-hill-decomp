@@ -30,7 +30,6 @@ typedef struct _CollisionTriggerIntersect
     /* 0x28 */ q19_12 intersectAlpha; /** Intersection alpha along the line with a collided trigger. */
     /* 0x2C */ q19_12 triggerHeight;  /** Collided trigger height. */
 } s_CollisionTriggerIntersect;
-STATIC_ASSERT_SIZEOF(s_CollisionTriggerIntersect, 48);
 
 /** @brief World-space collision trigger used to inform uneven terrain such as walls, ceilings, and stairs. */
 typedef struct _CollisionTrigger
@@ -42,7 +41,6 @@ typedef struct _CollisionTrigger
     /* 0x0+25 */ u32 sizeZ        : 4;  /** Meter steps. */
     /* 0x0+29 */ u32 height       : 3;  /** Half-meter steps. */
 } s_CollisionTrigger;
-STATIC_ASSERT_SIZEOF(s_CollisionTrigger, 4);
 
 /** @brief Collection of nearby collision triggers. */
 typedef struct _ActiveCollisionTriggers

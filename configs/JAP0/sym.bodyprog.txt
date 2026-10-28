@@ -3454,12 +3454,12 @@ g_MapMsg_SelectCancelIdx                     = 0x800BF2AB; // type:s8
 //--- PA: 0x09A750   VA: 0x800BF2B0   subsegment: .bss, events/game_sys_states
 //----------------------------------------------------------------------------
 g_DeltaTimeCpy                               = 0x800BF2B4; // type:s32
-g_ItemTriggerEvents                          = 0x800BF2C0; // type:s32 size:0x14
+g_ItemEvents                          = 0x800BF2C0; // type:s32 size:0x14
 g_RadioNoise                                 = 0x800BF2D8;
 g_MapPoint                                   = 0x800BF2E0;
 g_ItemTriggerItemIds                         = 0x800BF2F0; // type:s32 size:0x14
 g_MapAreaLoadCounter                         = 0x800BF304;
-g_MapEventData                               = 0x800BF308; // type:u32 - pointer to `s_EventData`.
+g_MapEventData                               = 0x800BF308; // type:u32
 
 //------------------------------------------------------------------
 //--- PA: 0x09A7B0   VA: 0x800BF310   subsegment: .bss, events/title

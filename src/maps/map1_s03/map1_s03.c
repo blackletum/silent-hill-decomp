@@ -394,7 +394,7 @@ void MapEvent_RoofDrainPuzzleInteract0(void) // 0x800DAA28
             if (g_MapEventData->mapPointIdx == 19 ||
                 g_MapEventData->mapPointIdx == 20)
             {
-                if (g_MapEventData->activationType == TriggerActivationType_Item)
+                if (g_MapEventData->activationType == EventActivationType_Item)
                 {
                     Savegame_EventFlagSet(EventFlag_M1S02_UsedRubberBall);
                     Event_DisplayMapMsg(false, MAP_MSG(36), false, false, 0, false); // "Used rubber ball."
@@ -454,7 +454,7 @@ void MapEvent_RoofDrainPuzzleInteract1(void) // 0x800DABC4
             else if (g_MapEventData->mapPointIdx == 19 ||
                      g_MapEventData->mapPointIdx == 20)
             {
-                if (g_MapEventData->activationType == TriggerActivationType_Item ||
+                if (g_MapEventData->activationType == EventActivationType_Item ||
                     Savegame_EventFlagGet(EventFlag_M1S02_UsedRubberBall))
                 {
                     Event_BgTextureCmd(false, FILE_TIM_BALLHOLE_TIM, false);
@@ -499,7 +499,7 @@ void MapEvent_RoofDrainPuzzleInteract1(void) // 0x800DABC4
             if (g_MapEventData->mapPointIdx == 19 ||
                 g_MapEventData->mapPointIdx == 20)
             {
-                if (g_MapEventData->activationType == TriggerActivationType_Item)
+                if (g_MapEventData->activationType == EventActivationType_Item)
                 {
                     Savegame_EventFlagSet(EventFlag_M1S02_UsedRubberBall);
                     Event_DisplayMapMsg(false, MAP_MSG(36), false, false, 0, false);
