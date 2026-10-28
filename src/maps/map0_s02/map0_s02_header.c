@@ -141,6 +141,6 @@ const s_MapOverlayHdr g_MapOverlayHdr = {
         #include "vc_road_data.h"
     },
     .collisionTriggers = {
-        #include "header_field_D2C.h"
+        #include "collision_triggers.h"
     },
 };

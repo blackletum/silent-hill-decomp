@@ -137,12 +137,12 @@ const s_MapOverlayHdr g_MapOverlayHdr = {
         NULL, NULL, NULL, NULL, Romper_Update },
     .charaGroupIds = { Chara_Romper, Chara_Wormhead, Chara_NightFlutter },
     .charaSpawnInfos   = {
-#include "chara_spawns.h"
+        #include "chara_spawns.h"
     },
     .cameraPaths = {
-#include "vc_road_data.h"
+        #include "vc_road_data.h"
     },
     .collisionTriggers = {
-#include "header_field_D2C.h"
+        #include "collision_triggers.h"
     },
 };

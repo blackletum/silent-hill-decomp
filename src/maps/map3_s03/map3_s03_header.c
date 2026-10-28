@@ -154,12 +154,12 @@ const s_MapOverlayHdr g_MapOverlayHdr = {
         PuppetNurse_Update, PuppetNurse_Update, PuppetDoctor_Update, PuppetDoctor_Update, NULL, Bloodsucker_Update },
     .charaGroupIds = { Chara_PuppetNurse, Chara_DummyNurse, Chara_Bloodsucker },
     .charaSpawnInfos   = {
-#include "chara_spawns.h"
+        #include "chara_spawns.h"
     },
     .cameraPaths = {
-#include "vc_road_data.h"
+        #include "vc_road_data.h"
     },
     .collisionTriggers = {
-#include "header_field_D2C.h"
+        #include "collision_triggers.h"
     },
 };
