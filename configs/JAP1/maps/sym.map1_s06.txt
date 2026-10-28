@@ -157,7 +157,7 @@ MAP_ROOM_IDXS                    = 0x800D97E8; // type:u8
 D_800D71E8                       = 0x800D9820;
 
 //----------------------------------------------------------------------
-//--- PA: 0x00DC58   VA: 0x800D9828   subsegment: .data, map1_s06_header
+//--- PA: 0x00DC58   VA: 0x800D9828   subsegment: .data, header
 //----------------------------------------------------------------------
 g_LoadScreenFuncs                = 0x800D9828;
 MAP_POINTS                       = 0x800D9838; // type:MapPoint2d
@@ -169,7 +169,7 @@ g_MapEventFuncs                  = 0x800D9AA8;
 MAP_MESSAGES                     = 0x800D9ACC; // type:u32 size:0x7C
 
 //---------------------------------------------------------------------------
-//--- PA: 0x00DF78   VA: 0x800D9B48   subsegment: .data, map1_s06_events_data
+//--- PA: 0x00DF78   VA: 0x800D9B48   subsegment: .data, map_events
 //---------------------------------------------------------------------------
 MAP_EVENTS                       = 0x800D9B48;
 

@@ -56,12 +56,12 @@ segments:
     subsegments:
       # .rodata section
       - [0x0, rodata]
-      - [0x4, .rodata, map0_s00_header]
+      - [0x4, .rodata, header]
       - [0x1050, .rodata, map0_s00_2]
 
       # Data only C files
-      - [0x20F8, c, map0_s00_header]
-      #- [0x20F8, c, map0_s00_events_data] # Could this be merge with `map0_s00_events`? (That file should contain strings and functions of events just like map0_s01 counterpart)
+      - [0x20F8, c, header]
+      #- [0x20F8, c, map_events] # Could this be merge with `map0_s00_events`? (That file should contain strings and functions of events just like map0_s01 counterpart)
       - [0x20F8, c, map0_s00_anim_info]
       
       # .text section
@@ -70,8 +70,8 @@ segments:
       # .data section
       - [0x13D04, .data, map0_s00_anim_info]
       - [0x13FCC, data]
-      - [0x15D58, .data, map0_s00_header]
+      - [0x15D58, .data, header]
       - [0x16100, .data, map0_s00_2]
-      - [0x16198, data, map0_s00_events_data] # Some events are different to USA? TODO: Run bin2c and compare.
+      - [0x16198, data, map_events] # Some events are different to USA? TODO: Run bin2c and compare.
       - [0x164F8, data]
   - [0x1A500]

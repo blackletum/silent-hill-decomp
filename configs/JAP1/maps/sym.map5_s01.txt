@@ -394,7 +394,7 @@ D_800EFC7C                       = 0x800F2294;
 D_800EFC80                       = 0x800F2298;
 
 //----------------------------------------------------------------------
-//--- PA: 0x0266F4   VA: 0x800F22C4   subsegment: .data, map5_s01_header
+//--- PA: 0x0266F4   VA: 0x800F22C4   subsegment: .data, header
 //----------------------------------------------------------------------
 g_LoadScreenFuncs                = 0x800F22C4;
 MAP_POINTS                       = 0x800F22D4; // type:MapPoint2d
@@ -406,7 +406,7 @@ g_MapEventFuncs                  = 0x800F24F0;
 MAP_MESSAGES                     = 0x800F2510; // type:u32 size:0x50
 
 //---------------------------------------------------------------------------
-//--- PA: 0x026990   VA: 0x800F2560   subsegment: .data, map5_s01_events_data
+//--- PA: 0x026990   VA: 0x800F2560   subsegment: .data, map_events
 //---------------------------------------------------------------------------
 MAP_EVENTS                       = 0x800F2560;
 

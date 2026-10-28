@@ -161,7 +161,7 @@ sharedData_800D2F7C_7_s00          = 0x800ECF9C;
 sharedData_800D2F84_7_s00          = 0x800ECFA4;
 
 //----------------------------------------------------------------------
-//--- PA: 0x023A34   VA: 0x800ECFAC   subsegment: .data, map7_s03_header
+//--- PA: 0x023A34   VA: 0x800ECFAC   subsegment: .data, header
 //----------------------------------------------------------------------
 g_LoadScreenFuncs                  = 0x800ECFAC;
 MAP_POINTS                         = 0x800ECFBC;
@@ -173,7 +173,7 @@ g_MapEventFuncs                    = 0x800ECFC8;
 MAP_MESSAGES                       = 0x800ECFEC; // type:u32 size:0x190
 
 //---------------------------------------------------------------------------
-//--- PA: 0x023C04   VA: 0x800ED17C   subsegment: .data, map7_s03_events_data
+//--- PA: 0x023C04   VA: 0x800ED17C   subsegment: .data, map_events
 //---------------------------------------------------------------------------
 MAP_EVENTS                         = 0x800ED17C;
 

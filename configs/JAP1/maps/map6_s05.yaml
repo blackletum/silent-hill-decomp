@@ -56,11 +56,11 @@ segments:
     subsegments:
       # .rodata section
       - [0x0, rodata]
-      - [0x4, .rodata, map6_s05_header]
+      - [0x4, .rodata, header]
       - [0x1050, .rodata, map6_s05]
 
-      - [0x133C, c, map6_s05_header]
-      - [0x133C, c, map6_s05_events_data]
+      - [0x133C, c, header]
+      - [0x133C, c, map_events]
       - [0x133C, c, map6_s05_anim_info]
       # .text section
       - [0x133C, c, map6_s05]
@@ -68,8 +68,8 @@ segments:
       # .data section
       - [0x3658, .data, map6_s05_anim_info]
       - [0x36A8, data]
-      - [0x36F0, .data, map6_s05_header]
+      - [0x36F0, .data, header]
       - [0x3710, .data, map6_s05]
-      - [0x3750, .data, map6_s05_events_data]
+      - [0x3750, .data, map_events]
       - [0x375C, data]
   - [0x4100]

@@ -234,7 +234,7 @@ D_800DF2F8                          = 0x800E10EC;
 D_800DF300                          = 0x800E10F4;
 
 //----------------------------------------------------------------------
-//--- PA: 0x015D94   VA: 0x800E1104   subsegment: .data, map0_s00_header
+//--- PA: 0x015D94   VA: 0x800E1104   subsegment: .data, header
 //----------------------------------------------------------------------
 g_LoadScreenFuncs                   = 0x800E1104;
 MAP_POINTS                          = 0x800E1114;
@@ -246,7 +246,7 @@ g_MapEventFuncs                     = 0x800E1468;
 MAP_MESSAGES                        = 0x800E14AC; // type:u32 size:0x9C
 
 //---------------------------------------------------------------------------
-//--- PA: 0x0161DC   VA: 0x800E154C   subsegment: .data, map0_s00_events_data
+//--- PA: 0x0161DC   VA: 0x800E154C   subsegment: .data, map_events
 //---------------------------------------------------------------------------
 MAP_EVENTS                          = 0x800E154C;
 
