@@ -922,8 +922,8 @@ void func_800E07F0(s_SubCharacter* chara, GsCOORDINATE2* boneCoords) // 0x800E07
 
     chara->collision.cylinder.radius = Q12(0.5f);
     chara->collision.cylinder.field_2  = Q12(0.5f);
-    chara->collision.box.top  = posY - Q12(0.25f);
-    chara->collision.box.bottom  = posY;
+    chara->collision.box.topExtent  = posY - Q12(0.25f);
+    chara->collision.box.bottomExtent  = posY;
     chara->collision.box.height  = posY + Q12(0.25f);
     chara->collision.box.offsetY  = posY;
 
@@ -944,9 +944,9 @@ void func_800E0888(s_SubCharacter* chara, GsCOORDINATE2* boneCoords) // 0x800E08
     }
 
     posY            = chara->position.vy;
-    chara->collision.box.bottom = posY;
+    chara->collision.box.bottomExtent = posY;
     chara->collision.box.height = posY;
-    chara->collision.box.top = posY - Q12(1.0f);
+    chara->collision.box.topExtent = posY - Q12(1.0f);
     chara->collision.box.offsetY = posY - Q12(0.5f);
 }
 

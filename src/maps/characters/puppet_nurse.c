@@ -1435,19 +1435,19 @@ void sharedFunc_800D0828_3_s03(s_SubCharacter* nurse, GsCOORDINATE2* boneCoords)
     posY                     = localNurse->position.vy;
     rightShinPosY            = Q8_TO_Q12(boneMats[BoneMatIdx_RightShin].t[1]);
     leftShinPosY             = Q8_TO_Q12(boneMats[BoneMatIdx_LeftShin].t[1]);
-    nurse->collision.box.top = Q8_TO_Q12(boneMats[BoneMatIdx_Head].t[1]);
+    nurse->collision.box.topExtent = Q8_TO_Q12(boneMats[BoneMatIdx_Head].t[1]);
 
     offsetPosY                  = posY + Q12(0.25f);
-    nurse->collision.box.top   -= offsetPosY;
-    nurse->collision.box.bottom = posY;
+    nurse->collision.box.topExtent   -= offsetPosY;
+    nurse->collision.box.bottomExtent = posY;
 
     if (rightShinPosY >= leftShinPosY)
     {
-        nurse->collision.box.height = leftShinPosY - nurse->collision.box.bottom;
+        nurse->collision.box.height = leftShinPosY - nurse->collision.box.bottomExtent;
     }
     else
     {
-        nurse->collision.box.height = rightShinPosY - nurse->collision.box.bottom;
+        nurse->collision.box.height = rightShinPosY - nurse->collision.box.bottomExtent;
     }
 
     // `((torsoPosY - headPosY) / 2) - posY`
@@ -1482,8 +1482,8 @@ void sharedFunc_800D0968_3_s03(s_SubCharacter* nurse, GsCOORDINATE2* boneCoords)
     posY = nurse->position.vy;
 
     // Update collision box.
-    nurse->collision.box.bottom  = posY;
+    nurse->collision.box.bottomExtent  = posY;
     nurse->collision.box.height  = posY;
-    nurse->collision.box.top     = posY - Q12(1.7f);
+    nurse->collision.box.topExtent     = posY - Q12(1.7f);
     nurse->collision.box.offsetY = posY - Q12(1.0f);
 }

@@ -182,7 +182,7 @@ bool func_8006FD90(s_SubCharacter* chara, s32 count, q19_12 baseDistMax, q19_12 
     if ((g_SysWork.field_2388.field_154.effectsInfo.flags.field_0 & (SpecialEnvEventFlags_DarkEnvironment | SpecialEnvEventFlags_FlashlightAllowed)) == SpecialEnvEventFlags_FlashlightAllowed)
     {
         offset.vy = Q12(0.0f);
-        pos.vy    = g_SysWork.playerWork.player.position.vy + g_SysWork.playerWork.player.collision.box.top;
+        pos.vy    = g_SysWork.playerWork.player.position.vy + g_SysWork.playerWork.player.collision.box.topExtent;
     }
     else
     {

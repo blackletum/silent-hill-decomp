@@ -1,25 +1,18 @@
 #include "game.h"
-#include "inline_no_dmpsx.h"
 
-#include <psyq/gtemac.h>
 #include <psyq/libapi.h>
 #include <psyq/strings.h>
 
 #include "bodyprog/bodyprog.h"
 #include "bodyprog/collision/collision.h"
 #include "bodyprog/math/math.h"
-#include "bodyprog/item_screens.h"
-#include "bodyprog/player.h"
-#include "bodyprog/screen/screen_data.h"
-#include "bodyprog/screen/screen_draw.h"
-#include "bodyprog/sound/sound_system.h"
-#include "main/rng.h"
+#include "bodyprog/view/vw_main.h"
 
 #define DEFAULT_TRIGGER_HEIGHT (SHRT_MIN * 2)
 
 /** @brief Computes a trigger height from half-meter height steps.
  *
- * @note The trigger height has a default offset of `Q12(-1.5f)`.
+ * @note The trigger height has a starting offset of `Q12(-1.5f)`.
  *
  * @param steps Half-meter height steps.
  * @return Trigger height (Q19.12).
@@ -192,7 +185,7 @@ bool Collision_TriggerIntersectGet(s_CollisionTriggerIntersect* intersect, const
 }
 
 q19_12 Collision_TriggerCeilingHeightGet(VECTOR3* moveOffset,
-                                         const s_CollisionCylinder* cylinder, q19_12 cylinderRadius, q19_12 cylinderHeight) // 0x8006F620
+                                         const s_CharaCollisionCylinder* cylinder, q19_12 cylinderRadius, q19_12 cylinderTopExtent) // 0x8006F620
 {
     q19_12                    projOffsetToTriggerX;
     q19_12                    projOffsetToTriggerZ;
@@ -223,7 +216,7 @@ q19_12 Collision_TriggerCeilingHeightGet(VECTOR3* moveOffset,
     // Compute start parameters.
     moveOffsetX     = moveOffset->vx;
     moveOffsetZ     = moveOffset->vz;
-    cylinderTop     = cylinder->position.vy + cylinderHeight;
+    cylinderTop     = cylinder->position.vy + cylinderTopExtent;
     projCylinderTop = cylinderTop + moveOffset->vy;
 
     // Run through active triggers.

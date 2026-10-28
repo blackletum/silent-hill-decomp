@@ -3,23 +3,22 @@
 
 #include "bodyprog/chara/chara.h"
 
-/** @brief Character collision cylinder. */
-typedef struct _CollisionCylinder
+/** @brief Character collision cylinder. TODO: Too similar to `s_CharaCylinder` */
+typedef struct _CharaCollisionCylinder
 {
-    /* 0x0  */ VECTOR3 position; /** Q19.12 */
-    /* 0xC  */ q3_12   bottom;
-    /* 0xE  */ q3_12   top;
+    /* 0x0  */ VECTOR3 position;     /** Q19.12 */
+    /* 0xC  */ q3_12   bottomExtent;
+    /* 0xE  */ q3_12   topExtent;
     /* 0x10 */ q3_12   radius;
-    /* 0x14 */ s8      collisionState; /** `e_CharaCollisionState` */
-} s_CollisionCylinder;
-STATIC_ASSERT_SIZEOF(s_CollisionCylinder, 20);
+    /* 0x14 */ s8      state;        /** `e_CharaCollisionState` */
+} s_CharaCollisionCylinder;
+STATIC_ASSERT_SIZEOF(s_CharaCollisionCylinder, 20);
 
 /** @brief Character collision state. TODO: Name clash with `e_CharaCollisionState`. */
 typedef struct _CollisionCharaState
 {
-    /* 0x0  */ s32        collisionState; /** `e_CharaCollisionState` */
-    /* 0x4  */ bool       field_4;        // `allowDefaultCeilHeight`? Set when the character collision being checked is any of the ones in
-                                          // `Collision_CharaCollisionSetup`.
+    /* 0x0  */ s32        state;   /** `e_CharaCollisionState` */
+    /* 0x4  */ bool       field_4; // `allowDefaultCeilHeight`? Set when the character collision being checked is any of the ones in `Collision_CharaCollisionSetup`.
     /* 0x8  */ q19_12     distance;
     /* 0xC  */ SVECTOR    offset; /** Q23.8 | Character movement offset. */
     /* 0x14 */ DVECTOR_XZ direction;

@@ -996,8 +996,8 @@ void func_800DEF50(s_SubCharacter* incubus, GsCOORDINATE2* boneCoords) // 0x800D
 
     incubus->collision.cylinder.radius  = Q12(0.5f);
     incubus->collision.cylinder.field_2 = Q12(0.5f);
-    incubus->collision.box.top          = offsetY - Q12(0.25f);
-    incubus->collision.box.bottom       = offsetY;
+    incubus->collision.box.topExtent          = offsetY - Q12(0.25f);
+    incubus->collision.box.bottomExtent       = offsetY;
     incubus->collision.box.height       = offsetY + Q12(0.25f);
     incubus->collision.box.offsetY      = offsetY;
 
@@ -1019,9 +1019,9 @@ void func_800DEFE8(s_SubCharacter* incubus, GsCOORDINATE2* boneCoords) // 0x800D
 
     posY = incubus->position.vy;
 
-    incubus->collision.box.bottom  = posY;
+    incubus->collision.box.bottomExtent  = posY;
     incubus->collision.box.height  = posY;
-    incubus->collision.box.top     = posY - Q12(1.0f);
+    incubus->collision.box.topExtent     = posY - Q12(1.0f);
     incubus->collision.box.offsetY = posY - Q12(0.5f);
 }
 

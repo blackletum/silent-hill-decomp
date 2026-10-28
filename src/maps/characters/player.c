@@ -340,9 +340,9 @@ void Player_ControlUnfreeze(bool setIdle)
     player->collision.cylinder.field_2 = DEFAULT_PLAYER_CYLINDER_FIELD_2;
     Player_CollisionReset();
     g_SysWork.playerWork.player.properties.player.flags &= ~(PlayerFlag_Unk2 |
-                                                                 PlayerFlag_SfxActive |
-                                                                 PlayerFlag_DamageReceived |
-                                                                 PlayerFlag_Moving);
+                                                             PlayerFlag_SfxActive |
+                                                             PlayerFlag_DamageReceived |
+                                                             PlayerFlag_Moving);
 
     player->flags          &= ~CharaFlag_Unk4;
     player->collision.state = CharaCollisionState_Npc;
@@ -888,8 +888,8 @@ bool sharedFunc_800D2E94_0_s00(void)
         {
             npc->health                             = Q12(400.0f);
             npc->model.controlState++;
-            npc->collision.box.top                  = Q12(-0.2f);
-            npc->collision.box.bottom               = Q12(0.2f);
+            npc->collision.box.topExtent            = Q12(-0.2f);
+            npc->collision.box.bottomExtent         = Q12(0.2f);
             npc->collision.cylinder.radius          = Q12(0.05f);
             npc->collision.cylinder.field_2         = Q12(0.5f);
             npc->field_40                           = 0;

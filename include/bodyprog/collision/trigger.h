@@ -3,14 +3,14 @@
 
 #include "bodyprog/collision/chara.h"
 
-/** @brief Collision trigger flags. Applied per IPD collision shape, unrelated to volume triggers. */
+/** @brief Collision trigger flags. */
 typedef enum _CollisionTriggerFlags
 {
     CollisionTriggerFlag_None    = 0,
     CollisionTriggerFlag_Map     = 1 << 0,
     CollisionTriggerFlag_Objects = 1 << 1,
     CollisionTriggerFlag_Block   = 1 << 2, /** Blocks select passages, e.g. the gate to the Split Head boss elevator. */
-    CollisionTriggerFlag_Unused3 = 1 << 3, /** @unused Secondary block? Only set in `MAP6_S05` and never checked. */
+    CollisionTriggerFlag_Unused3 = 1 << 3, /** @unused Secondary block? Only activated in `MAP6_S05` and never checked. */
     CollisionTriggerFlag_All     = 0xFFFF
 } e_CollisionTriggerFlags;
 
@@ -84,11 +84,11 @@ bool Collision_TriggerIntersectGet(s_CollisionTriggerIntersect* intersect, const
  * @param moveOffset Output movement offset.
  * @param cylinder Collision cylinder.
  * @param cylinderRadius Cylinder radius.
- * @param cylinderHeight Cylinder height.
+ * @param cylinderTopExtent Cylinder top extent.
  * @return Trigger ceiling height, or `DEFAULT_CEILING_HEIGHT` if no ceiling exists.
  */
 q19_12 Collision_TriggerCeilingHeightGet(VECTOR3* moveOffset,
-                                         const s_CollisionCylinder* cylinder, q19_12 cylinderRadius, q19_12 cylinderHeight);
+                                         const s_CharaCollisionCylinder* cylinder, q19_12 cylinderRadius, q19_12 cylinderTopExtent);
 
 /** @brief Gets the offset from a world position to the edge of a collision trigger.
  * If the position is inside the trigger, the offset is (0, 0).

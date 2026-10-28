@@ -1707,7 +1707,7 @@ void func_800D3694(s_SubCharacter* twinfeeler, s_AnmHeader* anmHdr, GsCOORDINATE
     Chara_ModelBoneScaleSet(boneCoords, 0, scale, scale, scale);
 
     twinfeeler->collision.box.height               = Q12(0.0f);
-    twinfeeler->collision.box.bottom               = Q12(0.0f);
+    twinfeeler->collision.box.bottomExtent               = Q12(0.0f);
     twinfeeler->collision.shapeOffsets.cylinder.vz = Q12(0.0f);
     twinfeeler->collision.shapeOffsets.cylinder.vx = Q12(0.0f);
     twinfeeler->collision.cylinder.radius          = Q12(0.0f);
@@ -1724,8 +1724,8 @@ void func_800D3694(s_SubCharacter* twinfeeler, s_AnmHeader* anmHdr, GsCOORDINATE
     gte_rt();
     gte_stlvnl(&ptr->field_28);
 
-    twinfeeler->collision.box.top             = Q12_MULT_PRECISE(Q8_TO_Q12(ptr->field_28.vy), scale);
-    twinfeeler->collision.box.offsetY         = twinfeeler->collision.box.top + Q12(0.03f);
+    twinfeeler->collision.box.topExtent             = Q12_MULT_PRECISE(Q8_TO_Q12(ptr->field_28.vy), scale);
+    twinfeeler->collision.box.offsetY         = twinfeeler->collision.box.topExtent + Q12(0.03f);
     twinfeeler->collision.shapeOffsets.box.vx = Q12_MULT_PRECISE(twinfeeler->position.vx - Q8_TO_Q12(ptr->field_28.vx), scale);
     twinfeeler->collision.shapeOffsets.box.vz = Q12_MULT_PRECISE(twinfeeler->position.vz - Q8_TO_Q12(ptr->field_28.vz), scale);
     twinfeeler->collision.cylinder.field_2    = Q12(0.05f);
@@ -2979,14 +2979,14 @@ void func_800D5904(s_SubCharacter* twinfeeler, GsCOORDINATE2* boneCoords) // 0x8
 
     unkBasePosY                   = Q8_TO_Q12(transformMat.t[1]) - posY;
     unkPosY                       = unkBasePosY - Q12(0.25f);
-    twinfeeler->collision.box.top = unkPosY;
+    twinfeeler->collision.box.topExtent = unkPosY;
     if (unkPosY >= posY)
     {
-        twinfeeler->collision.box.bottom = posY;
+        twinfeeler->collision.box.bottomExtent = posY;
     }
     else
     {
-        twinfeeler->collision.box.bottom = unkPosY;
+        twinfeeler->collision.box.bottomExtent = unkPosY;
     }
 
     twinfeeler->collision.box.height       = unkBasePosY + Q12(0.25f);
@@ -3082,9 +3082,9 @@ void func_800D5B6C(s_SubCharacter* twinfeeler, GsCOORDINATE2* boneCoords) // 0x8
     }
 
     posY                              = twinfeeler->position.vy;
-    twinfeeler->collision.box.bottom  = posY;
+    twinfeeler->collision.box.bottomExtent  = posY;
     twinfeeler->collision.box.height  = posY;
-    twinfeeler->collision.box.top     = posY - Q12(1.0f);
+    twinfeeler->collision.box.topExtent     = posY - Q12(1.0f);
     twinfeeler->collision.box.offsetY = posY - Q12(0.5f);
 }
 
@@ -3217,13 +3217,13 @@ void func_800D5E30(s_SubCharacter* twinfeeler, GsCOORDINATE2* boneCoords) // 0x8
         newPosY = Q8_TO_Q12(transformMat.t[1]);
         newPosZ = Q8_TO_Q12(transformMat.t[2]);
 
-        charaRecords->field_10       = Q12(0.45f);
-        charaRecords->field_E        = newPosY - Q12(0.3f);
-        charaRecords->field_C        = posY;
-        charaRecords->position.vx    = newPosX;
-        charaRecords->position.vy    = newPosY;
-        charaRecords->position.vz    = newPosZ;
-        charaRecords->collisionState = CharaCollisionState_Npc;
+        charaRecords->radius       = Q12(0.45f);
+        charaRecords->topExtent    = newPosY - Q12(0.3f);
+        charaRecords->bottomExtent = posY;
+        charaRecords->position.vx  = newPosX;
+        charaRecords->position.vy  = newPosY;
+        charaRecords->position.vz  = newPosZ;
+        charaRecords->state        = CharaCollisionState_Npc;
     }
 }
 

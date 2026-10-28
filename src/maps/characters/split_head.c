@@ -1023,7 +1023,7 @@ void SplitHead_MovementUpdate(s_SubCharacter* splitHead)
     sharedFunc_800D4408_1_s05(&pos, 2, Q8(0.0f), -57, 3);
 
     splitHead->collision.shapeOffsets.cylinder.vx = pos.vx - splitHead->position.vx;
-    splitHead->collision.box.top                  = pos.vy;
+    splitHead->collision.box.topExtent                  = pos.vy;
     splitHead->collision.shapeOffsets.cylinder.vz = pos.vz - splitHead->position.vz;
 
     if (ANIM_STATUS_IDX_GET(splitHead->model.anim.status) == SplitHeadAnim_BiteAttack ||
@@ -1280,7 +1280,7 @@ void sharedFunc_800D2D74_1_s05(s_SubCharacter* splitHead)
             if (ABS(sp98[1] - sp98[2]) >= 114)
             {
                 splitHeadProps.flags                 |= SplitHeadFlag_0;
-                splitHead->collision.box.top          = sp20[0].vy;
+                splitHead->collision.box.topExtent          = sp20[0].vy;
                 splitHead->collision.box.height       = sp50[0].vy;
                 splitHead->collision.cylinder.field_2 = Q12(0.6f);
 
@@ -1356,9 +1356,9 @@ void sharedFunc_800D2D74_1_s05(s_SubCharacter* splitHead)
         sharedFunc_800D4408_1_s05(&sp50[3], 1, 0, 149, -319);
     }
 
-    splitHead->collision.box.top = FP_FROM((sp20[0].vy * (Q12(1.0f) - sp90[unkIdx])) + (sp20[unkIdx].vy * sp90[unkIdx]), Q12_SHIFT);
+    splitHead->collision.box.topExtent = FP_FROM((sp20[0].vy * (Q12(1.0f) - sp90[unkIdx])) + (sp20[unkIdx].vy * sp90[unkIdx]), Q12_SHIFT);
     splitHead->collision.box.height = FP_FROM((sp50[0].vy * (Q12(1.0f) - sp90[unkIdx])) + (sp20[unkIdx + 4].vy * sp90[unkIdx]), Q12_SHIFT);
-    splitHead->collision.box.offsetY = (splitHead->collision.box.top + splitHead->collision.box.height) >> 1;
+    splitHead->collision.box.offsetY = (splitHead->collision.box.topExtent + splitHead->collision.box.height) >> 1;
 
     if (unkIdx == 3)
     {
@@ -1588,7 +1588,7 @@ void sharedFunc_800D3B30_1_s05(s_SubCharacter* splitHead)
     q3_12                       var_v1_3;
 
     // Reset collision shapes.
-    splitHead->collision.box.bottom               = Q12(0.0f);
+    splitHead->collision.box.bottomExtent               = Q12(0.0f);
     splitHead->collision.cylinder.radius          = Q12(0.0f);
     splitHead->collision.shapeOffsets.cylinder.vx = Q12(0.0f);
     splitHead->collision.shapeOffsets.cylinder.vz = Q12(0.0f);

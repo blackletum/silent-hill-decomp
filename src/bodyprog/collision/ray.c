@@ -682,7 +682,7 @@ void func_8006EE0C(s_RayState_6C* arg0, bool useCylinder, const s_SubCharacter* 
         arg0->field_C = Q12_TO_Q8(chara->collision.cylinder.radius);
         offsetX       = chara->collision.shapeOffsets.cylinder.vx;
         offsetZ       = chara->collision.shapeOffsets.cylinder.vz;
-        topHeight     = chara->position.vy + chara->collision.box.bottom;
+        topHeight     = chara->position.vy + chara->collision.box.bottomExtent;
     }
     else
     {
@@ -695,7 +695,7 @@ void func_8006EE0C(s_RayState_6C* arg0, bool useCylinder, const s_SubCharacter* 
     arg0->topHeight    = Q12_TO_Q8(topHeight);
     arg0->positionX    = Q12_TO_Q8(chara->position.vx + offsetX);
     arg0->positionZ    = Q12_TO_Q8(chara->position.vz + offsetZ);
-    arg0->floorHeight = Q12_TO_Q8(chara->position.vy + chara->collision.box.top);
+    arg0->floorHeight = Q12_TO_Q8(chara->position.vy + chara->collision.box.topExtent);
 }
 
 void func_8006EEB8(s_RayState* state, s_SubCharacter* chara) // 0x8006EEB8

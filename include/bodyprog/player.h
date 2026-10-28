@@ -684,8 +684,8 @@ static inline void Player_CollisionReset()
 {
     #define playerChara g_SysWork.playerWork.player
 
-    playerChara.collision.box.top                  = DEFAULT_PLAYER_BOX_TOP;
-    playerChara.collision.box.bottom               = Q12(0.0f);
+    playerChara.collision.box.topExtent            = DEFAULT_PLAYER_BOX_TOP;
+    playerChara.collision.box.bottomExtent         = Q12(0.0f);
     playerChara.collision.box.offsetY              = DEFAULT_PLAYER_BOX_OFFSET_Y;
     playerChara.collision.shapeOffsets.cylinder.vz = Q12(0.0f);
     playerChara.collision.shapeOffsets.cylinder.vx = Q12(0.0f);

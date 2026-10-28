@@ -1042,7 +1042,7 @@ bool sharedFunc_800D2E04_0_s01(s_SubCharacter* airScreamer, VECTOR3* inVec, q19_
     if (((u32)angle0 * 2) >= angle1 && dist0 >= dist)
     {
         sharedData_800DE170_0_s01.vx = airScreamer->position.vx;
-        sharedData_800DE170_0_s01.vy = airScreamer->position.vy + airScreamer->collision.box.top; // Head offset.
+        sharedData_800DE170_0_s01.vy = airScreamer->position.vy + airScreamer->collision.box.topExtent; // Head offset.
         sharedData_800DE170_0_s01.vz = airScreamer->position.vz;
         return !Ray_TraceQuery(&sharedData_800E2330_0_s01, &sharedData_800DE170_0_s01, inVec);
     }
@@ -1169,7 +1169,7 @@ bool sharedFunc_800D3430_0_s01(s_SubCharacter* airScreamer, q19_12* dist, q19_12
     bool cond;
 
     g_AirScreamer_HeadTargetPosition.vx = g_SysWork.playerWork.player.position.vx;
-    g_AirScreamer_HeadTargetPosition.vy = g_SysWork.playerWork.player.position.vy + g_SysWork.playerWork.player.collision.box.top;
+    g_AirScreamer_HeadTargetPosition.vy = g_SysWork.playerWork.player.position.vy + g_SysWork.playerWork.player.collision.box.topExtent;
     g_AirScreamer_HeadTargetPosition.vz = g_SysWork.playerWork.player.position.vz;
 
     cond = sharedFunc_800D2E04_0_s01(airScreamer, &g_AirScreamer_HeadTargetPosition, dist, angle);
@@ -3160,10 +3160,10 @@ void AirScreamer_Control_10(s_SubCharacter* airScreamer)
             }
             else if (temp_fp < Q12(1.1f))
             {
-                temp_s6   = airScreamer->position.vy + airScreamer->collision.box.top + Q12(0.1f);
+                temp_s6   = airScreamer->position.vy + airScreamer->collision.box.topExtent + Q12(0.1f);
                 playerPosY = g_SysWork.playerWork.player.position.vy;
                 height = g_SysWork.playerWork.player.collision.box.height;
-                temp_s7   = g_SysWork.playerWork.player.collision.box.top;
+                temp_s7   = g_SysWork.playerWork.player.collision.box.topExtent;
 
                 temp_s4_2 = Q12_ANGLE_NORM_S(func_80080478(&airScreamer->position, &airScreamerProps.targetPosition) - airScreamer->rotation.vy);
 
@@ -9251,7 +9251,7 @@ bool sharedFunc_800DBF88_2_s00(s_SubCharacter* airScreamer, q19_12 arg1)
 
     unkPosY = unkVec->vy;
 
-    charaFieldC8 = airScreamer->collision.box.top;
+    charaFieldC8 = airScreamer->collision.box.topExtent;
 
     Collision_TriggerQuery(sharedData_800E2370_0_s01, posX, posZ, posDeltaX, posDeltaZ);
 
@@ -9344,7 +9344,7 @@ bool sharedFunc_800DC30C_2_s00(s_SubCharacter* airScreamer)
             return true;
     }
 
-    return (Collision_FloorHeightGet(airScreamer->position.vx, airScreamer->position.vz) + (airScreamer->collision.box.top * 2)) >= sharedData_800E2370_0_s01[1];
+    return (Collision_FloorHeightGet(airScreamer->position.vx, airScreamer->position.vz) + (airScreamer->collision.box.topExtent * 2)) >= sharedData_800E2370_0_s01[1];
 }
 
 bool sharedFunc_800DC3BC_2_s00(s_SubCharacter* airScreamer)
@@ -9427,7 +9427,7 @@ s32 sharedFunc_800DC598_2_s00(s_SubCharacter* airScreamer)
             {
                 Collision_TriggerQuery(sharedData_800E2370_0_s01, airScreamer->position.vx, airScreamer->position.vz, 0, 0);
 
-                if (sharedData_800E2370_0_s01[1] < ((airScreamer->position.vy + airScreamer->collision.box.top) - Q12(2.0f)))
+                if (sharedData_800E2370_0_s01[1] < ((airScreamer->position.vy + airScreamer->collision.box.topExtent) - Q12(2.0f)))
                 {
                     ret = 1;
                 }
@@ -9613,7 +9613,7 @@ bool sharedFunc_800D4AEC_0_s01(s_SubCharacter* airScreamer, VECTOR3* arg1, VECTO
     Collision_TriggerQuery(sharedData_800E2370_0_s01, posX, posZ, offsetX, offsetZ);
 
     var_a0    = sharedData_800E2370_0_s01[1];
-    temp_v1   = airScreamer->collision.box.top;
+    temp_v1   = airScreamer->collision.box.topExtent;
     hasHit = true;
 
     if (i < 0 && var_a0 < (posY + temp_v1))
@@ -10759,7 +10759,7 @@ void sharedFunc_800D53AC_0_s01(s_SubCharacter* airScreamer)
     else
     {
         targetPosX = playerPosX + Q12_MULT_PRECISE(playerRadius / 4, Math_Sin(angleToPlayer));
-        targetPosY = playerPosY + g_SysWork.playerWork.player.collision.box.top;
+        targetPosY = playerPosY + g_SysWork.playerWork.player.collision.box.topExtent;
         targetPosZ = playerPosZ + Q12_MULT_PRECISE(playerRadius / 4, Math_Cos(angleToPlayer));
     }
 
@@ -10943,7 +10943,7 @@ s32 sharedFunc_800DEE24_2_s00(s_SubCharacter* airScreamer)
 
     newPlayerPosX = playerPosX + playerOffsetX;
     newPlayerPosZ = playerPosZ + playerOffsetZ;
-    playerOffsetX = playerPosY + g_SysWork.playerWork.player.collision.box.top;
+    playerOffsetX = playerPosY + g_SysWork.playerWork.player.collision.box.topExtent;
     playerOffsetZ = Collision_FloorHeightGet(newPlayerPosX, newPlayerPosZ);
 
     floorHeight = airScreamerProps.floorHeight;
@@ -12461,7 +12461,7 @@ void sharedFunc_800D633C_0_s01(s_SubCharacter* airScreamer)
 
     Collision_TriggerQuery(&sharedData_800E2370_0_s01, airScreamer->position.vx, airScreamer->position.vz, Q12(0.0f), Q12(0.0f));
 
-    posY = sharedData_800E2370_0_s01[1] - airScreamer->collision.box.top;
+    posY = sharedData_800E2370_0_s01[1] - airScreamer->collision.box.topExtent;
     if (airScreamer->position.vy < posY)
     {
         airScreamer->position.vy = posY;
@@ -13693,13 +13693,13 @@ void sharedFunc_800D82B8_0_s01(s_SubCharacter* airScreamer)
         airScreamer->collision.box.field_8 = offsetY;
 
         airScreamer->collision.box.height = height;
-        airScreamer->collision.box.top    = top;
+        airScreamer->collision.box.topExtent    = top;
 
         bottom0 = sharedData_800CAA98_0_s01.field_D70[sp10][0];
         radius1 = sharedData_800CAA98_0_s01.field_D70[sp10][1];
 
         airScreamer->collision.state           = CharaCollisionState_Npc;
-        airScreamer->collision.box.bottom      = bottom0;
+        airScreamer->collision.box.bottomExtent      = bottom0;
         airScreamer->collision.cylinder.radius = radius1;
     }
     else
@@ -13711,22 +13711,22 @@ void sharedFunc_800D82B8_0_s01(s_SubCharacter* airScreamer)
         airScreamer->collision.cylinder.field_2 = Q12(0.0f);
 
         airScreamer->collision.box.height  = Q12(0.0f);
-        airScreamer->collision.box.top     = Q12(0.0f);
+        airScreamer->collision.box.topExtent     = Q12(0.0f);
         airScreamer->collision.box.offsetY = Q12(0.0f);
         airScreamer->collision.box.field_8 = Q12(0.0f);
-        airScreamer->collision.box.bottom  = bottom1;
+        airScreamer->collision.box.bottomExtent  = bottom1;
         airScreamer->collision.state       = CharaCollisionState_Ignore;
     }
 
     if (airScreamerProps.field_E8_0 == 3)
     {
-        airScreamer->collision.box.bottom = Q12_MULT_PRECISE(airScreamer->collision.box.bottom, Q12(1.125f));
+        airScreamer->collision.box.bottomExtent = Q12_MULT_PRECISE(airScreamer->collision.box.bottomExtent, Q12(1.125f));
         airScreamer->collision.cylinder.field_2 = Q12_MULT_PRECISE(airScreamer->collision.cylinder.field_2, Q12(1.125f));
     }
 
     if (airScreamerProps.flags & AirScreamerFlag_12)
     {
-        airScreamer->collision.box.bottom = Q12_MULT_PRECISE(airScreamer->collision.box.bottom, Q12(0.875f));
+        airScreamer->collision.box.bottomExtent = Q12_MULT_PRECISE(airScreamer->collision.box.bottomExtent, Q12(0.875f));
         airScreamer->collision.cylinder.field_2 = Q12_MULT_PRECISE(airScreamer->collision.cylinder.field_2, Q12(0.875f));
     }
 
@@ -13750,7 +13750,7 @@ void sharedFunc_800D8714_0_s01(s_SubCharacter* airScreamer, q19_12 moveSpeed, q1
     idx                               = sharedFunc_800D4A80_0_s01(airScreamer);
     base                              = &sharedData_800CAA98_0_s01;
     moveDistBase                      = base->field_D5C[idx][1];
-    airScreamer->collision.box.bottom = base->field_D5C[idx][0];
+    airScreamer->collision.box.bottomExtent = base->field_D5C[idx][0];
 
     if (moveSpeed == Q12(0.0f))
     {

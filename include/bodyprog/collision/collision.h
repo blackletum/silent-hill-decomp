@@ -174,7 +174,7 @@ typedef struct _CollisionState
                          /* 0x0 */ q7_8 bottom; // Set to absolute character bottom height.
                          /* 0x2 */ q7_8 top;    // Set to absolute character top height.
                          /* 0x4 */ q7_8 radius;
-                         /* 0x6 */ u8   collisionState; /** `e_CharaCollisionState` */
+                         /* 0x6 */ u8   state;     /** `e_CharaCollisionState` */
                          /* 0x8 */ u8*  passStamp; /** Tracks visited characters per query pass. */
                      } chara;
     /* 0xA0   */ } field_A0; // Floor info? Cell info? Cell state?
@@ -326,12 +326,12 @@ s_SubCharacter** Collision_CollidableCharasGet(s32* collCharaCount, const s_SubC
  * @param cylinder Collision cylinder.
  * @return `true` if movement is possible, `false` otherwise.
  */
-s32 Collision_OffsetCheck(s_CollisionResult* collResult, VECTOR* offset, const s_CollisionCylinder* cylinder);
+s32 Collision_OffsetCheck(s_CollisionResult* collResult, VECTOR* offset, const s_CharaCollisionCylinder* cylinder);
 
-s32 func_8006A42C(s_CollisionResult* collResult, const VECTOR3* offset, const s_CollisionCylinder* cylinder);
+s32 func_8006A42C(s_CollisionResult* collResult, const VECTOR3* offset, const s_CharaCollisionCylinder* cylinder);
 
 // Something for character movement.
-s32 func_8006A4A8(s_CollisionResult* collResult, VECTOR3* moveOffset, const s_CollisionCylinder* cylinder, bool arg3,
+s32 func_8006A4A8(s_CollisionResult* collResult, VECTOR3* moveOffset, const s_CharaCollisionCylinder* cylinder, bool arg3,
                   s_IpdCollisionData** collDataPtrs, s32 collDataIdx, s_CharaCollisionRecord* charaRecords, s32 charaRecordCount,
                   s_SubCharacter** charas, s32 charaCount);
 
@@ -342,7 +342,7 @@ s32 func_8006A4A8(s_CollisionResult* collResult, VECTOR3* moveOffset, const s_Co
  * @param charas Characters to collide.
  * @param charaCount Number of characters.
  */
-void Collision_MoveOffsetDampen(VECTOR3* moveOffset, const s_CollisionCylinder* cylinder,
+void Collision_MoveOffsetDampen(VECTOR3* moveOffset, const s_CharaCollisionCylinder* cylinder,
                                 s_SubCharacter** charas, s32 charaCount);
 
 /** @brief Initializes a collision state for a new pass.
@@ -352,7 +352,7 @@ void Collision_MoveOffsetDampen(VECTOR3* moveOffset, const s_CollisionCylinder* 
  * @param cylinder Collision cylinder.
  * @param arg3 Configuration flag. TODO: What is it?
  */
-void Collision_CollStateInit(s_CollisionState* state, VECTOR3* moveOffset, const s_CollisionCylinder* cylinder, bool arg3);
+void Collision_CollStateInit(s_CollisionState* state, VECTOR3* moveOffset, const s_CharaCollisionCylinder* cylinder, bool arg3);
 
 // ========================================
 // @split? Collision state fill.
@@ -365,7 +365,7 @@ void Collision_CollStateInit(s_CollisionState* state, VECTOR3* moveOffset, const
  * @param cylinder Collision cylinder.
  */
 void Collision_MoveDirectionCalc(s_CollisionCharaState* charaState,
-                                 const VECTOR3* moveOffset, const s_CollisionCylinder* cylinder);
+                                 const VECTOR3* moveOffset, const s_CharaCollisionCylinder* cylinder);
 
 void Collision_CharaCollisionHandle(s_CollisionState* state, s_IpdCollisionData* collData);
 

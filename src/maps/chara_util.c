@@ -681,8 +681,8 @@ void Chara_CollisionReset(s_SubCharacter* chara)
 {
     chara->model.stateStep = 0;
 
-    chara->collision.box.top                  = Q12(0.0f);
-    chara->collision.box.bottom               = Q12(0.0f);
+    chara->collision.box.topExtent                  = Q12(0.0f);
+    chara->collision.box.bottomExtent               = Q12(0.0f);
     chara->collision.box.offsetY              = Q12(0.0f);
     chara->collision.cylinder.radius          = Q12(0.0f);
     chara->collision.cylinder.field_2         = Q12(0.0f);

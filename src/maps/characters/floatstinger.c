@@ -845,7 +845,7 @@ void func_800D3AD4(s_SubCharacter* floatstinger) // 0x800D3AD4
 
     if ((g_SysWork.playerWork.player.position.vy - Q12(1.35f)) < ptr->field_50[0].vy)
     {
-        floatstinger->collision.box.top                  = ptr->field_50[1].vy - floatstinger->position.vy;
+        floatstinger->collision.box.topExtent                  = ptr->field_50[1].vy - floatstinger->position.vy;
         floatstinger->collision.box.height               = ptr->field_50[0].vy - floatstinger->position.vy;
         floatstinger->collision.cylinder.radius          = Q12(0.4f);
         floatstinger->collision.cylinder.field_2         = Q12(0.4f);
@@ -856,7 +856,7 @@ void func_800D3AD4(s_SubCharacter* floatstinger) // 0x800D3AD4
     }
     else
     {
-        floatstinger->collision.box.top                  = ptr->field_50[0].vy - floatstinger->position.vy;
+        floatstinger->collision.box.topExtent                  = ptr->field_50[0].vy - floatstinger->position.vy;
         floatstinger->collision.box.height               = ptr->field_50[2].vy - floatstinger->position.vy;
         floatstinger->collision.cylinder.radius          = Q12(0.5f);
         floatstinger->collision.cylinder.field_2         = Q12(0.5f);
@@ -901,11 +901,11 @@ void func_800D3AD4(s_SubCharacter* floatstinger) // 0x800D3AD4
 
     if (g_SysWork.playerWork.player.health <= Q12(0.0f))
     {
-        floatstinger->collision.box.bottom = Q12(-2.0f);
+        floatstinger->collision.box.bottomExtent = Q12(-2.0f);
     }
     else
     {
-        floatstinger->collision.box.bottom = Q12(-1.46f);
+        floatstinger->collision.box.bottomExtent = Q12(-1.46f);
     }
 }
 
@@ -1027,7 +1027,7 @@ bool func_800D4458(s_SubCharacter* floatstinger, VECTOR3* arg1) // 0x800D4458
 
     for (i = 0; i < 3; i++)
     {
-        if (arg1->vy + floatstinger->collision.box.bottom >= D_800D780C[i].field_10)
+        if (arg1->vy + floatstinger->collision.box.bottomExtent >= D_800D780C[i].field_10)
         {
             break;
         }
@@ -1038,7 +1038,7 @@ bool func_800D4458(s_SubCharacter* floatstinger, VECTOR3* arg1) // 0x800D4458
         return false;
     }
 
-    D_800DB89A = D_800D780C[i].field_10 - (arg1->vy + floatstinger->collision.box.bottom);
+    D_800DB89A = D_800D780C[i].field_10 - (arg1->vy + floatstinger->collision.box.bottomExtent);
 
     if (D_800D780C[i].field_0[0] <= arg1->vx)
     {
@@ -1147,7 +1147,7 @@ q19_12 func_800D48A4(s_SubCharacter* floatstinger, q3_12 dist, q3_12 headingAngl
     count = !(count < 0x80);
 
     from.vx = floatstinger->position.vx;
-    from.vy = floatstinger->position.vy + floatstinger->collision.box.bottom;
+    from.vy = floatstinger->position.vy + floatstinger->collision.box.bottomExtent;
     from.vz = floatstinger->position.vz;
 
     for (i = count; i < (count + 8); i++)

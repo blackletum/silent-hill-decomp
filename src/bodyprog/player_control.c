@@ -1589,10 +1589,10 @@ void Player_LogicUpdate(s_SubCharacter* player, s_PlayerExtra* extra, GsCOORDINA
                     }
 
                     player->collision.cylinder.field_2 += Q12_MULT_PRECISE(g_DeltaTime, Q12(0.27f));
-                    player->collision.box.top          += Q12_MULT_PRECISE(g_DeltaTime, Q12(1.2f));
+                    player->collision.box.topExtent    += Q12_MULT_PRECISE(g_DeltaTime, Q12(1.2f));
                     player->collision.box.offsetY      += Q12_MULT_PRECISE(g_DeltaTime, Q12(0.9f));
                     player->collision.cylinder.field_2  = CLAMP(player->collision.cylinder.field_2, DEFAULT_PLAYER_CYLINDER_FIELD_2, Q12(0.5f));
-                    player->collision.box.top           = CLAMP(player->collision.box.top, DEFAULT_PLAYER_BOX_TOP, Q12(-0.4));
+                    player->collision.box.topExtent     = CLAMP(player->collision.box.topExtent, DEFAULT_PLAYER_BOX_TOP, Q12(-0.4));
                     player->collision.box.offsetY       = CLAMP(player->collision.box.offsetY, DEFAULT_PLAYER_BOX_OFFSET_Y, Q12(-0.2f));
 
                     if (player->health <= Q12(0.0f) && player->properties.player.afkTimer <= Q12(0.0f))
@@ -2036,12 +2036,12 @@ void Player_LogicUpdate(s_SubCharacter* player, s_PlayerExtra* extra, GsCOORDINA
 
                         playerChara.collision.cylinder.radius          = Q12(0.3f);
                         playerChara.collision.cylinder.field_2         = DEFAULT_PLAYER_CYLINDER_FIELD_2;
-                        playerChara.collision.box.top                  = DEFAULT_PLAYER_BOX_TOP;
+                        playerChara.collision.box.topExtent            = DEFAULT_PLAYER_BOX_TOP;
                         playerChara.collision.shapeOffsets.cylinder.vz = Q12(0.0f);
                         playerChara.collision.shapeOffsets.cylinder.vx = Q12(0.0f);
                         playerChara.collision.shapeOffsets.box.vz      = Q12(0.0f);
                         playerChara.collision.shapeOffsets.box.vx      = Q12(0.0f);
-                        playerChara.collision.box.bottom               = Q12(0.0f);
+                        playerChara.collision.box.bottomExtent         = Q12(0.0f);
                         playerChara.collision.box.offsetY              = DEFAULT_PLAYER_BOX_OFFSET_Y;
                     }
 
@@ -2145,8 +2145,8 @@ void Player_LogicUpdate(s_SubCharacter* player, s_PlayerExtra* extra, GsCOORDINA
                         player->properties.player.field_10D = 0;
                         if (ANIM_STATUS_IS_ACTIVE(player->model.anim.status))
                         {
-                            playerChara.collision.box.top     = D_800AEEDC[player->model.anim.keyframeIdx - 379][0];
-                            playerChara.collision.box.offsetY = D_800AEEDC[player->model.anim.keyframeIdx - 379][1];
+                            playerChara.collision.box.topExtent = D_800AEEDC[player->model.anim.keyframeIdx - 379][0];
+                            playerChara.collision.box.offsetY   = D_800AEEDC[player->model.anim.keyframeIdx - 379][1];
                         }
 
                         if (player->model.anim.keyframeIdx == HARRY_BASE_ANIM_INFOS[45].endKeyframeIdx)
@@ -2160,10 +2160,10 @@ void Player_LogicUpdate(s_SubCharacter* player, s_PlayerExtra* extra, GsCOORDINA
                                 Player_ExtraStateSet(player, extra, PlayerState_None);
                             }
 
-                            playerChara.collision.box.top     = DEFAULT_PLAYER_BOX_TOP;
-                            playerChara.collision.box.bottom  = Q12(0.0f);
-                            playerChara.collision.box.offsetY = DEFAULT_PLAYER_BOX_OFFSET_Y;
-                            player->collision.cylinder.radius = Q12(0.3f);
+                            playerChara.collision.box.topExtent    = DEFAULT_PLAYER_BOX_TOP;
+                            playerChara.collision.box.bottomExtent = Q12(0.0f);
+                            playerChara.collision.box.offsetY      = DEFAULT_PLAYER_BOX_OFFSET_Y;
+                            player->collision.cylinder.radius      = Q12(0.3f);
                         }
                     }
                     else
@@ -2172,8 +2172,8 @@ void Player_LogicUpdate(s_SubCharacter* player, s_PlayerExtra* extra, GsCOORDINA
 
                         if (ANIM_STATUS_IS_ACTIVE(player->model.anim.status))
                         {
-                            playerChara.collision.box.top     = D_800AEF78[player->model.anim.keyframeIdx - 418][0];
-                            playerChara.collision.box.offsetY = D_800AEF78[player->model.anim.keyframeIdx - 418][1];
+                            playerChara.collision.box.topExtent = D_800AEF78[player->model.anim.keyframeIdx - 418][0];
+                            playerChara.collision.box.offsetY   = D_800AEF78[player->model.anim.keyframeIdx - 418][1];
                         }
 
                         if (player->model.anim.keyframeIdx == HARRY_BASE_ANIM_INFOS[47].endKeyframeIdx)
@@ -2187,10 +2187,10 @@ void Player_LogicUpdate(s_SubCharacter* player, s_PlayerExtra* extra, GsCOORDINA
                                 Player_ExtraStateSet(player, extra, PlayerState_None);
                             }
 
-                            playerChara.collision.box.top     = DEFAULT_PLAYER_BOX_TOP;
-                            playerChara.collision.box.bottom  = Q12(0.0f);
-                            playerChara.collision.box.offsetY = DEFAULT_PLAYER_BOX_OFFSET_Y;
-                            player->collision.cylinder.radius = Q12(0.3f);
+                            playerChara.collision.box.topExtent    = DEFAULT_PLAYER_BOX_TOP;
+                            playerChara.collision.box.bottomExtent = Q12(0.0f);
+                            playerChara.collision.box.offsetY      = DEFAULT_PLAYER_BOX_OFFSET_Y;
+                            player->collision.cylinder.radius      = Q12(0.3f);
                         }
                     }
                     break;
@@ -8864,12 +8864,12 @@ void func_8007FD4C(bool resetColl) // 0x8007FD4C
 
         // TODO: Doesn't match?
         //Player_CollisionReset();
-        g_SysWork.playerWork.player.collision.box.top                  = DEFAULT_PLAYER_BOX_TOP;
+        g_SysWork.playerWork.player.collision.box.topExtent            = DEFAULT_PLAYER_BOX_TOP;
         g_SysWork.playerWork.player.collision.shapeOffsets.cylinder.vz = Q12(0.0f);
         g_SysWork.playerWork.player.collision.shapeOffsets.cylinder.vx = Q12(0.0f);
         g_SysWork.playerWork.player.collision.shapeOffsets.box.vz      = Q12(0.0f);
         g_SysWork.playerWork.player.collision.shapeOffsets.box.vx      = Q12(0.0f);
-        g_SysWork.playerWork.player.collision.box.bottom               = Q12(0.0f);
+        g_SysWork.playerWork.player.collision.box.bottomExtent         = Q12(0.0f);
         g_SysWork.playerWork.player.collision.box.offsetY              = DEFAULT_PLAYER_BOX_OFFSET_Y;
     }
 }

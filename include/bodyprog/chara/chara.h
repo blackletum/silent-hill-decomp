@@ -545,18 +545,21 @@ typedef struct
 /** @brief Character collision box. */
 typedef struct _CharaBox
 {
-    /* 0x0 */ q3_12 top;
-    /* 0x2 */ q3_12 bottom;
+    /* 0x0 */ q3_12 topExtent;
+    /* 0x2 */ q3_12 bottomExtent;
     /* 0x4 */ q3_12 height;
     /* 0x6 */ q3_12 offsetY;
+    // TODO: Maybe nested inner and outer XZ extents. See `s_CharaCylinder`.
     /* 0x8 */ q3_12 field_8; // X extent?? Always negative, but why? `s_CharaCylinder::radius` is set to this.
     /* 0xA */ q3_12 field_A; // Z extent?? `s_CharaCylinder::field_2` is set to this.
 } s_CharaBox;
 STATIC_ASSERT_SIZEOF(s_CharaBox, 12);
 
-/** @brief Character collision cylinder. */
+/** @brief Character collision cylinder. TODO: Too similar to `s_CharaCollisionCylinder`. */
 typedef struct _CharaCylinder
 {
+    // TODO: These seem to be inner and outer radii used for proximity checks,
+    // e.g. outer region allows stalking and inner region allows attacking.
     /* 0x0 */ q3_12 radius;  // Map geometry collision radius?
     /* 0x2 */ q3_12 field_2; // Character-to-character collision radius? Sometimes used as box extent?
 } s_CharaCylinder;
@@ -577,16 +580,17 @@ typedef struct _CharaKeyframe
     /* 0xC */ s_CharaShapeOffsets shapeOffsets;
 } s_CharaKeyframe;
 
-// TODO: Does this track only other characters, or other shapes too?
-/** @brief Recorded character collision. */
+/** @brief Recorded character-to-character collision.
+ * Similar to `s_CharaCollisionCylinder` but with extra `passStamp` field.
+ */
 typedef struct _CharaCollisionRecord
 {
-    /* 0x0  */ VECTOR3 position;
-    /* 0xC  */ q3_12   field_C;        // Bottom offset?
-    /* 0xE  */ q3_12   field_E;        // Top offset?
-    /* 0x10 */ q3_12   field_10;       // Radius?
-    /* 0x12 */ s8      collisionState; /** `e_CharaCollisionState` */
-    /* 0x13 */ u8      passStamp;      /** Tracks visited characters per query pass. */
+    /* 0x0  */ VECTOR3 position;     /** Q19.12 */
+    /* 0xC  */ q3_12   bottomExtent;
+    /* 0xE  */ q3_12   topExtent;
+    /* 0x10 */ q3_12   radius;
+    /* 0x12 */ s8      state;        /** `e_CharaCollisionState` */
+    /* 0x13 */ u8      passStamp;    /** Tracks visited characters per query pass. */
 } s_CharaCollisionRecord;
 
 /** @brief Character collision info for the active tick. */
@@ -678,10 +682,10 @@ extern s_CharaFileInfo CHARA_FILE_INFOS[Chara_Count]; // 0x800A90FC
     s32 __temp;                                                                    \
     s32 __temp2;                                                                   \
                                                                                    \
-    chara->collision.box.top = keyframe.box.top;                                   \
+    chara->collision.box.topExtent = keyframe.box.topExtent;                                   \
                                                                                    \
-    __temp                      = keyframe.box.bottom;                             \
-    chara->collision.box.bottom = __temp;                                          \
+    __temp                      = keyframe.box.bottomExtent;                             \
+    chara->collision.box.bottomExtent = __temp;                                          \
     chara->collision.box.height = keyframe.box.height;                             \
                                                                                    \
     __temp                                    = keyframe.box.offsetY;              \
