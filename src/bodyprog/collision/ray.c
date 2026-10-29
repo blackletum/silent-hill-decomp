@@ -15,65 +15,73 @@
 #include "bodyprog/sound/sound_system.h"
 #include "main/rng.h"
 
-bool Ray_TraceQuery(s_RayTrace* trace, const VECTOR3* from, const VECTOR3* to) // 0x8006D90C
+#define g_RayQueryCache (s_RayQuery*)PSX_SCRATCH
+
+bool Ray_GeomTraceGet(s_RayTrace* trace, const VECTOR3* from, const VECTOR3* to) // 0x8006D90C
 {
     s32         prevScratchAddr;
-    s_RayState* state;
+    s_RayQuery* query;
     VECTOR3     offset; // Q19.12
 
+    // Compute end offset.
     offset.vx = to->vx - from->vx;
     offset.vy = to->vy - from->vy;
     offset.vz = to->vz - from->vz;
-
+    
+    // Run ray trace.
     trace->hasHit = false;
-
-    if (Ray_TraceSetup((s_RayState*)PSX_SCRATCH, false, Q8(0.0f), from, &offset, Q12(0.0f), Q12(0.0f), NULL, 0))
+    if (Ray_TraceSetup(g_RayQueryCache, false, Q8(0.0f), from, &offset, Q12(0.0f), Q12(0.0f), NULL, 0))
     {
-        prevScratchAddr = SetSp((s32)PSX_SCRATCH_ADDR(984));
+        prevScratchAddr = SetSp((s32)PSX_SCRATCH_ADDR(0x3D8));
 
-        state         = (s_RayState*)PSX_SCRATCH;
-        trace->hasHit = Ray_TraceRun(trace, state);
+        query         = g_RayQueryCache;
+        trace->hasHit = Ray_TraceRun(trace, query);
 
         SetSp(prevScratchAddr);
     }
 
+    // Set missed ray if no obstacle was hit.
     if (!trace->hasHit)
     {
-        Ray_MissSet(trace, from, &offset, state->rayDistance);
+        Ray_MissSet(trace, from, &offset, query->rayDistance);
     }
 
     return trace->hasHit;
 }
 
-bool Ray_CharaTraceQuery(s_RayTrace* trace, const VECTOR3* from, VECTOR3* offset, s_SubCharacter* excludedChara) // 0x8006DA08
+bool Ray_GeomAndCharaTraceGet(s_RayTrace* trace, const VECTOR3* from, const VECTOR3* offset,
+                              const s_SubCharacter* excludedChara) // 0x8006DA08
 {
     s32              collCharaCount;
-    s32              prevScratch;
-    s_RayState*      state;
+    s32              prevScratchAddr;
+    s_RayQuery*      query;
     s_SubCharacter** collCharas;
 
+    // Get collidable characters.
     collCharas = Collision_CollidableCharasGet(&collCharaCount, excludedChara, false);
 
+    // Run ray trace.
     trace->hasHit = false;
-    if (Ray_TraceSetup((s_RayState*)PSX_SCRATCH, false, Q8(0.0f), from, offset, Q12(0.0f), Q12(0.0f), collCharas, collCharaCount))
+    if (Ray_TraceSetup(g_RayQueryCache, false, Q8(0.0f), from, offset, Q12(0.0f), Q12(0.0f), collCharas, collCharaCount))
     {
-        prevScratch   = SetSp((s32)PSX_SCRATCH_ADDR(0x3D8));
+        prevScratchAddr = SetSp((s32)PSX_SCRATCH_ADDR(0x3D8));
 
-        state         = (s_RayState*)PSX_SCRATCH;
-        trace->hasHit = Ray_TraceRun(trace, state);
+        query         = g_RayQueryCache;
+        trace->hasHit = Ray_TraceRun(trace, query);
 
-        SetSp(prevScratch);
+        SetSp(prevScratchAddr);
     }
 
+    // Set missed ray if no obstacle was hit.
     if (!trace->hasHit)
     {
-        Ray_MissSet(trace, from, offset, state->rayDistance);
+        Ray_MissSet(trace, from, offset, query->rayDistance);
     }
 
     return trace->hasHit;
 }
 
-void Ray_MissSet(s_RayTrace* trace, const VECTOR3* from, const VECTOR3* offset, q23_8 dist) // 0x8006DAE4
+void Ray_MissSet(s_RayTrace* trace, const VECTOR3* from, const VECTOR3* offset, q23_8 hitDist) // 0x8006DAE4
 {
     trace->hasHit       = false;
     trace->floorType    = FloorType_Default;
@@ -81,34 +89,38 @@ void Ray_MissSet(s_RayTrace* trace, const VECTOR3* from, const VECTOR3* offset, 
     trace->target.vy    = from->vy + offset->vy;
     trace->target.vz    = from->vz + offset->vz;
     trace->character    = NULL;
-    trace->hitDistance  = Q8_TO_Q12(dist);
-    trace->floorHeight  = Q12(1.875f);      // @bug? Awkward value suggests `Q8(30.0f)` may have been typed by mistake.
+    trace->hitDistance  = Q8_TO_Q12(hitDist);
+    trace->floorHeight  = Q12(1.875f); // @bug? Awkward value suggests `Q8(DEFAULT_FLOOR_HEIGHT)` may have been typed by mistake.
     trace->headingAngle = Q12_ANGLE(0.0f);
 }
 
-bool Ray_LosHitCheck(s_RayTrace* trace, const VECTOR3* from, const VECTOR3* offset, s_SubCharacter* excludedChara) // 0x8006DB3C
+bool Ray_GeomAndCharaTraceGetAlt(s_RayTrace* trace, const VECTOR3* from, const VECTOR3* offset,
+                                 s_SubCharacter* excludedChara) // 0x8006DB3C
 {
     s32              collCharaCount;
     s32              prevScratchAddr;
-    s_RayState*      state;
+    s_RayQuery*      query;
     s_SubCharacter** collCharas;
 
+    // Get collidable characters.
     collCharas = Collision_CollidableCharasGet(&collCharaCount, excludedChara, true);
-    trace->hasHit    = false;
 
-    if (Ray_TraceSetup((s_RayState*)PSX_SCRATCH, true, Q8(0.0f), from, offset, Q12(0.0f), Q12(0.0f), collCharas, collCharaCount))
+    // Run ray trace.
+    trace->hasHit = false;
+    if (Ray_TraceSetup(g_RayQueryCache, true, Q8(0.0f), from, offset, Q12(0.0f), Q12(0.0f), collCharas, collCharaCount))
     {
-        prevScratchAddr = SetSp((s32)PSX_SCRATCH_ADDR(984));
+        prevScratchAddr = SetSp((s32)PSX_SCRATCH_ADDR(0x3D8));
 
-        state         = (s_RayState*)PSX_SCRATCH;
-        trace->hasHit = Ray_TraceRun(trace, state);
+        query         = g_RayQueryCache;
+        trace->hasHit = Ray_TraceRun(trace, query);
 
         SetSp(prevScratchAddr);
     }
 
+    // Set missed ray if no obstacle was hit.
     if (!trace->hasHit)
     {
-        Ray_MissSet(trace, from, offset, state->rayDistance);
+        Ray_MissSet(trace, from, offset, query->rayDistance);
     }
 
     return trace->hasHit;
@@ -117,28 +129,29 @@ bool Ray_LosHitCheck(s_RayTrace* trace, const VECTOR3* from, const VECTOR3* offs
 bool func_8006DC18(s_RayTrace* trace, const VECTOR3* from, const VECTOR3* offset) // 0x8006DC18
 {
     s32         prevScratchAddr;
-    s_RayState* state;
+    s_RayQuery* query;
 
     trace->hasHit = false;
     if (Ray_TraceSetup((s32)PSX_SCRATCH, true, Q8(0.3f), from, offset, Q12(0.0f), Q12(0.0f), NULL, 0))
     {
         prevScratchAddr = SetSp((s32)PSX_SCRATCH_ADDR(0x3D8));
 
-        state         = (s_RayState*)PSX_SCRATCH;
-        trace->hasHit = Ray_TraceRun(trace, state);
+        query         = g_RayQueryCache;
+        trace->hasHit = Ray_TraceRun(trace, query);
 
         SetSp(prevScratchAddr);
     }
 
     if (!trace->hasHit)
     {
-        Ray_MissSet(trace, from, offset, state->rayDistance);
+        Ray_MissSet(trace, from, offset, query->rayDistance);
     }
 
     return trace->hasHit;
 }
 
-bool Ray_TraceSetup(s_RayState* state, bool useCylinder, q7_8 radiusOffset, const VECTOR3* from, const VECTOR3* offset, q19_12 arg5, q19_12 arg6,
+bool Ray_TraceSetup(s_RayQuery* query, bool ignoreFloors, q7_8 radiusOffset, const VECTOR3* from, const VECTOR3* offset,
+                    q19_12 unusedX, q19_12 unusedZ,
                     s_SubCharacter** collCharas, s32 collCharaCount)
 {
     if (offset->vx == Q12(0.0f) && offset->vz == Q12(0.0f))
@@ -146,55 +159,55 @@ bool Ray_TraceSetup(s_RayState* state, bool useCylinder, q7_8 radiusOffset, cons
         return false;
     }
 
-    state->field_0      = useCylinder;
-    state->triggerFlags = g_ActiveCollisionTriggers.flags; // TODO: Struct could begin some point earlier.
-    state->radius       = radiusOffset;
-    state->hitDistance  = SHRT_MAX;
-    state->character    = NULL;
+    query->ignoreFloors      = ignoreFloors;
+    query->triggerFlags = g_ActiveCollisionTriggers.flags;
+    query->radius       = radiusOffset;
+    query->hitDistance  = SHRT_MAX;
+    query->character    = NULL;
 
-    state->from.vx = Q12_TO_Q8(from->vx);
-    state->from.vy = Q12_TO_Q8(from->vy);
-    state->from.vz = Q12_TO_Q8(from->vz);
+    query->from.vx = Q12_TO_Q8(from->vx);
+    query->from.vy = Q12_TO_Q8(from->vy);
+    query->from.vz = Q12_TO_Q8(from->vz);
 
-    state->offset.vx = Q12_TO_Q8(offset->vx);
-    state->offset.vy = Q12_TO_Q8(offset->vy);
-    state->offset.vz = Q12_TO_Q8(offset->vz);
+    query->offset.vx = Q12_TO_Q8(offset->vx);
+    query->offset.vy = Q12_TO_Q8(offset->vy);
+    query->offset.vz = Q12_TO_Q8(offset->vz);
 
-    state->field_3C = state->from.vx + state->offset.vx;
+    query->field_3C = query->from.vx + query->offset.vx;
 
-    state->field_4C = Q12_TO_Q8(arg5);
-    state->field_4E = Q12_TO_Q8(arg6);
+    query->field_4C = Q12_TO_Q8(unusedX);
+    query->field_4E = Q12_TO_Q8(unusedZ);
 
-    state->field_40 = state->from.vy + state->offset.vy;
-    state->field_44 = state->from.vz + state->offset.vz;
+    query->field_40 = query->from.vy + query->offset.vy;
+    query->field_44 = query->from.vz + query->offset.vz;
 
-    state->rayDistance = Math_Vector2MagCalc(state->offset.vx, state->offset.vz);
-    if (state->rayDistance == Q8(0.0f))
+    query->rayDistance = Math_Vector2MagCalc(query->offset.vx, query->offset.vz);
+    if (query->rayDistance == Q8(0.0f))
     {
         return false;
     }
 
-    state->field_58 = (state->offset.vx << Q12_SHIFT) / state->rayDistance;
-    state->field_5A = (state->offset.vz << Q12_SHIFT) / state->rayDistance;
+    query->field_58 = (query->offset.vx << Q12_SHIFT) / query->rayDistance;
+    query->field_5A = (query->offset.vz << Q12_SHIFT) / query->rayDistance;
 
-    if (state->offset.vy < 0)
+    if (query->offset.vy < 0)
     {
-        state->field_5E = state->from.vy + state->field_4E;
-        state->field_60 = state->field_40 + state->field_4E;
+        query->field_5E = query->from.vy + query->field_4E;
+        query->field_60 = query->field_40 + query->field_4E;
     }
     else
     {
-        state->field_60 = state->from.vy + state->field_4E;
-        state->field_5E = state->field_40 + state->field_4E;
+        query->field_60 = query->from.vy + query->field_4E;
+        query->field_5E = query->field_40 + query->field_4E;
     }
 
-    state->collCharas     = collCharas;
-    state->collCharaCount = collCharaCount;
+    query->collidableCharas     = collCharas;
+    query->collidableCharaCount = collCharaCount;
 
     return true;
 }
 
-bool Ray_TraceRun(s_RayTrace* trace, s_RayState* state) // 0x8006DEB0
+bool Ray_TraceRun(s_RayTrace* trace, s_RayQuery* query) // 0x8006DEB0
 {
     s32                  collDataIdx;
     s32                  temp_lo;
@@ -202,9 +215,9 @@ bool Ray_TraceRun(s_RayTrace* trace, s_RayState* state) // 0x8006DEB0
     s_SubCharacter**     curCollChara;
     s_IpdCollisionData** collDataPtrs;
     s_IpdCollisionData** curCollData;
-    s_RayState_8C*       curUnk;
+    s_RayQuery_8C*       curUnk;
 
-    // Run through IPD collision data.
+    // Run through collision data.
     collDataPtrs = WorldMap_ActiveChunksCollisionDataGet(&collDataIdx);
     for (curCollData = collDataPtrs; curCollData < &collDataPtrs[collDataIdx]; curCollData++)
     {
@@ -214,56 +227,56 @@ bool Ray_TraceRun(s_RayTrace* trace, s_RayState* state) // 0x8006DEB0
             collData->polygonCount        != 0 ||
             collData->cylinderCount       != 0)
         {
-            func_8006E0AC(state, collData);
+            func_8006E0AC(query, collData);
             Collision_ShapePassReset(collData);
 
-            for (curUnk = &state->field_8C; curUnk < &state->field_8C[state->field_88]; curUnk++)
+            for (curUnk = &query->field_8C; curUnk < &query->field_8C[query->field_88]; curUnk++)
             {
-                temp_lo = curUnk->field_2 * state->cellCountX;
-                func_8006E53C(state, &collData->shapeRanges[temp_lo + curUnk->field_0], collData);
+                temp_lo = curUnk->field_2 * query->cellCountX;
+                func_8006E53C(query, &collData->shapeRanges[temp_lo + curUnk->field_0], collData);
             }
         }
     }
 
     // Run through collidable characters.
-    for (curCollChara = state->collCharas;
-         curCollChara < &state->collCharas[state->collCharaCount];
+    for (curCollChara = query->collidableCharas;
+         curCollChara < &query->collidableCharas[query->collidableCharaCount];
          curCollChara++)
     {
-        func_8006EE0C(&state->field_6C, state->field_0, *curCollChara);
-        func_8006EEB8(state, *curCollChara);
+        func_8006EE0C(&query->field_6C, query->ignoreFloors, *curCollChara);
+        func_8006EEB8(query, *curCollChara);
     }
 
-    if (state->hitDistance != SHRT_MAX)
+    if (query->hitDistance != SHRT_MAX)
     {
-        trace->target.vx    = Q8_TO_Q12(state->target.vx);
-        trace->target.vy    = Q8_TO_Q12(state->target.vy);
-        trace->target.vz    = Q8_TO_Q12(state->target.vz);
-        trace->character    = state->character;
-        trace->hitDistance  = Q8_TO_Q12(state->hitDistance);
-        trace->floorHeight  = Q8_TO_Q12(state->floorHeight);
-        trace->headingAngle = ratan2(state->offsetX, state->offsetZ);
-        trace->floorType    = state->floorType;
+        trace->target.vx    = Q8_TO_Q12(query->target.vx);
+        trace->target.vy    = Q8_TO_Q12(query->target.vy);
+        trace->target.vz    = Q8_TO_Q12(query->target.vz);
+        trace->character    = query->character;
+        trace->hitDistance  = Q8_TO_Q12(query->hitDistance);
+        trace->floorHeight  = Q8_TO_Q12(query->floorHeight);
+        trace->headingAngle = ratan2(query->offsetX, query->offsetZ);
+        trace->floorType    = query->floorType;
         return true;
     }
 
     return false;
 }
 
-void func_8006E0AC(s_RayState* state, const s_IpdCollisionData* collData) // 0x8006E0AC
+void func_8006E0AC(s_RayQuery* query, const s_IpdCollisionData* collData) // 0x8006E0AC
 {
-    // TODO: Some `s_RayState_6C` fields might be wrong.
-    state->field_6C.positionX   = collData->positionX;
-    state->field_6C.positionZ   = collData->positionZ;
-    state->field_6C.floorHeight = state->from.vx - state->field_6C.positionX;
-    state->field_6C.topHeight   = state->from.vz - state->field_6C.positionZ;
-    state->field_6C.field_C     = state->field_6C.floorHeight + state->offset.vx;
-    state->field_6C.field_E     = state->field_6C.topHeight + state->offset.vz;
-    state->cellCountX           = collData->cellCountX;
-    state->cellCountZ           = collData->cellCountZ;
-    state->cellSize             = collData->cellSize;
+    query->field_6C.positionX         = collData->positionX;
+    query->field_6C.positionZ         = collData->positionZ;
+    query->field_6C.u.unk.offset.vx   = query->from.vx - query->field_6C.positionX;
+    query->field_6C.u.unk.offset.vz   = query->from.vz - query->field_6C.positionZ;
+    query->field_6C.u.unk.offset_C.vx = query->field_6C.u.unk.offset.vx + query->offset.vx;
+    query->field_6C.u.unk.offset_C.vz = query->field_6C.u.unk.offset.vz + query->offset.vz;
+    query->cellCountX                 = collData->cellCountX;
+    query->cellCountZ                 = collData->cellCountZ;
+    query->cellSize                   = collData->cellSize;
 
-    func_8006E150(&state->field_6C, ((DVECTOR*)&state->offset)[0], ((DVECTOR*)&state->offset)[1]);
+    // TODO: Use `DVECTOR_XZ`?
+    func_8006E150(&query->field_6C, ((DVECTOR*)&query->offset)[0], ((DVECTOR*)&query->offset)[1]);
 }
 
 void func_8006E150(s_func_8006E490* arg0, DVECTOR arg1, DVECTOR arg2) // 0x8006E150
@@ -422,7 +435,7 @@ void func_8006E490(s_func_8006E490* arg0, u32 flags, q19_12 posX, q19_12 posZ) /
     }
 }
 
-void func_8006E53C(s_RayState* state, s_IpdShapeRange* shapeRangePair, s_IpdCollisionData* collData) // 0x8006E53C
+void func_8006E53C(s_RayQuery* query, s_IpdShapeRange* shapeRangePair, s_IpdCollisionData* collData) // 0x8006E53C
 {
     s32            i;
     bool           hasSurface;
@@ -447,13 +460,14 @@ void func_8006E53C(s_RayState* state, s_IpdShapeRange* shapeRangePair, s_IpdColl
             {
                 curPolygon = &collData->polygons[shapeIdx];
 
-                if (CHECK_FLAG_IDX(state->triggerFlags, (curPolygon->triggerFlagIdxLow << 2) | curPolygon->triggerFlagIdxHigh, true))
+                // Check active shape.
+                if (CHECK_FLAG_IDX(query->triggerFlags, (curPolygon->triggerFlagIdxLow << 2) | curPolygon->triggerFlagIdxHigh, true))
                 {
                     surfaceIdx0 = curPolygon->surfaceIdx0;
                     surfaceIdx1 = curPolygon->surfaceIdx1;
                     hasSurface  = surfaceIdx0 != UCHAR_MAX && surfaceIdx1 != UCHAR_MAX;
 
-                    if (state->field_0 == true)
+                    if (query->ignoreFloors == true)
                     {
                         if (hasSurface)
                         {
@@ -485,7 +499,7 @@ void func_8006E53C(s_RayState* state, s_IpdShapeRange* shapeRangePair, s_IpdColl
                         }
                     }
 
-                    func_8006E78C(state, curPolygon, collData->polygonSplitVertices, collData->polygonSurfaces, hasSurface);
+                    func_8006E78C(query, curPolygon, collData->polygonSplitVertices, collData->polygonSurfaces, hasSurface);
                 }
             }
             // Handle cylinder shape.
@@ -493,20 +507,20 @@ void func_8006E53C(s_RayState* state, s_IpdShapeRange* shapeRangePair, s_IpdColl
             {
                 curCylinder = &collData->cylinders[shapeIdx - collData->polygonCount];
 
-                if (CHECK_FLAG_IDX(state->triggerFlags, curCylinder->triggerFlagIdx, true) &&
-                    (state->field_0 == true ||
+                if (CHECK_FLAG_IDX(query->triggerFlags, curCylinder->triggerFlagIdx, true) &&
+                    (query->ignoreFloors == true ||
                      (curCylinder->floorType != FloorType_Default &&
                       curCylinder->floorType != FloorType_None)) &&
-                    curCylinder->radius >= state->radius)
+                    curCylinder->radius >= query->radius)
                 {
-                    func_8006EB8C(state, curCylinder);
+                    func_8006EB8C(query, curCylinder);
                 }
             }
         }
     }
 }
 
-void func_8006E78C(s_RayState* state, s_IpdPolygon* polygon, SVECTOR3* splitVerts, s_IpdSurface* surfaces, bool hasSurface) // 0x8006E78C
+void func_8006E78C(s_RayQuery* query, s_IpdPolygon* polygon, SVECTOR3* splitVerts, s_IpdSurface* surfaces, bool hasSurface) // 0x8006E78C
 {
     SVECTOR   sp0;
     SVECTOR   sp8;
@@ -525,7 +539,7 @@ void func_8006E78C(s_RayState* state, s_IpdPolygon* polygon, SVECTOR3* splitVert
     splitVert1 = &splitVerts[polygon->splitVertexIdx1];
     splitVert0 = &splitVerts[polygon->splitVertexIdx0];
 
-    if (state->field_5E >= splitVert1->vy || state->field_5E >= splitVert0->vy)
+    if (query->field_5E >= splitVert1->vy || query->field_5E >= splitVert0->vy)
     {
         if (polygon->surfaceIdx0 != UCHAR_MAX)
         {
@@ -536,22 +550,22 @@ void func_8006E78C(s_RayState* state, s_IpdPolygon* polygon, SVECTOR3* splitVert
             floorType = surfaces[polygon->surfaceIdx1].floorType;
         }
 
-        unkXz = PACKED_XZ16(state->field_58, state->field_5A);
+        unkXz = PACKED_XZ16(query->field_58, query->field_5A);
         gte_ldR11R12(unkXz);
         gte_ldR13R21(unkXz);
-        gte_ldvxy0(PACKED_XZ16(splitVert1->vx - state->field_6C.floorHeight, splitVert1->vz - state->field_6C.topHeight));
+        gte_ldvxy0(PACKED_XZ16(splitVert1->vx - query->field_6C.u.unk.offset.vx, splitVert1->vz - query->field_6C.u.unk.offset.vz));
         gte_ldvz0();
         gte_rtv0();
         gte_stMAC12(&sp0);
 
-        gte_ldvxy0(PACKED_XZ16(splitVert0->vx - state->field_6C.floorHeight, splitVert0->vz - state->field_6C.topHeight));
+        gte_ldvxy0(PACKED_XZ16(splitVert0->vx - query->field_6C.u.unk.offset.vx, splitVert0->vz - query->field_6C.u.unk.offset.vz));
         gte_ldvz0();
         gte_rtv0();
         gte_stMAC12(&sp8);
 
         if ((sp0.vy & 0x8000) != (sp8.vy & 0x8000))
         {
-            if (state->field_0 == true)
+            if (query->ignoreFloors == true)
             {
                 gte_ldsxy3(0, *(s32*)&sp0.vx, *(s32*)&sp8.vx);
                 gte_nclip();
@@ -576,7 +590,7 @@ void func_8006E78C(s_RayState* state, s_IpdPolygon* polygon, SVECTOR3* splitVert
             {
                 var_v1 = ((sp0.vy << 12) / (sp0.vy - sp8.vy));
                 hitDist = (((sp8.vx - sp0.vx) * var_v1) >> 12) + sp0.vx;
-                if (hitDist >= 0 && state->rayDistance >= hitDist)
+                if (hitDist >= 0 && query->rayDistance >= hitDist)
                 {
                     gte_lddp(var_v1);
                     gte_ldsv3_(splitVert0->vx - splitVert1->vx, splitVert0->vy - splitVert1->vy, splitVert0->vz - splitVert1->vz);
@@ -587,31 +601,31 @@ void func_8006E78C(s_RayState* state, s_IpdPolygon* polygon, SVECTOR3* splitVert
                     maybeSplitDiff.vy += splitVert1->vy;
                     maybeSplitDiff.vz += splitVert1->vz;
 
-                    maybeRayStep = state->from.vy + state->field_4E;
-                    if (state->offset.vy != Q8(0.0f))
+                    maybeRayStep = query->from.vy + query->field_4E;
+                    if (query->offset.vy != Q8(0.0f))
                     {
-                        maybeRayStep += (state->offset.vy * hitDist) / state->rayDistance;
+                        maybeRayStep += (query->offset.vy * hitDist) / query->rayDistance;
                     }
 
-                    if (maybeRayStep >= maybeSplitDiff.vy && hitDist < state->hitDistance)
+                    if (maybeRayStep >= maybeSplitDiff.vy && hitDist < query->hitDistance)
                     {
                         offsetX = polygon->offsetY;
                         offsetZ = -polygon->offsetX;
-                        if (state->field_0 != true && hasSurface && (sp8.vy - sp0.vy) > 0)
+                        if (query->ignoreFloors != true && hasSurface && (sp8.vy - sp0.vy) > 0)
                         {
                             offsetX = -offsetX;
                             offsetZ = polygon->offsetX;
                         }
 
-                        state->hitDistance  = hitDist;
-                        state->target.vx    = maybeSplitDiff.vx + state->field_6C.positionX;
-                        state->target.vy    = maybeRayStep - state->field_4E;
-                        state->target.vz    = maybeSplitDiff.vz + state->field_6C.positionZ;
-                        state->floorHeight = maybeSplitDiff.vy;
-                        state->offsetX      = offsetX;
-                        state->offsetZ      = offsetZ;
-                        state->character    = NULL;
-                        state->floorType   = floorType;
+                        query->hitDistance  = hitDist;
+                        query->target.vx    = maybeSplitDiff.vx + query->field_6C.positionX;
+                        query->target.vy    = maybeRayStep - query->field_4E;
+                        query->target.vz    = maybeSplitDiff.vz + query->field_6C.positionZ;
+                        query->floorHeight = maybeSplitDiff.vy;
+                        query->offsetX      = offsetX;
+                        query->offsetZ      = offsetZ;
+                        query->character    = NULL;
+                        query->floorType   = floorType;
                     }
                 }
             }
@@ -619,7 +633,7 @@ void func_8006E78C(s_RayState* state, s_IpdPolygon* polygon, SVECTOR3* splitVert
     }
 }
 
-void func_8006EB8C(s_RayState* state, s_IpdCylinder* cylinder) // 0x8006EB8C
+void func_8006EB8C(s_RayQuery* query, s_IpdCylinder* cylinder) // 0x8006EB8C
 {
     SVECTOR sp10;
     SVECTOR sp18; // Q7.8
@@ -629,76 +643,76 @@ void func_8006EB8C(s_RayState* state, s_IpdCylinder* cylinder) // 0x8006EB8C
     s32     temp_v1;
 
     radius = cylinder->radius;
-    if (state->field_5E <= cylinder->offset.vy)
+    if (query->field_5E <= cylinder->offset.vy)
     {
         return;
     }
 
-    temp_v1 = PACKED_XZ16(state->field_58, state->field_5A);
+    temp_v1 = PACKED_XZ16(query->field_58, query->field_5A);
     gte_ldR11R12(temp_v1);
     gte_ldR13R21(temp_v1);
-    gte_ldvxy0(PACKED_XZ16(cylinder->offset.vx - state->field_6C.floorHeight, cylinder->offset.vz - state->field_6C.topHeight));
+    gte_ldvxy0(PACKED_XZ16(cylinder->offset.vx - query->field_6C.u.unk.offset.vx, cylinder->offset.vz - query->field_6C.u.unk.offset.vz));
     gte_ldvz0();
     gte_rtv0();
     gte_stMAC12(&sp10);
 
-    if (-radius < sp10.vx && sp10.vx < (state->rayDistance + radius) &&
+    if (-radius < sp10.vx && sp10.vx < (query->rayDistance + radius) &&
         -radius < sp10.vy && sp10.vy < radius)
     {
         temp_v0   = SquareRoot0(SQUARE(radius) - SQUARE(sp10.vy));
         hitDist = sp10.vx - temp_v0;
 
-        if (hitDist >= -temp_v0 && state->rayDistance >= hitDist && hitDist < state->hitDistance)
+        if (hitDist >= -temp_v0 && query->rayDistance >= hitDist && hitDist < query->hitDistance)
         {
-            gte_lddp(Q12(hitDist) / state->rayDistance);
-            gte_ldsv3_(state->offset.vx, state->offset.vy, state->offset.vz);
+            gte_lddp(Q12(hitDist) / query->rayDistance);
+            gte_ldsv3_(query->offset.vx, query->offset.vy, query->offset.vz);
             gte_gpf12();
             gte_stsv(&sp18);
 
-            if ((sp18.vy + state->from.vy + state->field_4E) >= cylinder->offset.vy)
+            if ((sp18.vy + query->from.vy + query->field_4E) >= cylinder->offset.vy)
             {
-                state->hitDistance  = hitDist;
-                state->target.vx    = sp18.vx + state->field_6C.floorHeight + state->field_6C.positionX;
-                state->target.vy    = sp18.vy + state->from.vy;
-                state->target.vz    = sp18.vz + state->field_6C.topHeight + state->field_6C.positionZ;
-                state->floorHeight = cylinder->offset.vy;
-                state->offsetX      = (sp18.vx + state->field_6C.floorHeight) - cylinder->offset.vx;
-                state->offsetZ      = (sp18.vz + state->field_6C.topHeight)    - cylinder->offset.vz;
-                state->character    = NULL;
-                state->floorType   = cylinder->floorType;
+                query->hitDistance = hitDist;
+                query->target.vx   = sp18.vx + query->field_6C.u.unk.offset.vx + query->field_6C.positionX;
+                query->target.vy   = sp18.vy + query->from.vy;
+                query->target.vz   = sp18.vz + query->field_6C.u.unk.offset.vz + query->field_6C.positionZ;
+                query->floorHeight = cylinder->offset.vy;
+                query->offsetX     = (sp18.vx + query->field_6C.u.unk.offset.vx) - cylinder->offset.vx;
+                query->offsetZ     = (sp18.vz + query->field_6C.u.unk.offset.vz) - cylinder->offset.vz;
+                query->character   = NULL;
+                query->floorType   = cylinder->floorType;
             }
         }
     }
 }
 
-void func_8006EE0C(s_RayState_6C* arg0, bool useCylinder, const s_SubCharacter* chara) // 0x8006EE0C
+void func_8006EE0C(s_RayQuery_6C* arg0, bool ignoreFloors, const s_SubCharacter* chara) // 0x8006EE0C
 {
-    q19_12 offsetZ;
     q19_12 offsetX;
-    q19_12 topHeight;
+    q19_12 offsetZ;
+    q19_12 top;
 
-    if (useCylinder == true)
+    if (ignoreFloors == true)
     {
-        arg0->field_C = Q12_TO_Q8(chara->collision.cylinder.outerRadius);
-        offsetX       = chara->collision.shapeOffsets.cylinder.vx;
-        offsetZ       = chara->collision.shapeOffsets.cylinder.vz;
-        topHeight     = chara->position.vy + chara->collision.box.bottomExtent;
+        arg0->u.shape.radius = Q12_TO_Q8(chara->collision.cylinder.outerRadius);
+        offsetX              = chara->collision.shapeOffsets.cylinder.vx;
+        offsetZ              = chara->collision.shapeOffsets.cylinder.vz;
+        top                  = chara->position.vy + chara->collision.box.bottomExtent;
     }
     else
     {
-        arg0->field_C = Q12_TO_Q8(chara->collision.cylinder.innerRadius);
-        offsetX       = chara->collision.shapeOffsets.box.vx;
-        offsetZ       = chara->collision.shapeOffsets.box.vz;
-        topHeight     = chara->position.vy + chara->collision.box.height;
+        arg0->u.shape.radius = Q12_TO_Q8(chara->collision.cylinder.innerRadius);
+        offsetX              = chara->collision.shapeOffsets.box.vx;
+        offsetZ              = chara->collision.shapeOffsets.box.vz;
+        top                  = chara->position.vy + chara->collision.box.height;
     }
 
-    arg0->topHeight    = Q12_TO_Q8(topHeight);
-    arg0->positionX    = Q12_TO_Q8(chara->position.vx + offsetX);
-    arg0->positionZ    = Q12_TO_Q8(chara->position.vz + offsetZ);
-    arg0->floorHeight = Q12_TO_Q8(chara->position.vy + chara->collision.box.topExtent);
+    arg0->u.shape.topHeight   = Q12_TO_Q8(top);
+    arg0->positionX           = Q12_TO_Q8(chara->position.vx + offsetX);
+    arg0->positionZ           = Q12_TO_Q8(chara->position.vz + offsetZ);
+    arg0->u.shape.floorHeight = Q12_TO_Q8(chara->position.vy + chara->collision.box.topExtent);
 }
 
-void func_8006EEB8(s_RayState* state, s_SubCharacter* chara) // 0x8006EEB8
+void func_8006EEB8(s_RayQuery* query, s_SubCharacter* chara) // 0x8006EEB8
 {
     VECTOR3 offset; // Q23.8
     s32     bound;
@@ -710,105 +724,105 @@ void func_8006EEB8(s_RayState* state, s_SubCharacter* chara) // 0x8006EEB8
     q23_8   z0;
     q19_12  var_v1;
 
-    if (state->from.vx <= state->field_3C)
+    if (query->from.vx <= query->field_3C)
     {
-        x0 = state->from.vx;
-        z0 = state->field_3C;
+        x0 = query->from.vx;
+        z0 = query->field_3C;
     }
     else
     {
-        x0 = state->field_3C;
-        z0 = state->from.vx;
+        x0 = query->field_3C;
+        z0 = query->from.vx;
     }
 
-    if (state->from.vz <= state->field_44)
+    if (query->from.vz <= query->field_44)
     {
-        z1 = state->from.vz;
-        x1 = state->field_44;
+        z1 = query->from.vz;
+        x1 = query->field_44;
     }
     else
     {
-        z1 = state->field_44;
-        x1 = state->from.vz;
+        z1 = query->field_44;
+        x1 = query->from.vz;
     }
 
-    bound = state->field_6C.field_C;
-    if ((state->field_6C.positionX + bound) < x0 ||
-         z0 < (state->field_6C.positionX - bound))
+    bound = query->field_6C.u.shape.radius;
+    if ((query->field_6C.positionX + bound) < x0 ||
+         z0 < (query->field_6C.positionX - bound))
     {
         return;
     }
 
-    if ((state->field_6C.positionZ + bound) < z1 || x1 < (state->field_6C.positionZ - bound) ||
-        ((state->from.vy + state->field_4E) < state->field_6C.floorHeight && (state->field_40 + state->field_4E) < state->field_6C.floorHeight) ||
-        ((state->from.vy + state->field_4C) > state->field_6C.topHeight && state->field_6C.topHeight < (state->field_40 + state->field_4C)))
+    if ((query->field_6C.positionZ + bound) < z1 || x1 < (query->field_6C.positionZ - bound) ||
+        ((query->from.vy + query->field_4E) < query->field_6C.u.shape.floorHeight && (query->field_40 + query->field_4E) < query->field_6C.u.shape.floorHeight) ||
+        ((query->from.vy + query->field_4C) > query->field_6C.u.shape.topHeight && query->field_6C.u.shape.topHeight < (query->field_40 + query->field_4C)))
     {
         return;
     }
 
-    alpha = func_8006C248(*(s32*)&state->field_58, state->rayDistance,
-                          state->field_6C.positionX - state->from.vx,
-                          state->field_6C.positionZ - state->from.vz,
+    alpha = func_8006C248(*(s32*)&query->field_58, query->rayDistance,
+                          query->field_6C.positionX - query->from.vx,
+                          query->field_6C.positionZ - query->from.vz,
                           bound);
     if (alpha == NO_VALUE)
     {
         return;
     }
 
-    clampedRayDist = Q12_MULT(state->rayDistance, alpha);
-    if (clampedRayDist >= state->hitDistance)
+    clampedRayDist = Q12_MULT(query->rayDistance, alpha);
+    if (clampedRayDist >= query->hitDistance)
     {
         return;
     }
 
-    offset.vy = state->from.vy + (Q12_MULT(state->offset.vy, alpha));
-    if ((offset.vy + state->field_4E) < state->field_6C.floorHeight ||
-        state->field_6C.topHeight < (offset.vy + state->field_4C))
+    offset.vy = query->from.vy + (Q12_MULT(query->offset.vy, alpha));
+    if ((offset.vy + query->field_4E) < query->field_6C.u.shape.floorHeight ||
+        query->field_6C.u.shape.topHeight < (offset.vy + query->field_4C))
     {
-        if (state->offset.vy == Q8(0.0f))
+        if (query->offset.vy == Q8(0.0f))
         {
             return;
         }
 
-        if ((offset.vy + state->field_4E) < state->field_6C.floorHeight)
+        if ((offset.vy + query->field_4E) < query->field_6C.u.shape.floorHeight)
         {
-            var_v1 = Q12(state->field_6C.floorHeight - (state->from.vy + state->field_4E)) / state->offset.vy;
+            var_v1 = Q12(query->field_6C.u.shape.floorHeight - (query->from.vy + query->field_4E)) / query->offset.vy;
             if (var_v1 > Q12(1.0f))
             {
                 return;
             }
-            offset.vy = state->field_6C.floorHeight - state->field_4E;
+            offset.vy = query->field_6C.u.shape.floorHeight - query->field_4E;
         }
         else
         {
-            var_v1 = Q12(state->field_6C.topHeight - (state->from.vy + state->field_4C)) / state->offset.vy;
+            var_v1 = Q12(query->field_6C.u.shape.topHeight - (query->from.vy + query->field_4C)) / query->offset.vy;
             if (var_v1 > Q12(1.0f))
             {
                 return;
             }
-            offset.vy = state->field_6C.topHeight - state->field_4C;
+            offset.vy = query->field_6C.u.shape.topHeight - query->field_4C;
         }
 
-        offset.vx = state->from.vx + Q12_MULT(state->offset.vx, var_v1);
-        offset.vz = state->from.vz + Q12_MULT(state->offset.vz, var_v1);
-        if ((SQUARE(state->field_6C.positionX - offset.vx) + SQUARE(state->field_6C.positionZ - offset.vz)) >= SQUARE(state->field_6C.field_C))
+        offset.vx = query->from.vx + Q12_MULT(query->offset.vx, var_v1);
+        offset.vz = query->from.vz + Q12_MULT(query->offset.vz, var_v1);
+        if ((SQUARE(query->field_6C.positionX - offset.vx) + SQUARE(query->field_6C.positionZ - offset.vz)) >= SQUARE(query->field_6C.u.shape.radius))
         {
             return;
         }
     }
     else
     {
-        offset.vx = state->from.vx + Q12_MULT(state->offset.vx, alpha);
-        offset.vz = state->from.vz + Q12_MULT(state->offset.vz, alpha);
+        offset.vx = query->from.vx + Q12_MULT(query->offset.vx, alpha);
+        offset.vz = query->from.vz + Q12_MULT(query->offset.vz, alpha);
     }
 
-    state->hitDistance  = clampedRayDist;
-    state->target.vx    = offset.vx;
-    state->target.vy    = offset.vy;
-    state->target.vz    = offset.vz;
-    state->floorHeight = state->field_6C.floorHeight;
-    state->offsetX      = offset.vx - state->field_6C.positionX;
-    state->offsetZ      = offset.vz - state->field_6C.positionZ;
-    state->character    = chara;
-    state->floorType   = FloorType_Default;
+    query->hitDistance = clampedRayDist;
+    query->target.vx   = offset.vx;
+    query->target.vy   = offset.vy;
+    query->target.vz   = offset.vz;
+    query->floorHeight = query->field_6C.u.shape.floorHeight;
+    query->offsetX     = offset.vx - query->field_6C.positionX;
+    query->offsetZ     = offset.vz - query->field_6C.positionZ;
+    query->character   = chara;
+    query->floorType   = FloorType_Default;
 }

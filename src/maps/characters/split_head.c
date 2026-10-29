@@ -495,7 +495,7 @@ void SplitHead_Control_2(s_SubCharacter* splitHead)
             dir.vx = Q12_MULT(distMax, Math_Sin((angleToPlayer + angle) + angle1));
             dir.vy = Q12(0.0f);
             dir.vz = Q12_MULT(distMax, Math_Cos((angleToPlayer + angle) + angle1));
-            Ray_LosHitCheck(&trace, &splitHead->position, &dir, splitHead);
+            Ray_GeomAndCharaTraceGetAlt(&trace, &splitHead->position, &dir, splitHead);
 
             if (!trace.hasHit || trace.character != NULL)
             {
@@ -571,7 +571,7 @@ void SplitHead_Control_2(s_SubCharacter* splitHead)
     dir.vy = Q12(0.0f);
     dir.vz = Q12_MULT(distToPlayer, Math_Cos(angleToPlayer2));
 
-    Ray_LosHitCheck(&trace, &splitHead->position, &dir, splitHead);
+    Ray_GeomAndCharaTraceGetAlt(&trace, &splitHead->position, &dir, splitHead);
 
     if (distToPlayer < Q12(6.4f) &&
         (angleDeltaToPlayer < Q12_ANGLE(7.5f) || distToPlayer > Q12(3.2f) && angleDeltaToPlayer < Q12_ANGLE(15.0f)) &&
@@ -824,7 +824,7 @@ void SplitHead_Control_5(s_SubCharacter* splitHead)
             dir.vx = Q12_MULT(distMax, Math_Sin((angleToPlayer + angle) + angle3));
             dir.vy = Q12(0.0f);
             dir.vz = Q12_MULT(distMax, Math_Cos((angleToPlayer + angle) + angle3));
-            Ray_LosHitCheck(&trace, &splitHead->position, &dir, splitHead);
+            Ray_GeomAndCharaTraceGetAlt(&trace, &splitHead->position, &dir, splitHead);
 
             if (!trace.hasHit || trace.character != NULL)
             {
@@ -901,7 +901,7 @@ void SplitHead_Control_5(s_SubCharacter* splitHead)
     dir.vy = Q12(0.0f);
     dir.vz = Q12_MULT(distToPlayer, Math_Cos(angle1));
 
-    Ray_LosHitCheck(&trace, &splitHead->position, &dir, splitHead);
+    Ray_GeomAndCharaTraceGetAlt(&trace, &splitHead->position, &dir, splitHead);
 
     if (distToPlayer > Q12(2.85f) && distToPlayer < Q12(4.0f) &&
         angle2 < Q12_ANGLE(15.0f) &&

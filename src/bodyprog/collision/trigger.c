@@ -10,6 +10,8 @@
 
 #define DEFAULT_TRIGGER_HEIGHT (SHRT_MIN * 2)
 
+#define g_TriggerIntersectCache (s_CollisionTriggerIntersect*)PSX_SCRATCH
+
 /** @brief Computes a trigger height from half-meter height steps.
  *
  * @note The trigger height has a starting offset of `Q12(-1.5f)`.
@@ -25,7 +27,7 @@ void Collision_TriggerQuery(q19_12* result, q19_12 posX, q19_12 posZ, q19_12 off
     s32                          i;
     s_CollisionTriggerIntersect* intersect;
 
-    intersect = PSX_SCRATCH;
+    intersect = g_TriggerIntersectCache;
 
     // Initialize line intersection.
     Collision_TriggerIntersectInit(intersect, posX, posZ, offsetX, offsetZ);

@@ -1167,7 +1167,7 @@ q19_12 func_800D48A4(s_SubCharacter* floatstinger, q3_12 dist, q3_12 headingAngl
         dir.vy = Q12(0.0f);
         dir.vz = Q12_MULT(dist, Math_Cos(unkAngle1));
 
-        if (Ray_CharaTraceQuery(&trace, &from, &dir, floatstinger) == false)
+        if (Ray_GeomAndCharaTraceGet(&trace, &from, &dir, floatstinger) == false)
         {
             return Math_AngleNormalizeSigned(headingAngle + unkAngle0);
         }

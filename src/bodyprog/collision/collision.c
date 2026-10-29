@@ -449,17 +449,19 @@ s_SubCharacter** Collision_CollidableCharasGet(s32* collCharaCount, const s_SubC
 {
     s_SubCharacter* curChara;
 
-    static s_SubCharacter*  collCharas[NPC_COUNT_MAX + 1]; // Enough for all NPCs and player.
-    static s_SubCharacter** curCollChara;                  // Array of active characters.
+    static s_SubCharacter*  collCharas[NPC_COUNT_MAX + 1]; // Enough for all NPCs + player.
+    static s_SubCharacter** curCollChara;                  // Active characters.
 
     // Filter invalid case.
-    if (excludedChara != NULL &&
-        (excludedChara->model.charaId == Chara_None ||
-         excludedChara->collision.state == CharaCollisionState_Ignore ||
-        (excludedChara->collision.state == CharaCollisionState_Player && includePlayer == true)))
+    if (excludedChara != NULL)
     {
-        *collCharaCount = 0;
-        return &collCharas;
+        if (excludedChara->model.charaId == Chara_None ||
+            excludedChara->collision.state == CharaCollisionState_Ignore ||
+            (excludedChara->collision.state == CharaCollisionState_Player && includePlayer == true))
+        {
+            *collCharaCount = 0;
+            return &collCharas;
+        }
     }
 
     *collCharaCount = 0;
@@ -2031,14 +2033,14 @@ void func_8006CC9C(s_CollisionState* state) // 0x8006CC9C
         return;
     }
 
-    if (state->chunkOffsetFrom.vx + (state->context.chara.radius + state->charaState.moveDistance) < state->charaState.positionFromX ||
-        state->charaState.positionToX < state->chunkOffsetFrom.vx - (state->context.chara.radius + state->charaState.moveDistance))
+    if (state->charaState.positionFromX > (state->chunkOffsetFrom.vx + (state->context.chara.radius + state->charaState.moveDistance)) ||
+        state->charaState.positionToX   < (state->chunkOffsetFrom.vx - (state->context.chara.radius + state->charaState.moveDistance)))
     {
         return;
     }
 
-    if (state->chunkOffsetTo.vz + (state->context.chara.radius + state->charaState.moveDistance) < state->charaState.positionFromZ ||
-        state->charaState.positionToZ < state->chunkOffsetTo.vz - (state->context.chara.radius + state->charaState.moveDistance) ||
+    if (state->charaState.positionFromZ > (state->chunkOffsetTo.vz + (state->context.chara.radius + state->charaState.moveDistance)) ||
+        state->charaState.positionToZ   < (state->chunkOffsetTo.vz - (state->context.chara.radius + state->charaState.moveDistance)) ||
         state->charaState.top > state->context.chara.top)
     {
         return;
@@ -2097,7 +2099,7 @@ void func_8006CF18(s_CollisionState* state, s_CharaCollisionRecord* charaRecords
     q23_8                   radius;
     s_CharaCollisionRecord* curCharaRecord;
 
-    // Run through character collision records.
+    // Run through character records.
     for (curCharaRecord = charaRecords; curCharaRecord < &charaRecords[charaRecordCount]; curCharaRecord++)
     {
         radius = Q12_TO_Q8(curCharaRecord->radius) + state->charaState.radius;

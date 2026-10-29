@@ -1265,10 +1265,10 @@ func_8006D7EC                                = 0x8006F2FC; // type:func
 //----------------------------------------------------------------
 //--- PA: 0x04A8BC   VA: 0x8006F41C   subsegment: c, collision/ray
 //----------------------------------------------------------------
-Ray_TraceQuery                               = 0x8006F41C; // type:func
-Ray_CharaTraceQuery                          = 0x8006F518; // type:func
+Ray_GeomTraceGet                               = 0x8006F41C; // type:func
+Ray_GeomAndCharaTraceGet                          = 0x8006F518; // type:func
 Ray_MissSet                                  = 0x8006F5F4; // type:func
-Ray_LosHitCheck                              = 0x8006F64C; // type:func
+Ray_GeomAndCharaTraceGetAlt                              = 0x8006F64C; // type:func
 func_8006DC18                                = 0x8006F728; // type:func
 Ray_TraceSetup                               = 0x8006F7F0; // type:func
 Ray_TraceRun                                 = 0x8006F9C0; // type:func

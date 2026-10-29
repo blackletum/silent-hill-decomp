@@ -7659,7 +7659,7 @@ s32 Player_LowerBodyMoveStateGet(s_SubCharacter* player, s_800C45C8* arg1) // 0x
     vecs[2].vx = player->position.vx + offsetX0;
     vecs[2].vz = player->position.vz - offsetZ0;
 
-    traceHits[0] = Ray_TraceQuery(&traces[0], &vecs[2], &vecs[0]);
+    traceHits[0] = Ray_GeomTraceGet(&traces[0], &vecs[2], &vecs[0]);
 
     if (traceHits[0])
     {
@@ -7670,7 +7670,7 @@ s32 Player_LowerBodyMoveStateGet(s_SubCharacter* player, s_800C45C8* arg1) // 0x
         vecs[3].vx = player->position.vx - offsetX0;
         vecs[3].vz = player->position.vz + offsetZ0;
 
-        traceHits[1] = Ray_TraceQuery(&traces[1], &vecs[3], &vecs[1]);
+        traceHits[1] = Ray_GeomTraceGet(&traces[1], &vecs[3], &vecs[1]);
 
         if (traceHits[1])
         {

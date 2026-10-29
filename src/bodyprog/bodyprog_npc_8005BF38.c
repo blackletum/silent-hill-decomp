@@ -373,7 +373,7 @@ void func_8005CD38(s32* npcIdx, q3_12* angle, const VECTOR3* pos, q3_12 angleMin
         offset.vy = (g_SysWork.npcs[j].position.vy + g_SysWork.npcs[j].collision.box.offsetY)         - posY;
         offset.vz = (g_SysWork.npcs[j].position.vz + g_SysWork.npcs[j].collision.shapeOffsets.box.vz) - posZ;
 
-        if (Ray_CharaTraceQuery(&trace, &from, &offset, &g_SysWork.playerWork.player) &&
+        if (Ray_GeomAndCharaTraceGet(&trace, &from, &offset, &g_SysWork.playerWork.player) &&
             trace.character == &g_SysWork.npcs[j])
         {
             break;
@@ -459,7 +459,7 @@ bool func_8005D50C(s32* targetNpcIdx, q3_12* rotToTargetX, q3_12* rotToTargetY, 
         }
 
         // Track closer targetable NPC.
-        if (Ray_CharaTraceQuery(&trace, attackPos, &offsetToTarget, &g_SysWork.playerWork.player) &&
+        if (Ray_GeomAndCharaTraceGet(&trace, attackPos, &offsetToTarget, &g_SysWork.playerWork.player) &&
             trace.character == &g_SysWork.npcs[i])
         {
             *targetNpcIdx = i;

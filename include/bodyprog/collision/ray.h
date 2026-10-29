@@ -23,23 +23,33 @@ typedef struct
 {
     /* 0x0 */ q23_8 positionX;
     /* 0x4 */ q23_8 positionZ;
-    /* 0x8 */ q7_8  floorHeight;
-    /* 0xA */ q7_8  topHeight; // Ceiling height?
-    /* 0xC */ q7_8  field_C;   // Collision cylinder radius?
-    /* 0xE */ s16   field_E;
-} s_RayState_6C;
+              union
+              {
+                  struct
+                  {
+                      /* 0x8 */ q7_8  floorHeight;
+                      /* 0xA */ q7_8  topHeight; // Not top box/cylinder height but something else?
+                      /* 0xC */ q7_8  radius;
+                  } shape;
+                  struct
+                  {
+                      /* 0x8 */ DVECTOR_XZ offset;   /** Q7.8 */
+                      /* 0xC */ DVECTOR_XZ offset_C; /** Q7.8 */
+                  } unk;
+              } u; // TODO: Temp name.
+} s_RayQuery_6C;
 
 // Something related to cell ranges.
 typedef struct
 {
     s16 field_0;
     s16 field_2;
-} s_RayState_8C;
+} s_RayQuery_8C;
 
-/** @brief State for an in-progress ray trace. Contains pointers to active characters among other things. */
-typedef struct _RayState
+/** @brief In-progress ray trace query. Contains pointers to active characters among other things. */
+typedef struct _RayQuery
 {
-    /* 0x0  */ bool             field_0; // "Use cylinder"?
+    /* 0x0  */ bool             ignoreFloors; // TODO: Unsure.
     /* 0x4  */ s16              triggerFlags; /** `e_CollisionTriggerFlags` */
     /* 0x6  */ q7_8             radius;
     /* 0x8  */ q7_8             hitDistance;
@@ -67,22 +77,22 @@ typedef struct _RayState
     /* 0x5E */ s16              field_5E;
     /* 0x60 */ s16              field_60;
     /* 0x62 */ s8               __pad_62[2];
-    /* 0x64 */ s_SubCharacter** collCharas;
-    /* 0x68 */ s32              collCharaCount;
-    /* 0x6C */ s_RayState_6C    field_6C;
+    /* 0x64 */ s_SubCharacter** collidableCharas;
+    /* 0x68 */ s32              collidableCharaCount; /** `collidableCharas` array size. */
+    /* 0x6C */ s_RayQuery_6C    field_6C;
     /* 0x7C */ s32              cellCountX;
     /* 0x80 */ s32              cellCountZ;
     /* 0x84 */ q8_8             cellSize;
     /* 0x86 */ u8               __pad_86[2];
     /* 0x88 */ s32              field_88;    // `field_8C` size.
-    /* 0x8C */ s_RayState_8C    field_8C[1]; // Unknown buffer size.
-} s_RayState;
+    /* 0x8C */ s_RayQuery_8C    field_8C[1]; // Unknown buffer size.
+} s_RayQuery;
 
-/** @brief Ray trace line of sight info. */
+/** @brief Collision ray trace. */
 typedef struct _RayTrace
 {
     /* 0x0  */ s8              hasHit;     /** `bool` */
-    /* 0x1  */ u8              floorType; /** `e_FloorType` */
+    /* 0x1  */ u8              floorType;  /** `e_FloorType` */
     /* 0x2  */ s8              __pad_2[2];
     /* 0x4  */ VECTOR3         target;     /** Q19.12 */
     /* 0x10 */ s_SubCharacter* character;
@@ -91,47 +101,72 @@ typedef struct _RayTrace
     /* 0x1C */ q3_12           headingAngle;
 } s_RayTrace;
 
-bool Ray_TraceQuery(s_RayTrace* trace, const VECTOR3* from, const VECTOR3* to);
+/** @brief Gets a collision ray trace with level geometry.
+ *
+ * @param trace Output ray trace.
+ * @param from Ray origin (Q19.12).
+ * @param to Ray target (Q19.12).
+ * @return `true` if the ray hit an obstacle, `false` otherwise.
+ */
+bool Ray_GeomTraceGet(s_RayTrace* trace, const VECTOR3* from, const VECTOR3* to);
 
-/** Ray function. */
-bool Ray_CharaTraceQuery(s_RayTrace* trace, const VECTOR3* from, VECTOR3* offset, s_SubCharacter* excludedChara);
+/** @brief Gets a collision ray trace with level geometry and characters, optionally ignoring a specified character.
+ *
+ * @param trace Output ray trace.
+ * @param from Ray origin (Q19.12).
+ * @param offset Ray target offset from the origin (Q19.12).
+ * @param excludedChara Character to ignore.
+ * @return `true` if the ray hit an obstacle, `false` otherwise.
+ */
+bool Ray_GeomAndCharaTraceGet(s_RayTrace* trace, const VECTOR3* from, const VECTOR3* offset,
+                              const s_SubCharacter* excludedChara);
 
-void Ray_MissSet(s_RayTrace* trace, const VECTOR3* from, const VECTOR3* offset, q23_8 dist);
+/** @brief Sets a missed collision ray trace.
+ *
+ * @param trace Ray trace to update.
+ * @param from Ray origin (Q19.12).
+ * @param offset Ray target offset from the origin (Q19.12).
+ * @param hitDist Hit distance to set.
+ */
+void Ray_MissSet(s_RayTrace* trace, const VECTOR3* from, const VECTOR3* offset, q23_8 hitDist);
 
-/** @brief Checks if an obstruction in a ray's line of sight has been hit, ignoring a specified character.
+/** @brief Checks if a collision ray's line of sight hit level geometry or a character, optionally ignoring a
+ * specified character.
  *
  * @param trace Ray trace.
- * @param from Ray origin.
- * @param offset Ray target offset from origin.
- * @param excludedChara Character to exclude.
- * @return `true` if there is an obstruction, `false` otherwise.
+ * @param from Ray origin (Q19.12).
+ * @param offset Ray target offset from the origin (Q19.12).
+ * @param excludedChara Character to ignore.
+ * @return `true` if there is an obstacle, `false` otherwise.
  */
-bool Ray_LosHitCheck(s_RayTrace* trace, const VECTOR3* from, const VECTOR3* offset, s_SubCharacter* excludedChara);
+bool Ray_GeomAndCharaTraceGetAlt(s_RayTrace* trace, const VECTOR3* from, const VECTOR3* offset,
+                                 s_SubCharacter* excludedChara);
 
 bool func_8006DC18(s_RayTrace* trace, const VECTOR3* from, const VECTOR3* offset);
 
-bool Ray_TraceSetup(s_RayState* state, bool useCylinder, q7_8 radiusOffset, const VECTOR3* from, const VECTOR3* offset, q19_12 arg5, q19_12 arg6,
+bool Ray_TraceSetup(s_RayQuery* query, bool ignoreFloors, q7_8 radiusOffset, const VECTOR3* from, const VECTOR3* offset,
+                    q19_12 unusedX, q19_12 unusedZ,
                     s_SubCharacter** collCharas, s32 collCharaCount);
 
-bool Ray_TraceRun(s_RayTrace* trace, s_RayState* state);
+bool Ray_TraceRun(s_RayTrace* trace, s_RayQuery* query);
 
-// Fills `state` with info.
-void func_8006E0AC(s_RayState* state, const s_IpdCollisionData* collData);
+// Fills `query` with info.
+void func_8006E0AC(s_RayQuery* query, const s_IpdCollisionData* collData);
 
 void func_8006E150(s_func_8006E490* arg0, DVECTOR arg1, DVECTOR arg2);
 
 void func_8006E490(s_func_8006E490* arg0, u32 flags, q19_12 posX, q19_12 posZ);
 
-void func_8006E53C(s_RayState* state, s_IpdShapeRange* shapeRangePair, s_IpdCollisionData* collData);
+void func_8006E53C(s_RayQuery* query, s_IpdShapeRange* shapeRangePair, s_IpdCollisionData* collData);
 
-void func_8006E78C(s_RayState* state, s_IpdPolygon* polygon, SVECTOR3* splitVerts, s_IpdSurface* surfaces, bool hasSurface);
+void func_8006E78C(s_RayQuery* query, s_IpdPolygon* polygon, SVECTOR3* splitVerts, s_IpdSurface* surfaces, bool hasSurface);
 
-void func_8006EB8C(s_RayState* state, s_IpdCylinder* cylinder);
+void func_8006EB8C(s_RayQuery* query, s_IpdCylinder* cylinder);
 
 // Fills ray hit data?
-void func_8006EE0C(s_RayState_6C* arg0, bool useCylinder, const s_SubCharacter* chara);
+void func_8006EE0C(s_RayQuery_6C* arg0, bool ignoreFloors, const s_SubCharacter* chara);
 
-// Sets hit character ray state?
-void func_8006EEB8(s_RayState* state, s_SubCharacter* chara);
+// Sets hit character ray query?
+void func_8006EEB8(s_RayQuery* query, s_SubCharacter* chara);
 
 #endif

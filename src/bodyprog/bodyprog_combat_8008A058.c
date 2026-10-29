@@ -654,7 +654,7 @@ s32 func_8008A3E0(s_SubCharacter* chara) // 0x8008A3E0
                         func_800892A4(5);
                     }
 
-                    hasHit = Ray_CharaTraceQuery(&D_800C4728, &chara->field_44.field_18, &chara->field_44.field_48[0], chara);
+                    hasHit = Ray_GeomAndCharaTraceGet(&D_800C4728, &chara->field_44.field_18, &chara->field_44.field_48[0], chara);
                     ptr  = D_800C4728.character;
                     if (hasHit && ptr != NULL)
                     {
@@ -1802,7 +1802,7 @@ s32 func_8008BF84(s_SubCharacter* chara, q19_12 angle, s_800AD4C8* arg2, s32 arg
         posZ             = unkX - Q12_MULT_PRECISE(innerRadius, unkZ);
 
         D_800C47C8[1].vz = posZ;
-        var_v1           = Ray_TraceQuery(&D_800C47F8, &D_800C47C8[0], &D_800C47C8[1]);
+        var_v1           = Ray_GeomTraceGet(&D_800C47F8, &D_800C47C8[0], &D_800C47C8[1]);
 
         if (var_v1 != false)
         {

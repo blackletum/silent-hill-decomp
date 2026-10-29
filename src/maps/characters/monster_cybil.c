@@ -1906,7 +1906,7 @@ bool func_800DB81C(s_SubCharacter* monsterCybil) // 0x800DB81C
     dir.vx = Q12_MULT(Q12_MULT(D_800AD4C8[63].field_0, Math_Sin(monsterCybilProps.field_11A)), Math_Sin(monsterCybil->rotation.vy));
     dir.vz = Q12_MULT(Q12_MULT(D_800AD4C8[63].field_0, Math_Sin(monsterCybilProps.field_11A)), Math_Cos(monsterCybil->rotation.vy));
 
-    if (Ray_CharaTraceQuery(&trace, &D_800ED570, &dir, monsterCybil) && trace.character == NULL)
+    if (Ray_GeomAndCharaTraceGet(&trace, &D_800ED570, &dir, monsterCybil) && trace.character == NULL)
     {
         return true;
     }
@@ -2195,7 +2195,7 @@ void func_800DC018(s_SubCharacter* monsterCybil) // 0x800DC018
             to.vy = from.vy;
             to.vz = monsterCybil->position.vz + Q12_MULT(Math_Cos(monsterCybil->rotation.vy), Q12(0.3f));
 
-            if (Ray_TraceQuery(&trace, &from, &to))
+            if (Ray_GeomTraceGet(&trace, &from, &to))
             {
                 monsterCybilProps.field_116 = Rng_GenerateUInt(2, 3);
                 monsterCybilProps.field_106 = Q12_ANGLE(0.0f);

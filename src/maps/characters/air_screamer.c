@@ -1044,7 +1044,7 @@ bool sharedFunc_800D2E04_0_s01(s_SubCharacter* airScreamer, VECTOR3* inVec, q19_
         sharedData_800DE170_0_s01.vx = airScreamer->position.vx;
         sharedData_800DE170_0_s01.vy = airScreamer->position.vy + airScreamer->collision.box.topExtent; // Head offset.
         sharedData_800DE170_0_s01.vz = airScreamer->position.vz;
-        return !Ray_TraceQuery(&sharedData_800E2330_0_s01, &sharedData_800DE170_0_s01, inVec);
+        return !Ray_GeomTraceGet(&sharedData_800E2330_0_s01, &sharedData_800DE170_0_s01, inVec);
     }
 
     return false;
@@ -9604,7 +9604,7 @@ bool sharedFunc_800D4AEC_0_s01(s_SubCharacter* airScreamer, VECTOR3* arg1, VECTO
 
     g_SysWork.playerWork.player.collision.state = CharaCollisionState_Ignore;
 
-    hasLosHit = Ray_LosHitCheck(&sharedData_800E2330_0_s01, var_s0, &sharedData_800DE1A0_0_s01, airScreamer);
+    hasLosHit = Ray_GeomAndCharaTraceGetAlt(&sharedData_800E2330_0_s01, var_s0, &sharedData_800DE1A0_0_s01, airScreamer);
 
     g_SysWork.playerWork.player.collision.state = prevCollState;
     offsetX                                     = sharedData_800E2330_0_s01.target.vx - posX;
@@ -9741,7 +9741,7 @@ void sharedFunc_800D4E84_0_s01(s_SubCharacter* airScreamer)
         sharedData_800DE1C0_0_s01.vy = Q12(0.0f);
         sharedData_800DE1C0_0_s01.vz = Math_Cos(rotY) * 2;
 
-        if (Ray_LosHitCheck(&sharedData_800E2330_0_s01, pos, &sharedData_800DE1C0_0_s01, airScreamer) &&
+        if (Ray_GeomAndCharaTraceGetAlt(&sharedData_800E2330_0_s01, pos, &sharedData_800DE1C0_0_s01, airScreamer) &&
             sharedFunc_800D5274_0_s01() < sharedData_800E2330_0_s01.floorHeight)
         {
             airScreamerProps.targetPosition2.vx = sharedData_800E2330_0_s01.target.vx;

@@ -192,7 +192,7 @@ bool func_8006FD90(s_SubCharacter* chara, s32 count, q19_12 baseDistMax, q19_12 
     }
 
     // TODO: Maybe `sp10` is not `VECTOR3`. Might need to rewrite this whole function if it's `s_RayTrace`?
-    return !Ray_CharaTraceQuery(&sp10, &pos, &offset, chara) || sp20.vx != Q12(0.0f);
+    return !Ray_GeomAndCharaTraceGet(&sp10, &pos, &offset, chara) || sp20.vx != Q12(0.0f);
 }
 
 bool Los_CharaToTargetHitCheck(s_SubCharacter* fromChara, q19_12 toX, q19_12 toY, q19_12 toZ)
@@ -204,7 +204,7 @@ bool Los_CharaToTargetHitCheck(s_SubCharacter* fromChara, q19_12 toX, q19_12 toY
     offset.vy = toY - fromChara->position.vy;
     offset.vz = toZ - fromChara->position.vz;
 
-    return Ray_LosHitCheck(&trace, &fromChara->position, &offset, fromChara);
+    return Ray_GeomAndCharaTraceGetAlt(&trace, &fromChara->position, &offset, fromChara);
 }
 
 bool Los_CharaToCharaTargetCheck(s_SubCharacter* fromChara, q19_12 toX, q19_12 toY, q19_12 toZ) // 0x80070084
@@ -218,7 +218,7 @@ bool Los_CharaToCharaTargetCheck(s_SubCharacter* fromChara, q19_12 toX, q19_12 t
     offset.vz = toZ - fromChara->position.vz;
 
     isCharaMissed = false;
-    if (Ray_LosHitCheck(&trace, &fromChara->position, &offset, fromChara))
+    if (Ray_GeomAndCharaTraceGetAlt(&trace, &fromChara->position, &offset, fromChara))
     {
         isCharaMissed = trace.character == NULL;
     }
@@ -237,7 +237,7 @@ bool Los_NpcToPlayerHitCheck(s_SubCharacter* fromNpc, s_SubCharacter* toPlayer) 
     offset.vy = Q12(-0.1f);
     offset.vz = toPlayer->position.vz - fromNpc->position.vz;
 
-    return Ray_LosHitCheck(&trace, &from, &offset, fromNpc) && trace.character == NULL;
+    return Ray_GeomAndCharaTraceGetAlt(&trace, &from, &offset, fromNpc) && trace.character == NULL;
 }
 
 bool Los_CharaToCharaDistCheck(s_SubCharacter* fromChara, q19_12 dist, q3_12 headingAngle) // 0x80070184
@@ -269,7 +269,7 @@ bool Los_CharaToCharaFrontHitCheck(s_SubCharacter* fromChara, q19_12 dist) // 0x
     offset.vz = Q12_MULT(dist, Math_Cos(fromChara->rotation.vy));
 
     hasHit = false;
-    if (Ray_LosHitCheck(&trace, &fromChara->position, &offset, fromChara))
+    if (Ray_GeomAndCharaTraceGetAlt(&trace, &fromChara->position, &offset, fromChara))
     {
         hasHit = trace.character > NULL;
     }
@@ -285,5 +285,5 @@ bool Los_CharaHitCheck(s_SubCharacter* fromChara, q19_12 dist, q3_12 headingAngl
     offset.vy = Q12(0.0f);
     offset.vz = Q12_MULT(dist, Math_Cos(headingAngle));
 
-    return Ray_LosHitCheck(&trace, &fromChara->position, &offset, fromChara);
+    return Ray_GeomAndCharaTraceGetAlt(&trace, &fromChara->position, &offset, fromChara);
 }
