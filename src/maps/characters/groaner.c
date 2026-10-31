@@ -383,7 +383,7 @@ void Groaner_ControlWalkForward(s_SubCharacter* groaner)
     {
         if (Los_CharaHitCheck(groaner, Q12_ANGLE(306.0f), groaner->rotation.vy))
         {
-            groanerProps.angleToTarget = func_8006F99C(groaner, Q12_ANGLE(306.0f), groaner->rotation.vy);
+            groanerProps.angleToTarget = func_8006F99C(groaner, Q12(0.85f), groaner->rotation.vy);
             if (groanerProps.angleToTarget == Q12_ANGLE(360.0f))
             {
                 groanerProps.angleToTarget = -groaner->rotation.vy;
@@ -489,7 +489,7 @@ void Groaner_ControlRunForward(s_SubCharacter* groaner)
                                                  Q12_ANGLE(360.0f), true);
             if (headingAngle == Q12_ANGLE(360.0f))
             {
-                headingAngle = func_8006F99C(groaner, (losDist * 3) >> 2, groaner->rotation.vy);
+                headingAngle = func_8006F99C(groaner, DIV_FAST(losDist * 3, 4), groaner->rotation.vy);
             }
 
             if (hasLosHit)
@@ -773,7 +773,7 @@ void Groaner_Control4(s_SubCharacter* groaner)
                                                            groanerProps.targetPositionZ, Q12(1.0f), false);
         if (groanerProps.angleToTarget == Q12_ANGLE(360.0f))
         {
-            groanerProps.angleToTarget = func_8006F99C(groaner, (distMax * 3) >> 2, groaner->rotation.vy);
+            groanerProps.angleToTarget = func_8006F99C(groaner, DIV_FAST(distMax * 3, 4), groaner->rotation.vy);
         }
 
         if (hasLosHit)

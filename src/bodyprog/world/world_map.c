@@ -1221,18 +1221,18 @@ void WorldMap_ChunkHeaderPtrsInit(s_IpdHeader* ipdHdr) // 0x80043DA4
 {
     s_IpdModelBuffer* curModelBuf;
 
-    ipdHdr->lmHdr          = (u8*)ipdHdr->lmHdr          + (u32)ipdHdr;
-    ipdHdr->modelInfos     = (u8*)ipdHdr->modelInfos     + (u32)ipdHdr;
-    ipdHdr->modelBuffers   = (u8*)ipdHdr->modelBuffers   + (u32)ipdHdr;
-    ipdHdr->modelOrderList = (u8*)ipdHdr->modelOrderList + (u32)ipdHdr;
+    ipdHdr->lmHdr        = (u8*)ipdHdr->lmHdr        + (u32)ipdHdr;
+    ipdHdr->modelInfos   = (u8*)ipdHdr->modelInfos   + (u32)ipdHdr;
+    ipdHdr->modelBuffers = (u8*)ipdHdr->modelBuffers + (u32)ipdHdr;
+    ipdHdr->modelOrder   = (u8*)ipdHdr->modelOrder   + (u32)ipdHdr;
 
     for (curModelBuf = &ipdHdr->modelBuffers[0];
          curModelBuf < &ipdHdr->modelBuffers[ipdHdr->modelBufferCount];
          curModelBuf++)
     {
-        curModelBuf->modelInstances = (u8*)curModelBuf->modelInstances + (u32)ipdHdr;
-        curModelBuf->field_10       = (u8*)curModelBuf->field_10       + (u32)ipdHdr;
-        curModelBuf->subchunkRanges = (u8*)curModelBuf->subchunkRanges + (u32)ipdHdr;
+        curModelBuf->modelInstances     = (u8*)curModelBuf->modelInstances     + (u32)ipdHdr;
+        curModelBuf->billboardInstances = (u8*)curModelBuf->billboardInstances + (u32)ipdHdr;
+        curModelBuf->subchunkRanges     = (u8*)curModelBuf->subchunkRanges     + (u32)ipdHdr;
     }
 }
 
@@ -1318,21 +1318,21 @@ void func_80044044(s_IpdHeader* ipd, s32 chunkX, s32 chunkZ) // 0x80044044
 
 void WorldMap_Draw(s_IpdHeader* ipdHdr, q19_12 posX, q19_12 posZ, GsOT* ot, s32 otShift) // 0x80044090
 {
-    s_ModelInfo         modelInfo;
-    GsCOORDINATE2       modelCoord;
-    MATRIX              viewMat;
-    MATRIX              worldMat;
-    s32                 curPosX;
-    s32                 cutPosZ;
-    q23_8               chunkEdgeZ;
-    q23_8               chunkEdgeX;
-    s32                 subchunkZ;
-    s32                 subchunkX;
-    s32                 i;
-    s_IpdModelBuffer*   modelBuffer;
-    s_IpdModelInstance* curModelInst;
-    u8*                 temp_fp;
-    SVECTOR*            curUnk;
+    s_ModelInfo             modelInfo;
+    GsCOORDINATE2           modelCoord;
+    MATRIX                  viewMat;
+    MATRIX                  worldMat;
+    s32                     curPosX;
+    s32                     cutPosZ;
+    q23_8                   chunkEdgeZ;
+    q23_8                   chunkEdgeX;
+    s32                     subchunkZ;
+    s32                     subchunkX;
+    s32                     i;
+    s_IpdModelBuffer*       modelBuffer;
+    s_IpdModelInstance*     curModelInst;
+    u8*                     temp_fp;
+    s_IpdBillboardInstance* curBillboardInst;
 
     // Convert position to geometry space.
     curPosX = Q12_TO_Q8(posX);
@@ -1355,16 +1355,20 @@ void WorldMap_Draw(s_IpdHeader* ipdHdr, q19_12 posX, q19_12 posZ, GsOT* ot, s32 
     modelInfo.flags  = ModelFlag_None;
     modelCoord.super = NULL;
 
+    // Run through model buffers.
     temp_fp = &ipdHdr->textureCount + (subchunkZ * 10) + (subchunkX * 2);
     for (i = temp_fp[0]; i < (temp_fp[1] + temp_fp[0]); i++)
     {
-        modelBuffer = &ipdHdr->modelBuffers[ipdHdr->modelOrderList[i]];
+        modelBuffer = &ipdHdr->modelBuffers[ipdHdr->modelOrder[i]];
 
-        if (!WorldMap_SubchunkVisibleCheck(modelBuffer, curPosX - chunkEdgeX, cutPosZ - chunkEdgeZ, chunkEdgeX, chunkEdgeZ))
+        // Check if model is visible.
+        if (!WorldMap_SubchunkVisibleCheck(modelBuffer,
+                                           curPosX - chunkEdgeX, cutPosZ - chunkEdgeZ, chunkEdgeX, chunkEdgeZ))
         {
             continue;
         }
 
+        // Run through model instances.
         for (curModelInst = modelBuffer->modelInstances;
              curModelInst < &modelBuffer->modelInstances[modelBuffer->modelInstanceCount];
              curModelInst++)
@@ -1384,23 +1388,26 @@ void WorldMap_Draw(s_IpdHeader* ipdHdr, q19_12 posX, q19_12 posZ, GsOT* ot, s32 
             }
         }
 
-        for (curUnk = modelBuffer->field_10; curUnk < &modelBuffer->field_10[modelBuffer->field_1]; curUnk++)
+        // Run through billboard sprite instances.
+        for (curBillboardInst = &modelBuffer->billboardInstances[0];
+             curBillboardInst < &modelBuffer->billboardInstances[modelBuffer->billboardInstanceCount];
+             curBillboardInst++)
         {
-            switch ((s8)curUnk->pad) // TODO: Must be another field.
+            switch (curBillboardInst->idx)
             {
                 case 0:
                     Gfx_BillboardDraw(1,
-                                      Q8_TO_Q12(curUnk->vx + chunkEdgeX),
-                                      Q8_TO_Q12(curUnk->vy),
-                                      Q8_TO_Q12(curUnk->vz + chunkEdgeZ),
+                                      Q8_TO_Q12(curBillboardInst->offset.vx + chunkEdgeX),
+                                      Q8_TO_Q12(curBillboardInst->offset.vy),
+                                      Q8_TO_Q12(curBillboardInst->offset.vz + chunkEdgeZ),
                                       ot, otShift);
                     break;
 
                 case 1:
                     Gfx_BillboardDraw(2,
-                                      Q8_TO_Q12(curUnk->vx + chunkEdgeX),
-                                      Q8_TO_Q12(curUnk->vy),
-                                      Q8_TO_Q12(curUnk->vz + chunkEdgeZ),
+                                      Q8_TO_Q12(curBillboardInst->offset.vx + chunkEdgeX),
+                                      Q8_TO_Q12(curBillboardInst->offset.vy),
+                                      Q8_TO_Q12(curBillboardInst->offset.vz + chunkEdgeZ),
                                       ot, otShift);
                     break;
             }
@@ -1420,7 +1427,7 @@ bool WorldMap_SubchunkVisibleCheck(s_IpdModelBuffer* modelBuf,
 
     // Run through subchunk ranges.
     for (curSubchunkRange = modelBuf->subchunkRanges;
-         curSubchunkRange < &modelBuf->subchunkRanges[modelBuf->polygonCount];
+         curSubchunkRange < &modelBuf->subchunkRanges[modelBuf->subchunkCount];
          curSubchunkRange++)
     {
         if (subchunkX > curSubchunkRange->minX &&

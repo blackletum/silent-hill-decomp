@@ -27,9 +27,9 @@ typedef struct
               {
                   struct
                   {
-                      /* 0x8 */ q7_8  floorHeight;
-                      /* 0xA */ q7_8  topHeight; // Not top box/cylinder height but something else?
-                      /* 0xC */ q7_8  radius;
+                      /* 0x8 */ q7_8 floorHeight;
+                      /* 0xA */ q7_8 topHeight; // Not top box/cylinder height but something else?
+                      /* 0xC */ q7_8 radius;
                   } shape;
                   struct
                   {
@@ -49,7 +49,7 @@ typedef struct
 /** @brief In-progress ray trace query. Contains pointers to active characters among other things. */
 typedef struct _RayQuery
 {
-    /* 0x0  */ bool             ignoreFloors; // TODO: Unsure.
+    /* 0x0  */ bool             ignoreFloors; // TODO: Unsure, probably more of a high-level query path flag.
     /* 0x4  */ s16              triggerFlags; /** `e_CollisionTriggerFlags` */
     /* 0x6  */ q7_8             radius;
     /* 0x8  */ q7_8             hitDistance;
@@ -84,7 +84,7 @@ typedef struct _RayQuery
     /* 0x80 */ s32              cellCountZ;
     /* 0x84 */ q8_8             cellSize;
     /* 0x86 */ u8               __pad_86[2];
-    /* 0x88 */ s32              field_88;    // `field_8C` size.
+    /* 0x88 */ s32              field_88;    // `field_8C` array size.
     /* 0x8C */ s_RayQuery_8C    field_8C[1]; // Unknown buffer size.
 } s_RayQuery;
 
@@ -157,7 +157,7 @@ void func_8006E150(s_func_8006E490* arg0, DVECTOR arg1, DVECTOR arg2);
 
 void func_8006E490(s_func_8006E490* arg0, u32 flags, q19_12 posX, q19_12 posZ);
 
-void func_8006E53C(s_RayQuery* query, s_IpdShapeRange* shapeRangePair, s_IpdCollisionData* collData);
+void func_8006E53C(s_RayQuery* query, s_IpdShapeAlloc* shapeAlloc, s_IpdCollisionData* collData);
 
 void func_8006E78C(s_RayQuery* query, s_IpdPolygon* polygon, SVECTOR3* splitVerts, s_IpdSurface* surfaces, bool hasSurface);
 

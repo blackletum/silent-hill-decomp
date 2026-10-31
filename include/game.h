@@ -301,8 +301,8 @@ typedef struct _MapEffectsInfo
 {
     /* 0x0  */ union
                {
-                   s32 field_0;     // }
-                   u8  field_00[4]; // } Index 0 `e_SpecialEnvEventFlags` | Index 2 `e_UnkGfxEnum`.
+                   s32 field_0;     // Bitfield?         }
+                   u8  field_00[4]; // Individual flags? } Index 0 `e_SpecialEnvEventFlags` | Index 2 `e_UnkGfxEnum`.
                } flags;
     /* 0x4  */ q3_12   spotLightIntensity;
     /* 0x6  */ q3_12   worldLightIntensity;

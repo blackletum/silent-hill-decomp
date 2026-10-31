@@ -21,6 +21,7 @@ q19_12 func_8006F99C(s_SubCharacter* chara, q19_12 dist, q3_12 headingAngle) // 
     q3_12 angleOffset;
     s32   i;
 
+    // TODO: What are these bit shifts?
     angleOffset = NO_VALUE;
     for (i = 0; i < 15; i++)
     {

@@ -22,10 +22,6 @@ seq:
     type: header
 
 instances:
-  collision:
-    pos: header.collision_offset
-    type: collision
-
   lm:
     pos: header.lm_header_offset
     type: lm(header.lm_header_offset)
@@ -42,11 +38,15 @@ instances:
     repeat: expr
     repeat-expr: header.model_buffer_count
 
-  model_order_list:
-    pos: header.model_order_list_offset
+  model_order:
+    pos: header.model_order
     type: u1
     repeat: expr
-    repeat-expr: header.model_order_count
+    repeat-expr: header.model_order_size
+
+  collision:
+    pos: header.collision_offset
+    type: collision
 
 types:
   header:
@@ -72,7 +72,7 @@ types:
       - id: model_buffer_count
         type: u1
 
-      - id: model_order_count
+      - id: model_order_size
         type: u1
 
       - size: 9
@@ -88,8 +88,9 @@ types:
 
       - id: unk_1d
         size: 51
+        doc: TODO Actual texture data array?
 
-      - id: model_order_list_offset
+      - id: model_order
         type: u4
 
     instances:
@@ -115,34 +116,42 @@ types:
       - id: model_instance_count
         type: u1
 
-      - id: field_1
+      - id: billboard_instance_count
         type: u1
 
-      - id: cell_count
+      - id: subchunk_range_count
         type: u1
 
       - size: 1
 
       - id: min_x
         type: s2
+        doc: Q7.8.
+
 
       - id: max_x
         type: s2
+        doc: Q7.8.
+
 
       - id: min_z
         type: s2
+        doc: Q7.8.
+
 
       - id: max_z
         type: s2
+        doc: Q7.8.
+
 
       - id: model_instances_offset
         type: u4
 
-      - id: field_10_offset
+      - id: billboard_instances_offset
         type: u4
         doc: Q7.8.
 
-      - id: cell_positions_offset
+      - id: subchunk_ranges_offset
         type: u4
         doc: Q7.8.
 
@@ -152,20 +161,60 @@ types:
         type: model_instance
         repeat: expr
         repeat-expr: model_instance_count
-        doc: TODO Offset is wrong? Add header.model_buffers_offset?
 
-  model_instance:
-    seq:
-      - id: model_header_offset
-        type: u4
+      billboard_instances:
+        pos: billboard_instances_offset
+        type: billboard_instance
+        repeat: expr
+        repeat-expr: billboard_instance_count
 
-      - id: transform
-        type: matrix
+      subchunk_ranges:
+        pos: subchunk_ranges_offset
+        type: subchunk_range
+        repeat: expr
+        repeat-expr: subchunk_range_count
 
-    instances:
-      model_headers:
-        type: model_header(model_header_offset)
-        doc: TODO Doesn't reveal correct data.
+    types:
+      model_instance:
+        seq:
+          - id: model_header_offset
+            type: u4
+    
+          - id: transform
+            type: matrix
+    
+        instances:
+          model_headers:
+            type: model_header(model_header_offset)
+            doc: TODO Doesn't reveal correct data.
+
+      billboard_instance:
+        seq:
+          - id: offset
+            type: svector_3
+
+          - id: idx
+            type: s2
+
+          - size: 1
+
+      subchunk_range:
+        seq:
+          - id: min_x
+            type: s2
+            doc: Q7.8.
+    
+          - id: max_x
+            type: s2
+            doc: Q7.8.
+    
+          - id: min_z
+            type: s2
+            doc: Q7.8.
+    
+          - id: max_z
+            type: s2
+            doc: Q7.8.
 
   model_header:
     params:
@@ -266,225 +315,6 @@ types:
         repeat: expr
         repeat-expr: normal_count
 
-  collision:
-    seq:
-      - id: position_x
-        type: s4
-        doc: Q23.8
-
-      - id: position_z
-        type: s4
-        doc: Q23.8
-
-      - id: polygon_split_vertex_count
-        type: b8
-
-      - id: polygon_surface_count
-        type: b8
-
-      - id: polygon_count
-        type: b8
-
-      - id: cylinder_count
-        type: b8
-
-      - id: polygon_split_vertices_offset
-        type: u4
-
-      - id: polygon_surfaces_offset
-        type: u4
-
-      - id: polygons_offset
-        type: u4
-
-      - id: cylinders_offset
-        type: u4
-
-      - id: cell_size
-        type: s2
-
-      - id: cell_count_x
-        type: u1
-
-      - id: cell_count_z
-        type: u1
-
-      - id: shape_ranges_offset
-        type: u4
-
-      - id: shape_lut_size
-        type: u2
-
-      - id: surface_lut_size
-        type: u2
-
-      - id: shape_lut_offset
-        type: u4
-
-      - id: surface_lut_offset
-        type: u4
-
-      - id: shape_pass_counter
-        type: u1
-        doc: Used by engine.
-
-      - size: 3
-
-      - id: shape_pass_stamp_buffer
-        size: 256
-        doc: Used by engine.
-
-    instances:
-      polygon_split_vertices:
-        pos: _root.header.collision_offset + polygon_split_vertices_offset
-        type: svector_3
-        repeat: expr
-        repeat-expr: polygon_split_vertex_count
-        doc: Q7.8.
-
-      polygon_surfaces:
-        pos: _root.header.collision_offset + polygon_surfaces_offset
-        type: polygon_surface
-        repeat: expr
-        repeat-expr: polygon_surface_count
-
-      polygons:
-        pos: _root.header.collision_offset + polygons_offset
-        type: polygon
-        repeat: expr
-        repeat-expr: polygon_count
-
-      cylinders:
-        pos: _root.header.collision_offset + cylinders_offset
-        type: cylinder
-        repeat: expr
-        repeat-expr: cylinder_count
-
-      shape_ranges:
-        pos: _root.header.collision_offset + shape_ranges_offset
-        type: shape_range
-        repeat: expr
-        repeat-expr: (cell_count_x * cell_count_z) + 1
-        doc: TODO Unsure if `+ 1` is necessary, looks like one extra entry?
-
-      polygon_lut:
-        pos: _root.header.collision_offset + shape_lut_offset
-        type: u1
-        repeat: expr
-        repeat-expr: shape_lut_size
-
-      surface_lut:
-        pos: _root.header.collision_offset + surface_lut_offset
-        type: u1
-        repeat: expr
-        repeat-expr: surface_lut_size
-
-  polygon_surface:
-    seq:
-      - id: offset
-        type: svector_3
-
-      - id: floor_type
-        type: b5
-
-      - id: disable_height
-        type: b3
-
-      - id: field_6_8
-        type: b3
-
-      - id: trigger_flag_idx
-        type: b4
-
-      - id: slope_gradient_x
-        type: s2
-        doc: Q7.8.
-
-      - id: slope_gradient_z
-        type: s2
-        doc: Q7.8.
-
-    instances:
-      slope_gradient_x_flt:
-        value: slope_gradient_x / (1 << 8).as<f4>
-
-      slope_gradient_z_flt:
-        value: slope_gradient_z / (1 << 8).as<f4>
-
-  polygon:
-    seq:
-      - id: offset_x
-        type: b14
-        doc: Q7.8.
-
-      - id: trigger_flag_idx_low
-        type: b2
-
-      - id: offset_y
-        type: b14
-        doc: Q7.8.
-
-      - id: trigger_flag_idx_high
-        type: b2
-
-      - id: offset_z
-        type: s2
-        doc: Q7.8.
-
-      - id: split_vertex_idx_0
-        type: u1
-
-      - id: split_vertex_idx_1
-        type: u1
-
-      - id: surface_idx_0
-        type: u1
-
-      - id: surface_idx_1
-        type: u1
-
-      - size: 2
-
-    instances:
-      offset_x_flt:
-        value: offset_x / (1 << 8).as<f4>
-
-      offset_y_flt:
-        value: offset_y / (1 << 8).as<f4>
-
-      offset_z_flt:
-        value: offset_z / (1 << 8).as<f4>
-
-      trigger_flags:
-        value: (trigger_flag_idx_low << 2) | trigger_flag_idx_high
-
-  cylinder:
-    seq:
-      - id: floor_type
-        type: b5
-
-      - id: disable_height
-        type: b3
-
-      - id: trigger_flag_idx
-        type: b4
-
-      - id: offset
-        type: svector_3
-        doc: Q7.8.
-
-      - id: radius
-        type: u2
-        doc: Q7.8.
-
-  shape_range:
-    seq:
-      - id: polygon_lut_idx
-        type: s2
-
-      - id: surface_lut_idx
-        type: s2
-
   material:
     seq:
       - id: name
@@ -564,6 +394,226 @@ types:
 
       - id: unk_10
         size: 4
+
+  collision:
+    seq:
+      - id: position_x
+        type: s4
+        doc: Q23.8
+
+      - id: position_z
+        type: s4
+        doc: Q23.8
+
+      - id: polygon_split_vertex_count
+        type: b8
+
+      - id: polygon_surface_count
+        type: b8
+
+      - id: polygon_count
+        type: b8
+
+      - id: cylinder_count
+        type: b8
+
+      - id: polygon_split_vertices_offset
+        type: u4
+
+      - id: polygon_surfaces_offset
+        type: u4
+
+      - id: polygons_offset
+        type: u4
+
+      - id: cylinders_offset
+        type: u4
+
+      - id: cell_size
+        type: s2
+
+      - id: cell_count_x
+        type: u1
+
+      - id: cell_count_z
+        type: u1
+
+      - id: shape_allocs_offset
+        type: u4
+
+      - id: shape_lut_size
+        type: u2
+
+      - id: surface_lut_size
+        type: u2
+
+      - id: shape_lut_offset
+        type: u4
+
+      - id: surface_lut_offset
+        type: u4
+
+      - id: shape_pass_counter
+        type: u1
+        doc: Used by engine.
+
+      - size: 3
+
+      - id: shape_pass_stamp_buffer
+        size: 256
+        doc: Used by engine.
+
+    instances:
+      polygon_split_vertices:
+        pos: _root.header.collision_offset + polygon_split_vertices_offset
+        type: svector_3
+        repeat: expr
+        repeat-expr: polygon_split_vertex_count
+        doc: Q7.8.
+
+      polygon_surfaces:
+        pos: _root.header.collision_offset + polygon_surfaces_offset
+        type: polygon_surface
+        repeat: expr
+        repeat-expr: polygon_surface_count
+
+      polygons:
+        pos: _root.header.collision_offset + polygons_offset
+        type: polygon
+        repeat: expr
+        repeat-expr: polygon_count
+
+      cylinders:
+        pos: _root.header.collision_offset + cylinders_offset
+        type: cylinder
+        repeat: expr
+        repeat-expr: cylinder_count
+
+      shape_ranges:
+        pos: _root.header.collision_offset + shape_allocs_offset
+        type: shape_range
+        repeat: expr
+        repeat-expr: (cell_count_x * cell_count_z) + 1
+        doc: TODO Unsure if `+ 1` is necessary, looks like one extra entry?
+
+      polygon_lut:
+        pos: _root.header.collision_offset + shape_lut_offset
+        type: u1
+        repeat: expr
+        repeat-expr: shape_lut_size
+
+      surface_lut:
+        pos: _root.header.collision_offset + surface_lut_offset
+        type: u1
+        repeat: expr
+        repeat-expr: surface_lut_size
+
+    types:
+      polygon_surface:
+        seq:
+          - id: offset
+            type: svector_3
+    
+          - id: floor_type
+            type: b5
+    
+          - id: disable_height
+            type: b3
+    
+          - id: field_6_8
+            type: b3
+    
+          - id: trigger_flag_idx
+            type: b4
+    
+          - id: slope_gradient_x
+            type: s2
+            doc: Q7.8.
+    
+          - id: slope_gradient_z
+            type: s2
+            doc: Q7.8.
+    
+        instances:
+          slope_gradient_x_flt:
+            value: slope_gradient_x / (1 << 8).as<f4>
+    
+          slope_gradient_z_flt:
+            value: slope_gradient_z / (1 << 8).as<f4>
+    
+      polygon:
+        seq:
+          - id: offset_x
+            type: b14
+            doc: Q7.8.
+    
+          - id: trigger_flag_idx_low
+            type: b2
+    
+          - id: offset_y
+            type: b14
+            doc: Q7.8.
+    
+          - id: trigger_flag_idx_high
+            type: b2
+    
+          - id: offset_z
+            type: s2
+            doc: Q7.8.
+    
+          - id: split_vertex_idx_0
+            type: u1
+    
+          - id: split_vertex_idx_1
+            type: u1
+    
+          - id: surface_idx_0
+            type: u1
+    
+          - id: surface_idx_1
+            type: u1
+    
+          - size: 2
+    
+        instances:
+          offset_x_flt:
+            value: offset_x / (1 << 8).as<f4>
+    
+          offset_y_flt:
+            value: offset_y / (1 << 8).as<f4>
+    
+          offset_z_flt:
+            value: offset_z / (1 << 8).as<f4>
+    
+          trigger_flags:
+            value: (trigger_flag_idx_low << 2) | trigger_flag_idx_high
+    
+      cylinder:
+        seq:
+          - id: floor_type
+            type: b5
+    
+          - id: disable_height
+            type: b3
+    
+          - id: trigger_flag_idx
+            type: b4
+    
+          - id: offset
+            type: svector_3
+            doc: Q7.8.
+    
+          - id: radius
+            type: u2
+            doc: Q7.8.
+
+      shape_range:
+        seq:
+          - id: polygon_lut_idx
+            type: s2
+    
+          - id: surface_lut_idx
+            type: s2
 
   svector_2:
     seq:

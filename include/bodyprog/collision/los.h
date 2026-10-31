@@ -3,7 +3,13 @@
 
 #include "bodyprog/chara/chara.h"
 
-// Returns angle.
+/** @brief
+ *
+ * @param chara 
+ * @param dist Ray distance.
+ * @param headingAngle Character heading angle.
+ * @return Angle...
+ */
 q19_12 func_8006F99C(s_SubCharacter* chara, q19_12 dist, q3_12 headingAngle);
 
 /** Angle getter. Something to do with the direction from a character to a target position, probably for NPC AI.
@@ -15,7 +21,7 @@ bool func_8006FD90(s_SubCharacter* chara, s32 count, q19_12 baseDistMax, q19_12 
 
 /** @brief Checks if there's an obstructed target-based line of sight between a character and a target position.
  *
- * @note `fromChara` is excluded.
+ * @note `fromChara` is ignored.
  *
  * @param fromChara Origin character.
  * @param toX Target X position.
@@ -27,7 +33,7 @@ bool Los_CharaToTargetHitCheck(s_SubCharacter* fromChara, q19_12 toX, q19_12 toY
 
 /** @brief Checks if there's an unobstructed target-based line of sight between a character and any other character.
  *
- * @note `fromChara` is excluded.
+ * @note `fromChara` is ignored.
  *
  * @param fromChara Origin character.
  * @param toX Target X position.
@@ -47,7 +53,7 @@ bool Los_NpcToPlayerHitCheck(s_SubCharacter* fromNpc, s_SubCharacter* toPlayer);
 
 /** @brief Checks if there's an unobstructed distance-based line of sight between a character and any other character.
  *
- * @note `fromChara` is excluded.
+ * @note `fromChara` is ignored.
  *
  * @param fromChara Origin character.
  * @param dist Ray distance.
@@ -59,7 +65,7 @@ bool Los_CharaToCharaDistCheck(s_SubCharacter* fromChara, q19_12 dist, q3_12 hea
 /** @brief @unused Checks if there's another character obstructing the distance-based line of sight in front of a
  * character.
  *
- * @note `fromChara` is excluded.
+ * @note `fromChara` is ignored.
  *
  * @param fromChara Origin character.
  * @param dist Ray distance.
@@ -69,7 +75,7 @@ bool Los_CharaToCharaFrontHitCheck(s_SubCharacter* fromChara, q19_12 dist);
 
 /** @brief Checks if there's an obstructed distance-based line of sight from a character.
  *
- * @note `fromChara` is excluded.
+ * @note `fromChara` is ignored.
  *
  * @param fromChara Origin character.
  * @param dist Ray distance.

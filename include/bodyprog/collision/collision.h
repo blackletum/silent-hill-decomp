@@ -133,8 +133,8 @@ typedef struct _CollisionShapePoint
 } s_CollisionShapePoint;
 STATIC_ASSERT_SIZEOF(s_CollisionShapePoint, 56);
 
-// TODO: Rename to `s_CollisionQuery`? This stores in-progress data.
-typedef struct _CollisionState
+/** @brief In-progress collision query. */
+typedef struct _CollisionQuery
 {
     /* 0x0+0  */ u8                         offsetX       : 8;  /** `bool` | Related to `Collision_ShapePassReset`. Maybe name `hasCellChecks`? */
     /* 0x0+8  */ s8                         isCharaMoving : 1;  /** `bool` */
@@ -155,7 +155,7 @@ typedef struct _CollisionState
     /* 0x88   */ q23_8                      slopeGradientX;
     /* 0x8C   */ q23_8                      slopeGradientZ;
     /* 0x90   */ bool                       disableHeight; /** `bool` | TODO: Does disabled height indicate a wall or pit? */
-    /* 0x94   */ s32                        floorType;      /** `e_FloorType` */
+    /* 0x94   */ s32                        floorType;     /** `e_FloorType` */
 
                  union
                  {
@@ -176,7 +176,7 @@ typedef struct _CollisionState
                          /* 0x1 */ u8                       cellZ;
                          /* 0x2 */ u8                       cellSpanX;
                          /* 0x3 */ u8                       cellSpanZ;
-                         /* 0x4 */ s_IpdShapeRange*         shapeRangePair;
+                         /* 0x4 */ s_IpdShapeAlloc*         shapeAlloc;
                          /* 0x8 */ s_CollisionCachedSurface surfaceCache[4];
                      } shape;
                      struct
@@ -193,7 +193,7 @@ typedef struct _CollisionState
     /* 0xCA   */ q7_8                  floorHeight; // TODO: Base floor height with slope unaccounted for?
     /* 0xCC   */ s_CollisionShapePoint point;
     // TODO: Maybe incomplete. Maybe not, added the final padding based on `Collision_SurfaceGet`.
-} s_CollisionState;
+} s_CollisionQuery;
 
 // emoose: Also works: `extern u16 g_ActiveCollisionTriggers[];`, `arg0->field_4 = g_ActiveCollisionTriggers[0];`.
 // Didn't see any array accesses in Ghidra though, struct might be more likely.
@@ -242,7 +242,7 @@ void Collision_NearbyTriggersGet(q19_12 posX, q19_12 posZ, const s_CollisionTrig
 // @split? IPD functions.
 // ========================================
 
-void Ipd_CollisionPtrsInit(s_IpdCollisionData* collData);
+void Collision_ChunkHeaderPtrsInit(s_IpdCollisionData* collData);
 
 /** @brief Resets the shape query pass system, clearing the counter and stamps to 0 in collision data..
  *
@@ -362,7 +362,7 @@ void Collision_MoveOffsetDampen(VECTOR3* moveOffset, const s_CharaCollisionCylin
  * @param cylinder Collision cylinder.
  * @param blockInvalidFloor `true` to treat invalid floors as walls, `false` otherwise.
  */
-void Collision_CollStateInit(s_CollisionState* state, VECTOR3* moveOffset,
+void Collision_CollStateInit(s_CollisionQuery* query, VECTOR3* moveOffset,
                              const s_CharaCollisionCylinder* cylinder, bool blockInvalidFloor);
 
 // ========================================
@@ -378,21 +378,21 @@ void Collision_CollStateInit(s_CollisionState* state, VECTOR3* moveOffset,
 void Collision_MoveDirectionCalc(s_CollisionCharaState* charaState,
                                  const VECTOR3* moveOffset, const s_CharaCollisionCylinder* cylinder);
 
-void Collision_CharaCollisionHandle(s_CollisionState* state, s_IpdCollisionData* collData);
+void Collision_CharaCollisionHandle(s_CollisionQuery* query, s_IpdCollisionData* collData);
 
-bool Collision_CellInit(s_CollisionState* state, const s_IpdCollisionData* collData);
+bool Collision_CellInit(s_CollisionQuery* query, const s_IpdCollisionData* collData);
 
-bool Collision_CellIdxGet(s_CollisionState* state, const s_IpdCollisionData* collData);
-
-// Related to polygons.
-void func_8006B1C8(s_CollisionState* state, s_IpdCollisionData* collData, s_IpdShapeRange* shapeRangePair);
+bool Collision_CellIdxGet(s_CollisionQuery* query, const s_IpdCollisionData* collData);
 
 // Related to polygons.
-bool func_8006B318(s_CollisionState* state, const s_IpdCollisionData* collData, s32 shapeIdx);
+void func_8006B1C8(s_CollisionQuery* query, s_IpdCollisionData* collData, s_IpdShapeAlloc* shapeAlloc);
+
+// Related to polygons.
+bool func_8006B318(s_CollisionQuery* query, const s_IpdCollisionData* collData, s32 shapeIdx);
 
 // Related to polygons.
 /** `arg1` is unused, but `func_8006B1C8` passes second arg to this. */
-void func_8006B6E8(s_CollisionState* state, s_IpdShapeRange* shapeRangePair);
+void func_8006B6E8(s_CollisionQuery* query, s_IpdShapeAlloc* shapeAlloc);
 
 // Related to polygons.
 bool func_8006B7E0(s_CollisionCachedSurface* cachedSurface, s_CharaCollisionDeltas* charaDeltas);
@@ -401,14 +401,14 @@ bool func_8006B7E0(s_CollisionCachedSurface* cachedSurface, s_CharaCollisionDelt
 void func_8006B8F8(s_CollisionShapePoint* cellPoint);
 
 // Related to polygons.
-void func_8006B9C8(s_CollisionState* state);
+void func_8006B9C8(s_CollisionQuery* query);
 
 // Related to polygons.
-void func_8006BB50(s_CollisionState* state, s32 pushType);
+void func_8006BB50(s_CollisionQuery* query, s32 pushType);
 
 // Related to polygons.
 // Computes floor height, accounting for differences in cell split vertex heights?
-q23_8 func_8006BC34(s_CollisionState* state);
+q23_8 func_8006BC34(s_CollisionQuery* query);
 
 void func_8006BCC4(s_CollisionObstacleContext* obstacleContext, u8* passStamp,
                    u32 pushType, q7_8 distX, q7_8 distZ, q7_8 radiusOffset);
@@ -417,49 +417,49 @@ void Collision_PushConstraintShapeAdd(s_CollisionPushConstraint* pushConstraint,
                                       q3_12 angleConstraintMin, q3_12 angleConstraintMax);
 
 // Related to polygons.
-void func_8006BE40(s_CollisionState* state);
+void func_8006BE40(s_CollisionQuery* query);
 
-void func_8006BF88(s_CollisionState* state, const SVECTOR3* splitVert);
+void func_8006BF88(s_CollisionQuery* query, const SVECTOR3* splitVert);
 
-void func_8006C0C8(s_CollisionState* state, q3_12 hitAlpha, q7_8 arg2);
+void func_8006C0C8(s_CollisionQuery* query, q3_12 hitAlpha, q7_8 arg2);
 
-bool func_8006C1B8(u32 contactType, q3_12 hitAlpha, s_CollisionState* state);
+bool func_8006C1B8(u32 contactType, q3_12 hitAlpha, s_CollisionQuery* query);
 
 // Computes obstacle hit distance alpha along the move distance.
 q3_12 func_8006C248(s32 packedDir, q3_12 moveDist, q3_12 deltaX, q7_8 deltaZ, q7_8 radius);
 
 // Related to cylinders.
-bool func_8006C3D4(s_CollisionState* state, s_IpdCollisionData* collData, s32 shapeIdx);
+bool func_8006C3D4(s_CollisionQuery* query, s_IpdCollisionData* collData, s32 shapeIdx);
 
 // Related to cylinders.
-void func_8006C45C(s_CollisionState* state);
+void func_8006C45C(s_CollisionQuery* query);
 
 // Related to cylinders.
-void func_8006C794(s_CollisionState* state, s32 pushType, q23_8 dist);
+void func_8006C794(s_CollisionQuery* query, s32 pushType, q23_8 dist);
 
-void func_8006C838(s_CollisionState* state, s_IpdCollisionData* collData);
+void func_8006C838(s_CollisionQuery* query, s_IpdCollisionData* collData);
 
 // Accounts for slopes in floor height?
-void func_8006CA18(s_CollisionState* state, s_IpdCollisionData* collData, s_IpdShapeRange* shapeRangePair);
+void func_8006CA18(s_CollisionQuery* query, s_IpdCollisionData* collData, s_IpdShapeAlloc* shapeAlloc);
 
 // TODO: Computes alpha related to the floor slope?
-q3_12 Collision_OffsetAlphaGet(s_CollisionState* state);
+q3_12 Collision_OffsetAlphaGet(s_CollisionQuery* query);
 
 // Gets sloped floor height, not the base height.
-q23_8 Ipd_FloorHeightGet(q23_8 posX, q23_8 posZ, const s_CollisionState* state);
+q23_8 Ipd_FloorHeightGet(q23_8 posX, q23_8 posZ, const s_CollisionQuery* query);
 
-void func_8006CC9C(s_CollisionState* state);
+void func_8006CC9C(s_CollisionQuery* query);
 
 // Runs through character collision records.
-void func_8006CF18(s_CollisionState* state, s_CharaCollisionRecord* charaRecords, s32 charaRecordCount);
+void func_8006CF18(s_CollisionQuery* query, s_CharaCollisionRecord* charaRecords, s32 charaRecordCount);
 
-void func_8006D01C(VECTOR3* extraOffset, VECTOR3* offset, q3_12 offsetAlpha, s_CollisionState* state);
+void func_8006D01C(VECTOR3* extraOffset, VECTOR3* offset, q3_12 offsetAlpha, s_CollisionQuery* query);
 
 void func_8006D2B4(VECTOR3* offset, s_CollisionObstacleContext* obstacleContext);
 
 void func_8006D600(VECTOR3* pos, q19_12 angle, q19_12 rotX, q19_12 rotY, q19_12 dist);
 
-void func_8006D774(s_CollisionState* state, const VECTOR3* offset0, const VECTOR3* offset1);
+void func_8006D774(s_CollisionQuery* query, const VECTOR3* offset0, const VECTOR3* offset1);
 
 /** Offsets are Q23.8. */
 void func_8006D7EC(s_CollisionCharaState* charaState, const SVECTOR* offset0, const SVECTOR* offset1);

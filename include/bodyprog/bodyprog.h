@@ -1581,7 +1581,7 @@ void StringCopy(char* prevStr, char* newStr);
 /** @brief Draws a 2D fog overlay quad. */
 void Gfx_FogOverlayQuadDraw(s16 x0, s16 y0, s16 x1, s16 y1, s32 arg4, s32 arg5, GsOT* ot, s32 otShift);
 
-/** Crucial 3D drawing function. */
+/** Draws 3D IPD chunk models? */
 void func_80057090(s_ModelInfo* modelInfo, GsOT* otTag, s32 otShift, MATRIX* viewMat, MATRIX* worldMat, u16 clutY);
 
 s32 func_800571D0(u32 arg0);

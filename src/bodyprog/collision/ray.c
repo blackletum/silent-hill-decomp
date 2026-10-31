@@ -233,7 +233,7 @@ bool Ray_TraceRun(s_RayTrace* trace, s_RayQuery* query) // 0x8006DEB0
             for (curUnk = &query->field_8C; curUnk < &query->field_8C[query->field_88]; curUnk++)
             {
                 temp_lo = curUnk->field_2 * query->cellCountX;
-                func_8006E53C(query, &collData->shapeRanges[temp_lo + curUnk->field_0], collData);
+                func_8006E53C(query, &collData->shapeAllocs[temp_lo + curUnk->field_0], collData);
             }
         }
     }
@@ -435,7 +435,7 @@ void func_8006E490(s_func_8006E490* arg0, u32 flags, q19_12 posX, q19_12 posZ) /
     }
 }
 
-void func_8006E53C(s_RayQuery* query, s_IpdShapeRange* shapeRangePair, s_IpdCollisionData* collData) // 0x8006E53C
+void func_8006E53C(s_RayQuery* query, s_IpdShapeAlloc* shapeAlloc, s_IpdCollisionData* collData) // 0x8006E53C
 {
     s32            i;
     bool           hasSurface;
@@ -447,74 +447,79 @@ void func_8006E53C(s_RayQuery* query, s_IpdShapeRange* shapeRangePair, s_IpdColl
     s_IpdCylinder* curCylinder;
     s_IpdPolygon*  curPolygon;
 
-    for (i = shapeRangePair[0].shapeLutIdx; i < shapeRangePair[1].shapeLutIdx; i++)
+    // Run through allocated cell shapes.
+    for (i = shapeAlloc[0].shapeLutIdx; i < shapeAlloc[1].shapeLutIdx; i++)
     {
         shapeIdx = collData->shapeLut[i];
 
-        if (collData->shapePassStampBuffer[shapeIdx] <= collData->shapePassCounter)
+        // Check if shape was already analyzed.
+        if (collData->shapePassStampBuffer[shapeIdx] > collData->shapePassCounter)
         {
-            collData->shapePassStampBuffer[shapeIdx] = collData->shapePassCounter + 1;
+            continue;
+        }
+        collData->shapePassStampBuffer[shapeIdx] = collData->shapePassCounter + 1;
 
-            // Handle polygon shape.
-            if (shapeIdx < collData->polygonCount)
+        // Handle polygon.
+        if (shapeIdx < collData->polygonCount)
+        {
+            // Check if polygon is collidable.
+            curPolygon = &collData->polygons[shapeIdx];
+            if (CHECK_FLAG_IDX(query->triggerFlags, (curPolygon->triggerFlagIdxHigh << 2) | curPolygon->triggerFlagIdxLow, false))
             {
-                curPolygon = &collData->polygons[shapeIdx];
+                continue;
+            }
 
-                // Check active shape.
-                if (CHECK_FLAG_IDX(query->triggerFlags, (curPolygon->triggerFlagIdxLow << 2) | curPolygon->triggerFlagIdxHigh, true))
+            // Get surfaces.
+            surfaceIdx0 = curPolygon->surfaceIdx0;
+            surfaceIdx1 = curPolygon->surfaceIdx1;
+            hasSurface  = surfaceIdx0 != UCHAR_MAX && surfaceIdx1 != UCHAR_MAX;
+
+            if (query->ignoreFloors == true)
+            {
+                if (hasSurface)
                 {
-                    surfaceIdx0 = curPolygon->surfaceIdx0;
-                    surfaceIdx1 = curPolygon->surfaceIdx1;
-                    hasSurface  = surfaceIdx0 != UCHAR_MAX && surfaceIdx1 != UCHAR_MAX;
-
-                    if (query->ignoreFloors == true)
-                    {
-                        if (hasSurface)
-                        {
-                            continue;
-                        }
-                    }
-                    else
-                    {
-                        cond1 = false;
-                        cond2 = false;
-
-                        if (surfaceIdx0 == UCHAR_MAX ||
-                            collData->polygonSurfaces[surfaceIdx0].floorType == FloorType_Default ||
-                            collData->polygonSurfaces[surfaceIdx0].floorType == FloorType_None)
-                        {
-                            cond1 = true;
-                        }
-
-                        if (surfaceIdx1 == UCHAR_MAX ||
-                            collData->polygonSurfaces[surfaceIdx1].floorType == FloorType_Default ||
-                            collData->polygonSurfaces[surfaceIdx1].floorType == FloorType_None)
-                        {
-                            cond2 = true;
-                        }
-
-                        if (cond1 && cond2)
-                        {
-                            continue;
-                        }
-                    }
-
-                    func_8006E78C(query, curPolygon, collData->polygonSplitVertices, collData->polygonSurfaces, hasSurface);
+                    continue;
                 }
             }
-            // Handle cylinder shape.
             else
             {
-                curCylinder = &collData->cylinders[shapeIdx - collData->polygonCount];
+                cond1 = false;
+                cond2 = false;
 
-                if (CHECK_FLAG_IDX(query->triggerFlags, curCylinder->triggerFlagIdx, true) &&
-                    (query->ignoreFloors == true ||
-                     (curCylinder->floorType != FloorType_Default &&
-                      curCylinder->floorType != FloorType_None)) &&
-                    curCylinder->radius >= query->radius)
+                if (surfaceIdx0 == UCHAR_MAX ||
+                    collData->polygonSurfaces[surfaceIdx0].floorType == FloorType_Default ||
+                    collData->polygonSurfaces[surfaceIdx0].floorType == FloorType_None)
                 {
-                    func_8006EB8C(query, curCylinder);
+                    cond1 = true;
                 }
+
+                if (surfaceIdx1 == UCHAR_MAX ||
+                    collData->polygonSurfaces[surfaceIdx1].floorType == FloorType_Default ||
+                    collData->polygonSurfaces[surfaceIdx1].floorType == FloorType_None)
+                {
+                    cond2 = true;
+                }
+
+                if (cond1 && cond2)
+                {
+                    continue;
+                }
+            }
+
+            func_8006E78C(query, curPolygon, collData->polygonSplitVertices, collData->polygonSurfaces, hasSurface);
+        }
+        // Handle cylinder.
+        else
+        {
+            curCylinder = &collData->cylinders[shapeIdx - collData->polygonCount];
+
+            if (CHECK_FLAG_IDX(query->triggerFlags, curCylinder->triggerFlagIdx, true) &&
+                (query->ignoreFloors == true ||
+                    (curCylinder->floorType != FloorType_Default &&
+                    curCylinder->floorType != FloorType_None)) &&
+                curCylinder->radius >= query->radius)
+            {
+                func_8006EB8C(query, curCylinder);
             }
         }
     }
@@ -526,8 +531,8 @@ void func_8006E78C(s_RayQuery* query, s_IpdPolygon* polygon, SVECTOR3* splitVert
     SVECTOR   sp8;
     SVECTOR3  maybeSplitDiff; // Q23.8
     q23_8     hitDist;
+    q19_12    offsetY;
     q19_12    offsetX;
-    q19_12    offsetZ;
     q23_8     maybeRayStep;
     s32       floorType; // `e_FloorType`
     SVECTOR3* splitVert1;
@@ -609,22 +614,22 @@ void func_8006E78C(s_RayQuery* query, s_IpdPolygon* polygon, SVECTOR3* splitVert
 
                     if (maybeRayStep >= maybeSplitDiff.vy && hitDist < query->hitDistance)
                     {
-                        offsetX = polygon->offsetY;
-                        offsetZ = -polygon->offsetX;
+                        offsetY =  polygon->offsetY;
+                        offsetX = -polygon->offsetX;
                         if (query->ignoreFloors != true && hasSurface && (sp8.vy - sp0.vy) > 0)
                         {
-                            offsetX = -offsetX;
-                            offsetZ = polygon->offsetX;
+                            offsetY = -offsetY;
+                            offsetX = polygon->offsetX;
                         }
 
-                        query->hitDistance  = hitDist;
-                        query->target.vx    = maybeSplitDiff.vx + query->field_6C.positionX;
-                        query->target.vy    = maybeRayStep - query->field_4E;
-                        query->target.vz    = maybeSplitDiff.vz + query->field_6C.positionZ;
+                        query->hitDistance = hitDist;
+                        query->target.vx   = maybeSplitDiff.vx + query->field_6C.positionX;
+                        query->target.vy   = maybeRayStep - query->field_4E;
+                        query->target.vz   = maybeSplitDiff.vz + query->field_6C.positionZ;
                         query->floorHeight = maybeSplitDiff.vy;
-                        query->offsetX      = offsetX;
-                        query->offsetZ      = offsetZ;
-                        query->character    = NULL;
+                        query->offsetX     = offsetY;
+                        query->offsetZ     = offsetX;
+                        query->character   = NULL;
                         query->floorType   = floorType;
                     }
                 }

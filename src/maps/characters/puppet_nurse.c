@@ -731,7 +731,7 @@ void sharedFunc_800CEEE0_3_s03(s_SubCharacter* nurse)
 
     if (Rng_GenerateUInt(0, 63) == 0) // 1 in 64 chance.
     {
-        localNurseProps.field_11C = func_8006F99C(nurse, Q12_ANGLE(360.0f), nurse->rotation.vy);
+        localNurseProps.field_11C = func_8006F99C(nurse, Q12(1.0f), nurse->rotation.vy);
     }
 
     angle = Math_AngleNormalizeSigned(localNurseProps.field_11C - nurse->rotation.vy);
@@ -823,7 +823,7 @@ void PuppetNurse_Control9(s_SubCharacter* nurse)
     if (!nurse->model.stateStep)
     {
         nurseProps.field_104 = 0;
-        nurseProps.field_11C = func_8006F99C(nurse, Q12_ANGLE(360.0f), nurse->rotation.vy);
+        nurseProps.field_11C = func_8006F99C(nurse, Q12(1.0f), nurse->rotation.vy);
         nurse->model.stateStep++;
     }
 
